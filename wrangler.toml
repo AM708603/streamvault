@@ -1,0 +1,1 @@
+name = "streamvault" main = "worker.js" compatibility_date = "2024-01-01" [[kv_namespaces]] binding = "SV_KV" id = "d64707b623f74a9e9a3210eaa082d73f"
