@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StreamVault Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--red:#E50914;--red-dim:rgba(229,9,20,.12);--bg:#0a0a0a;--bg2:#141414;--bg3:#1e1e1e;--bg4:#282828;--border:rgba(255,255,255,.08);--glass:rgba(255,255,255,.04);--text:#fff;--text2:#bbb;--text3:#666;--green:#46d369;--gold:#f5c518;--blue:#3b82f6;--r:8px;--r2:12px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#333;border-radius:4px}
+
+/* LOGIN */
+#loginScreen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999}
+.login-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:2.5rem;width:100%;max-width:380px;text-align:center}
+.login-logo{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.06em;color:var(--red);margin-bottom:.3rem}
+.login-logo span{color:var(--text)}
+.login-sub{font-size:.72rem;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:2rem}
+.login-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;padding:.8rem 1rem;margin-bottom:.8rem;transition:border-color .2s;text-align:center;letter-spacing:.1em}
+.login-input:focus{outline:none;border-color:rgba(255,255,255,.2)}
+.login-input::placeholder{color:var(--text3);letter-spacing:0}
+.login-btn{width:100%;background:var(--red);color:#fff;border:none;border-radius:var(--r);padding:.85rem;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:background .2s}
+.login-btn:hover{background:#c8070f}
+.login-error{color:#ff6b6b;font-size:.75rem;margin-top:.6rem;display:none}
+.login-cfg{margin-top:1.5rem;padding-top:1.2rem;border-top:1px solid var(--border);text-align:left}
+.login-cfg label{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:.3rem}
+.login-cfg input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.82rem;padding:.6rem .9rem;margin-bottom:.6rem}
+.login-cfg input:focus{outline:none;border-color:rgba(255,255,255,.2)}
+.login-cfg input::placeholder{color:var(--text3)}
+
+/* APP */
+#app{display:none;min-height:100vh;display:none;flex-direction:row}
+#app.visible{display:flex}
+.sidebar{width:240px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100}
+.sb-logo{padding:1.4rem;border-bottom:1px solid var(--border)}
+.sb-logo h1{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:.06em;color:var(--red)}
+.sb-logo h1 span{color:var(--text)}
+.sb-logo p{font-size:.6rem;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-top:.2rem}
+.sb-worker{padding:.7rem 1.4rem;background:var(--red-dim);border-bottom:1px solid var(--border);font-size:.65rem}
+.sb-worker-label{color:var(--text3);display:block;margin-bottom:.2rem;letter-spacing:.08em;text-transform:uppercase}
+.sb-worker-url{color:var(--green);font-family:monospace;word-break:break-all;font-size:.68rem}
+.sb-nav{padding:1rem 0;flex:1;overflow-y:auto}
+.sb-section{padding:.3rem 1rem .1rem;font-size:.58rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--text3);margin-top:.8rem}
+.sb-link{display:flex;align-items:center;gap:.75rem;padding:.6rem 1.4rem;font-size:.8rem;font-weight:500;color:var(--text3);cursor:pointer;transition:all .15s;border-left:2px solid transparent}
+.sb-link:hover{color:var(--text2);background:var(--glass)}
+.sb-link.active{color:var(--text);background:var(--red-dim);border-left-color:var(--red)}
+.sb-count{margin-left:auto;font-size:.6rem;font-weight:700;padding:.1rem .4rem;border-radius:3px}
+.sb-bottom{padding:1rem 1.4rem;border-top:1px solid var(--border)}
+.sb-stat{display:flex;justify-content:space-between;padding:.25rem 0;font-size:.7rem}
+.sb-stat-label{color:var(--text3)}
+.sb-stat-val{color:var(--text2);font-weight:600}
+.main{margin-left:240px;flex:1;min-height:100vh;display:flex;flex-direction:column}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:.9rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;gap:1rem}
+.topbar-left{display:flex;align-items:center;gap:1rem}
+.topbar-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.08em;color:var(--text2)}
+.sync-indicator{display:flex;align-items:center;gap:.4rem;font-size:.68rem;color:var(--text3);padding:.3rem .7rem;border-radius:20px;border:1px solid var(--border)}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.sync-dot.syncing{background:var(--gold);animation:pulse .8s infinite}
+.sync-dot.error{background:#ff4444}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.topbar-actions{display:flex;gap:.7rem;flex-shrink:0}
+.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.55rem 1.2rem;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--red);color:#fff}.btn-primary:hover{background:#c8070f}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--border)}.btn-secondary:hover{background:var(--bg4);color:var(--text)}
+.btn-green{background:var(--green);color:#000}.btn-green:hover{background:#3bc95e}
+.btn-danger{background:transparent;color:#ff4444;border:1px solid rgba(255,68,68,.3)}.btn-danger:hover{background:rgba(255,68,68,.1)}
+.btn-sm{padding:.35rem .8rem;font-size:.7rem}
+.view{display:none;padding:2rem;flex:1}
+.view.active{display:block}
+
+/* DASHBOARD */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:1.4rem}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:2.5rem;letter-spacing:.04em;margin-bottom:.2rem}
+.stat-label{font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em}
+.stat-sub{font-size:.68rem;color:var(--green);margin-top:.3rem}
+.recent-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden}
+.rc-header{padding:1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.rc-title{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.1em;color:var(--text2)}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{padding:.65rem 1rem;font-size:.63rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);text-align:left;border-bottom:1px solid var(--border)}
+.tbl td{padding:.75rem 1rem;font-size:.78rem;border-bottom:1px solid rgba(255,255,255,.03);color:var(--text2)}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--glass)}
+.tbl-thumb{width:50px;height:30px;border-radius:4px;overflow:hidden;background:var(--bg3)}
+.tbl-thumb img{width:100%;height:100%;object-fit:cover}
+.badge{display:inline-block;padding:.15rem .5rem;border-radius:3px;font-size:.6rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.badge-movie{background:rgba(229,9,20,.15);color:var(--red)}
+.badge-tv{background:rgba(59,130,246,.15);color:#60a5fa}
+.badge-anime{background:rgba(245,197,24,.12);color:var(--gold)}
+
+/* CONTENT GRID */
+.filter-bar{display:flex;align-items:center;gap:.8rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.filter-input{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.82rem;padding:.55rem 1rem;width:260px;transition:border-color .2s}
+.filter-input:focus{outline:none;border-color:rgba(255,255,255,.2)}
+.filter-input::placeholder{color:var(--text3)}
+.content-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem}
+.cc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;transition:border-color .2s}
+.cc:hover{border-color:rgba(255,255,255,.14)}
+.cc-img{aspect-ratio:16/9;overflow:hidden;background:var(--bg3);position:relative}
+.cc-img img{width:100%;height:100%;object-fit:cover}
+.cc-fb{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:2rem;color:rgba(255,255,255,.08);background:linear-gradient(135deg,#111,#1e1e1e)}
+.cc-typebadge{position:absolute;top:6px;left:6px}
+.cc-body{padding:.8rem}
+.cc-title{font-size:.8rem;font-weight:600;margin-bottom:.25rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cc-meta{font-size:.67rem;color:var(--text3);margin-bottom:.6rem}
+.cc-actions{display:flex;gap:.4rem}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.85);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:1.5rem}
+.overlay.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);width:100%;max-width:740px;max-height:90vh;overflow-y:auto;animation:mIn .2s ease}
+@keyframes mIn{from{opacity:0;transform:scale(.96) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-hdr{padding:1.3rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg2);z-index:1}
+.modal-hdr-title{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:.08em}
+.modal-close{background:none;border:none;cursor:pointer;color:var(--text3);font-size:1.1rem;padding:.3rem;transition:color .15s}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:1.5rem}
+.modal-footer{padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;gap:.7rem;justify-content:flex-end;position:sticky;bottom:0;background:var(--bg2)}
+.fg{display:flex;flex-direction:column;gap:.35rem}
+.fg label{font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3)}
+.fg input,.fg select,.fg textarea{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.84rem;padding:.6rem .9rem;transition:border-color .2s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:rgba(255,255,255,.22)}
+.fg input::placeholder,.fg textarea::placeholder{color:var(--text3)}
+.fg textarea{resize:vertical;min-height:85px;line-height:1.6}
+.fg select option{background:var(--bg3)}
+.fg .hint{font-size:.63rem;color:var(--text3)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+.form-grid .full{grid-column:1/-1}
+.form-divider{grid-column:1/-1;height:1px;background:var(--border);margin:.4rem 0}
+.form-section{grid-column:1/-1;font-family:'Bebas Neue',sans-serif;font-size:.9rem;letter-spacing:.1em;color:var(--text3);padding-top:.3rem}
+.ep-row{display:flex;gap:.5rem;align-items:center;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:.55rem .8rem;margin-bottom:.4rem}
+.ep-row input{background:transparent;border:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.78rem;flex:1;outline:none;min-width:0}
+.ep-row input::placeholder{color:var(--text3)}
+.ep-n{font-family:'Bebas Neue',sans-serif;font-size:.95rem;color:var(--text3);min-width:18px;flex-shrink:0}
+.ep-dur{width:55px;flex:none;text-align:center}
+.ep-rm{background:none;border:none;cursor:pointer;color:var(--text3);font-size:.9rem;flex-shrink:0;transition:color .15s}
+.ep-rm:hover{color:#ff4444}
+.stabs{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.6rem}
+.stab{padding:.28rem .7rem;border-radius:20px;font-size:.68rem;font-weight:600;background:var(--bg3);border:1px solid var(--border);color:var(--text3);cursor:pointer;transition:all .15s}
+.stab.active{background:var(--red-dim);border-color:var(--red);color:var(--red)}
+.stab.add-s{border-style:dashed}
+
+/* ADS */
+.ads-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem}
+.ad-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:1.5rem}
+.ad-box h3{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.08em;margin-bottom:.4rem}
+.ad-box p{font-size:.77rem;color:var(--text3);line-height:1.6;margin-bottom:.9rem}
+.code-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:.9rem;font-family:monospace;font-size:.7rem;color:var(--text2);white-space:pre-wrap;word-break:break-all;max-height:130px;overflow-y:auto;margin-bottom:.7rem;line-height:1.6}
+.ad-status{display:inline-flex;align-items:center;gap:.4rem;font-size:.67rem;font-weight:600;padding:.18rem .55rem;border-radius:3px}
+.ad-on{background:rgba(70,211,105,.1);color:var(--green)}
+.ad-off{background:var(--glass);color:var(--text3)}
+.placement-item{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:.9rem 1rem;margin-bottom:.6rem}
+.placement-label{font-size:.68rem;font-weight:700;color:var(--gold);margin-bottom:.3rem}
+
+/* SETUP */
+.setup-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:2rem;max-width:640px}
+.setup-step{display:flex;gap:1rem;padding:.7rem 0;border-bottom:1px solid rgba(255,255,255,.04);align-items:flex-start}
+.setup-step:last-child{border-bottom:none}
+.step-num{width:26px;height:26px;border-radius:50%;background:var(--red);color:#fff;font-size:.68rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.1rem}
+.step-body{flex:1}
+.step-title{font-size:.82rem;font-weight:600;margin-bottom:.25rem}
+.step-desc{font-size:.75rem;color:var(--text3);line-height:1.6}
+code{font-family:monospace;font-size:.78rem;background:var(--bg3);border:1px solid var(--border);padding:.12rem .4rem;border-radius:3px;color:var(--gold)}
+pre{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:.9rem 1rem;font-family:monospace;font-size:.75rem;color:var(--text2);margin:.5rem 0;overflow-x:auto;line-height:1.7}
+
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:.65rem 1.1rem;font-size:.78rem;color:var(--text2);transform:translateY(80px);transition:transform .3s;z-index:9999;pointer-events:none;display:flex;align-items:center;gap:.55rem;max-width:320px}
+.toast.show{transform:translateY(0)}
+.toast.ok{border-color:rgba(70,211,105,.3);color:var(--green)}
+.toast.err{border-color:rgba(255,68,68,.3);color:#ff6b6b}
+.toast.info{border-color:rgba(245,197,24,.3);color:var(--gold)}
+
+@media(max-width:768px){
+  .sidebar{display:none}.main{margin-left:0}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .form-grid{grid-template-columns:1fr}
+  .ads-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">Stream<span>Vault</span></div>
+    <div class="login-sub">Admin Portal</div>
+    <div class="login-cfg">
+      <label>Worker URL</label>
+      <input type="text" id="cfgWorkerUrl" placeholder="https://streamvault.yourname.workers.dev" value="">
+      <label>Admin Password</label>
+      <input type="password" id="cfgPassword" placeholder="Your admin password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <br>
+    <button class="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="login-error" id="loginError">Incorrect password or Worker URL</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <h1>Stream<span>Vault</span></h1>
+      <p>Admin Portal</p>
+    </div>
+    <div class="sb-worker">
+      <span class="sb-worker-label">Connected Worker</span>
+      <span class="sb-worker-url" id="sbWorkerUrl">—</span>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-section">Overview</div>
+      <div class="sb-link active" onclick="switchView('dashboard',this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </div>
+      <div class="sb-section">Content</div>
+      <div class="sb-link" onclick="switchView('movies',this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+        Movies
+        <span class="sb-count" style="background:rgba(229,9,20,.15);color:var(--red)" id="sbM">0</span>
+      </div>
+      <div class="sb-link" onclick="switchView('tvshows',this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17,2 12,7 7,2"/></svg>
+        TV Shows
+        <span class="sb-count" style="background:rgba(59,130,246,.15);color:#60a5fa" id="sbT">0</span>
+      </div>
+      <div class="sb-link" onclick="switchView('anime',this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8 17.72m2.54-15.38c-3.72 4.35-8.94 5.66-16.88 5.85m19.5 1.9c-3.5-.93-6.63-.82-8.94 0-2.58.92-5.01 2.86-7.44 6.32"/></svg>
+        Anime
+        <span class="sb-count" style="background:rgba(245,197,24,.1);color:var(--gold)" id="sbA">0</span>
+      </div>
+      <div class="sb-section">Tools</div>
+      <div class="sb-link" onclick="switchView('ads',this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        Ads Manager
+      </div>
+      <div class="sb-link" onclick="switchView('setup',this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        Setup Guide
+      </div>
+    </nav>
+    <div class="sb-bottom">
+      <div class="sb-stat"><span class="sb-stat-label">Total Titles</span><span class="sb-stat-val" id="sbTotal">0</span></div>
+      <div class="sb-stat"><span class="sb-stat-label">Last Sync</span><span class="sb-stat-val" id="sbSync">—</span></div>
+      <div style="margin-top:.8rem">
+        <button class="btn btn-danger btn-sm" onclick="logout()" style="width:100%;justify-content:center">Sign Out</button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-title" id="topTitle">Dashboard</div>
+        <div class="sync-indicator" id="syncIndicator">
+          <div class="sync-dot" id="syncDot"></div>
+          <span id="syncLabel">Synced</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-secondary" onclick="loadData()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="23,4 23,10 17,10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+          Refresh
+        </button>
+        <button class="btn btn-primary" onclick="openAdd()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Title
+        </button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="view active" id="view-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-val" id="dM" style="color:var(--red)">0</div><div class="stat-label">Movies</div><div class="stat-sub">In library</div></div>
+        <div class="stat-card"><div class="stat-val" id="dT" style="color:#60a5fa">0</div><div class="stat-label">TV Shows</div><div class="stat-sub">In library</div></div>
+        <div class="stat-card"><div class="stat-val" id="dA" style="color:var(--gold)">0</div><div class="stat-label">Anime</div><div class="stat-sub">In library</div></div>
+        <div class="stat-card"><div class="stat-val" id="dTot" style="color:var(--green)">0</div><div class="stat-label">Total</div><div class="stat-sub">All titles</div></div>
+      </div>
+      <div class="recent-card">
+        <div class="rc-header"><div class="rc-title">Recent Titles</div><button class="btn btn-secondary btn-sm" onclick="loadData()">Refresh</button></div>
+        <table class="tbl"><thead><tr><th>Poster</th><th>Title</th><th>Type</th><th>Year</th><th>IMDb</th><th>Actions</th></tr></thead>
+        <tbody id="recentTbody"></tbody></table>
+      </div>
+    </div>
+
+    <!-- MOVIES -->
+    <div class="view" id="view-movies">
+      <div class="filter-bar">
+        <input class="filter-input" placeholder="Search movies..." oninput="renderGrid('movie',this.value)">
+        <button class="btn btn-primary" onclick="openAdd('movie')">+ Add Movie</button>
+      </div>
+      <div class="content-grid" id="grid-movies"></div>
+    </div>
+
+    <!-- TV -->
+    <div class="view" id="view-tvshows">
+      <div class="filter-bar">
+        <input class="filter-input" placeholder="Search TV shows..." oninput="renderGrid('tv',this.value)">
+        <button class="btn btn-primary" onclick="openAdd('tv')">+ Add TV Show</button>
+      </div>
+      <div class="content-grid" id="grid-tv"></div>
+    </div>
+
+    <!-- ANIME -->
+    <div class="view" id="view-anime">
+      <div class="filter-bar">
+        <input class="filter-input" placeholder="Search anime..." oninput="renderGrid('anime',this.value)">
+        <button class="btn btn-primary" onclick="openAdd('anime')">+ Add Anime</button>
+      </div>
+      <div class="content-grid" id="grid-anime"></div>
+    </div>
+
+    <!-- ADS -->
+    <div class="view" id="view-ads">
+      <div class="ads-grid">
+        <div class="ad-box">
+          <h3>Google AdSense</h3>
+          <p>Automatic ads. Requires AdSense account approval (~1-2 weeks). Pays per 1000 views or clicks.</p>
+          <div class="fg" style="margin-bottom:.7rem"><label>Publisher ID</label><input id="adsId" placeholder="ca-pub-XXXXXXXXXXXXXXXXX" oninput="genAdsense()"></div>
+          <div class="fg" style="margin-bottom:.7rem"><label>Ad Slot ID</label><input id="adsSlot" placeholder="1234567890" oninput="genAdsense()"></div>
+          <label style="font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:.4rem">Generated Code</label>
+          <div class="code-box" id="adsCode"><!-- Enter Publisher ID above --></div>
+          <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+            <button class="btn btn-secondary btn-sm" onclick="copyEl('adsCode')">Copy Code</button>
+            <span class="ad-status ad-off" id="adsSt">● Not configured</span>
+          </div>
+        </div>
+        <div class="ad-box">
+          <h3>Direct Banner Ad</h3>
+          <p>Sell ad space directly. No approval needed. Charge advertisers a fixed monthly fee.</p>
+          <div class="fg" style="margin-bottom:.7rem"><label>Advertiser URL</label><input id="banUrl" placeholder="https://advertiser.com" oninput="genBanner()"></div>
+          <div class="fg" style="margin-bottom:.7rem"><label>Banner Image URL</label><input id="banImg" placeholder="https://cdn.com/banner.jpg" oninput="genBanner()"></div>
+          <div class="fg" style="margin-bottom:.7rem"><label>Alt Text / Fallback Label</label><input id="banText" placeholder="Advertisement" oninput="genBanner()"></div>
+          <label style="font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:.4rem">Generated Code</label>
+          <div class="code-box" id="banCode"><!-- Enter Advertiser URL above --></div>
+          <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+            <button class="btn btn-secondary btn-sm" onclick="copyEl('banCode')">Copy Code</button>
+            <span class="ad-status ad-off" id="banSt">● Not configured</span>
+          </div>
+        </div>
+      </div>
+      <div class="ad-box" style="max-width:640px">
+        <h3>Where to Paste Ad Code in streamvault-netflix.html</h3>
+        <p style="margin-bottom:1rem;font-size:.78rem;color:var(--text3)">Open <code>streamvault-netflix.html</code> and find these 3 spots:</p>
+        <div class="placement-item"><div class="placement-label">Placement 1 — Below Billboard (high visibility)</div><code>Find: &lt;div class="rows-wrap" id="rowsWrap"&gt;&lt;/div&gt;</code><br><span style="font-size:.72rem;color:var(--text3)">Paste your ad code on the line just above this.</span></div>
+        <div class="placement-item"><div class="placement-label">Placement 2 — Detail Page Sidebar</div><code>Find: &lt;div class="dp-right" id="dpRight"&gt;&lt;/div&gt;</code><br><span style="font-size:.72rem;color:var(--text3)">Paste at the top inside this div.</span></div>
+        <div class="placement-item"><div class="placement-label">Placement 3 — Below Player</div><code>Find: &lt;div id="pipLeft"&gt;&lt;/div&gt;</code><br><span style="font-size:.72rem;color:var(--text3)">Paste at the end inside pipLeft. Premium placement.</span></div>
+      </div>
+    </div>
+
+    <!-- SETUP -->
+    <div class="view" id="view-setup">
+      <div class="setup-card">
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.06em;margin-bottom:.4rem">Cloudflare Setup Guide</h2>
+        <p style="font-size:.82rem;color:var(--text3);margin-bottom:1.5rem">Follow these steps to connect your Cloudflare Worker backend. Takes about 5 minutes.</p>
+
+        <div class="setup-step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Create a KV Namespace</div>
+            <div class="step-desc">Go to <strong>workers.cloudflare.com</strong> → <strong>KV</strong> (left menu) → <strong>Create namespace</strong><br>Name it <code>SV_KV</code> and click Add.</div>
+          </div>
+        </div>
+
+        <div class="setup-step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Create a Worker</div>
+            <div class="step-desc">Go to <strong>Workers & Pages</strong> → <strong>Create</strong> → <strong>Create Worker</strong><br>Name it <code>streamvault</code>, click Deploy, then click <strong>Edit Code</strong>.</div>
+          </div>
+        </div>
+
+        <div class="setup-step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Paste worker.js Code</div>
+            <div class="step-desc">Delete all existing code. Paste the entire contents of <code>worker.js</code> you downloaded. Change the password at the top if you want, then click <strong>Save &amp; Deploy</strong>.</div>
+          </div>
+        </div>
+
+        <div class="setup-step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <div class="step-title">Bind KV to Worker</div>
+            <div class="step-desc">Go to your Worker → <strong>Settings</strong> → <strong>Variables</strong> → <strong>KV Namespace Bindings</strong><br>Click Add binding:<br>Variable name: <code>SV_KV</code><br>KV namespace: select your <code>SV_KV</code> namespace<br>Click Save.</div>
+          </div>
+        </div>
+
+        <div class="setup-step">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <div class="step-title">Copy your Worker URL</div>
+            <div class="step-desc">On your Worker page, your URL will look like:<br><code>https://streamvault.yourname.workers.dev</code><br>Copy this URL.</div>
+          </div>
+        </div>
+
+        <div class="setup-step">
+          <div class="step-num">6</div>
+          <div class="step-body">
+            <div class="step-title">Update streamvault-netflix.html</div>
+            <div class="step-desc">Open <code>streamvault-netflix.html</code> and find:<br><code>YOUR_WORKER_URL</code><br>Replace it with your actual Worker URL. Save the file.</div>
+          </div>
+        </div>
+
+        <div class="setup-step">
+          <div class="step-num">7</div>
+          <div class="step-body">
+            <div class="step-title">Log into this Admin</div>
+            <div class="step-desc">Enter your Worker URL and password in the login screen. All your content is now stored in Cloudflare KV — changes are live on your site instantly. No more manual exports!</div>
+          </div>
+        </div>
+
+        <div style="margin-top:1.2rem;padding:1rem;background:var(--red-dim);border:1px solid var(--red);border-radius:var(--r)">
+          <div style="font-size:.75rem;color:var(--text2);line-height:1.7"><strong style="color:var(--red)">Free Tier Limits:</strong> 100,000 Worker requests/day, 1GB KV storage, unlimited reads. More than enough for a streaming site.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="overlay" id="addOverlay" onclick="overlayClick(event)">
+  <div class="modal" id="addModal">
+    <div class="modal-hdr">
+      <div class="modal-hdr-title" id="modalHdrTitle">Add Title</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body"><div class="form-grid" id="formGrid"></div></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="saveBtn" onclick="saveItem()">Save to Cloudflare</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════
+//  STATE
+// ═══════════════════════
+var WORKER_URL = '';
+var ADMIN_PASS = '';
+var DB = { movies:[], tvshows:[], anime:[] };
+var editId = null, editType = null, editSeason = 1, editEps = {};
+var viewTitles = {dashboard:'Dashboard',movies:'Movies',tvshows:'TV Shows',anime:'Anime',ads:'Ads Manager',setup:'Setup Guide'};
+
+// ═══════════════════════
+//  LOGIN
+// ═══════════════════════
+function doLogin() {
+  var url = document.getElementById('cfgWorkerUrl').value.trim().replace(/\/$/, '');
+  var pass = document.getElementById('cfgPassword').value.trim();
+  if (!url || !pass) { showErr('Please enter both Worker URL and password'); return; }
+  WORKER_URL = url;
+  ADMIN_PASS = pass;
+
+  setSyncing('Verifying...');
+  fetch(url + '/api/auth', {
+    method: 'POST',
+    headers: { 'Content-Type':'application/json', 'X-Admin-Password': pass },
+  }).then(function(r) {
+    if (r.ok) {
+      localStorage.setItem('sv_worker', url);
+      localStorage.setItem('sv_pass', pass);
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('app').classList.add('visible');
+      document.getElementById('sbWorkerUrl').textContent = url.replace('https://','');
+      loadData();
+    } else {
+      showErr('Wrong password or Worker URL unreachable');
+      setSynced();
+    }
+  }).catch(function() { showErr('Cannot reach Worker URL — check it is deployed'); setSynced(); });
+}
+
+function showErr(msg) {
+  var el = document.getElementById('loginError');
+  el.textContent = msg; el.style.display = 'block';
+  setTimeout(function(){ el.style.display = 'none'; }, 4000);
+}
+
+function logout() {
+  localStorage.removeItem('sv_worker');
+  localStorage.removeItem('sv_pass');
+  location.reload();
+}
+
+function tryAutoLogin() {
+  var url = localStorage.getItem('sv_worker');
+  var pass = localStorage.getItem('sv_pass');
+  if (url && pass) {
+    document.getElementById('cfgWorkerUrl').value = url;
+    document.getElementById('cfgPassword').value = pass;
+  }
+}
+
+// ═══════════════════════
+//  SYNC INDICATOR
+// ═══════════════════════
+function setSyncing(label) {
+  document.getElementById('syncDot').className = 'sync-dot syncing';
+  document.getElementById('syncLabel').textContent = label || 'Syncing...';
+}
+function setSynced() {
+  document.getElementById('syncDot').className = 'sync-dot';
+  document.getElementById('syncLabel').textContent = 'Synced';
+  var now = new Date().toLocaleTimeString();
+  document.getElementById('sbSync').textContent = now;
+}
+function setSyncErr() {
+  document.getElementById('syncDot').className = 'sync-dot error';
+  document.getElementById('syncLabel').textContent = 'Error';
+}
+
+// ═══════════════════════
+//  API
+// ═══════════════════════
+function api(method, path, body) {
+  var opts = {
+    method: method,
+    headers: { 'Content-Type':'application/json', 'X-Admin-Password': ADMIN_PASS }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  return fetch(WORKER_URL + path, opts).then(function(r){ return r.json(); });
+}
+
+function loadData() {
+  setSyncing('Loading...');
+  api('GET', '/api/content').then(function(data) {
+    DB.movies  = data.movies  || [];
+    DB.tvshows = data.tvshows || [];
+    DB.anime   = data.anime   || [];
+    updateCounts();
+    renderRecent();
+    renderGrid('movie');
+    renderGrid('tv');
+    renderGrid('anime');
+    setSynced();
+    toast('Content loaded from Cloudflare', 'ok');
+  }).catch(function() {
+    setSyncErr();
+    toast('Failed to load — check Worker URL', 'err');
+  });
+}
+
+// ═══════════════════════
+//  COUNTS
+// ═══════════════════════
+function updateCounts() {
+  var m = DB.movies.length, t = DB.tvshows.length, a = DB.anime.length, tot = m+t+a;
+  ['dM','sbM'].forEach(function(id){ document.getElementById(id).textContent = m; });
+  ['dT','sbT'].forEach(function(id){ document.getElementById(id).textContent = t; });
+  ['dA','sbA'].forEach(function(id){ document.getElementById(id).textContent = a; });
+  ['dTot','sbTotal'].forEach(function(id){ document.getElementById(id).textContent = tot; });
+}
+
+// ═══════════════════════
+//  VIEWS
+// ═══════════════════════
+function switchView(id, el) {
+  document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+  document.getElementById('view-'+id).classList.add('active');
+  document.querySelectorAll('.sb-link').forEach(function(l){ l.classList.remove('active'); });
+  if (el) el.classList.add('active');
+  document.getElementById('topTitle').textContent = viewTitles[id] || id;
+}
+
+// ═══════════════════════
+//  RECENT TABLE
+// ═══════════════════════
+function renderRecent() {
+  var all = [];
+  DB.movies.forEach(function(m){ all.push({item:m,type:'movie'}); });
+  DB.tvshows.forEach(function(t){ all.push({item:t,type:'tv'}); });
+  DB.anime.forEach(function(a){ all.push({item:a,type:'anime'}); });
+  all = all.slice(-8).reverse();
+  document.getElementById('recentTbody').innerHTML = all.map(function(r) {
+    var it = r.item, tp = r.type;
+    var bc = tp==='movie'?'badge-movie':tp==='tv'?'badge-tv':'badge-anime';
+    var bl = tp==='movie'?'Movie':tp==='tv'?'TV Show':'Anime';
+    return '<tr>'+
+      '<td><div class="tbl-thumb"><img src="https://image.tmdb.org/t/p/w200'+(it.poster||'')+'" onerror="this.style.display=\'none\'" alt=""></div></td>'+
+      '<td><strong>'+esc(it.title)+'</strong></td>'+
+      '<td><span class="badge '+bc+'">'+bl+'</span></td>'+
+      '<td>'+(it.year||'—')+'</td>'+
+      '<td><span style="color:var(--gold)">★ '+(it.imdb||'?')+'</span></td>'+
+      '<td><div style="display:flex;gap:.4rem">'+
+        '<button class="btn btn-secondary btn-sm" onclick="editItem('+it.id+',\''+tp+'\')">Edit</button>'+
+        '<button class="btn btn-danger btn-sm" onclick="delItem('+it.id+',\''+tp+'\')">Del</button>'+
+      '</div></td>'+
+    '</tr>';
+  }).join('');
+}
+
+// ═══════════════════════
+//  CONTENT GRID
+// ═══════════════════════
+function renderGrid(type, filter) {
+  filter = (filter||'').toLowerCase();
+  var list = type==='movie'?DB.movies:type==='tv'?DB.tvshows:DB.anime;
+  var gid = type==='movie'?'grid-movies':type==='tv'?'grid-tv':'grid-anime';
+  var bc = type==='movie'?'badge-movie':type==='tv'?'badge-tv':'badge-anime';
+  var bl = type==='movie'?'Movie':type==='tv'?'TV Show':'Anime';
+  var items = list.filter(function(it){ return !filter || it.title.toLowerCase().indexOf(filter)!==-1 || (it.genre||'').toLowerCase().indexOf(filter)!==-1; });
+  var grid = document.getElementById(gid);
+  if (!items.length) { grid.innerHTML = '<div style="color:var(--text3);font-size:.85rem;padding:2rem">No titles. Click "+ Add" to get started.</div>'; return; }
+  grid.innerHTML = items.map(function(it) {
+    return '<div class="cc">'+
+      '<div class="cc-img"><img src="https://image.tmdb.org/t/p/w500'+(it.poster||'')+'" alt="'+esc(it.title)+'" onerror="this.style.display=\'none\'"><div class="cc-fb">'+esc((it.title||'').slice(0,3).toUpperCase())+'</div><div class="cc-typebadge"><span class="badge '+bc+'">'+bl+'</span></div></div>'+
+      '<div class="cc-body">'+
+        '<div class="cc-title">'+esc(it.title)+'</div>'+
+        '<div class="cc-meta">'+(it.year||'')+(it.genre?' · '+it.genre:'')+(it.imdb?' · ★'+it.imdb:'')+'</div>'+
+        '<div class="cc-actions">'+
+          '<button class="btn btn-secondary btn-sm" onclick="editItem('+it.id+',\''+type+'\')" style="flex:1">Edit</button>'+
+          '<button class="btn btn-danger btn-sm" onclick="delItem('+it.id+',\''+type+'\')">✕</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+// ═══════════════════════
+//  MODAL
+// ═══════════════════════
+function openAdd(type) {
+  type = type||'movie';
+  editId = null; editType = type; editEps = {}; editSeason = 1;
+  document.getElementById('modalHdrTitle').textContent = 'Add '+(type==='movie'?'Movie':type==='tv'?'TV Show':'Anime');
+  document.getElementById('saveBtn').textContent = 'Save to Cloudflare';
+  buildForm(type, null);
+  document.getElementById('addOverlay').classList.add('open');
+}
+
+function editItem(id, type) {
+  var list = type==='movie'?DB.movies:type==='tv'?DB.tvshows:DB.anime;
+  var item = list.filter(function(x){ return x.id===id; })[0];
+  if (!item) return;
+  editId = id; editType = type; editEps = {}; editSeason = 1;
+  if (type==='tv' && item.seasons) {
+    item.seasons.forEach(function(ss){ editEps['s'+ss.s] = ss.episodes.map(function(e){ return Object.assign({},e); }); });
+  } else if (type==='anime' && item.episodes) {
+    editEps['s1'] = (item.episodes||[]).map(function(e){ return Object.assign({},e); });
+  }
+  document.getElementById('modalHdrTitle').textContent = 'Edit: '+item.title;
+  document.getElementById('saveBtn').textContent = 'Update on Cloudflare';
+  buildForm(type, item);
+  document.getElementById('addOverlay').classList.add('open');
+}
+
+function closeModal() { document.getElementById('addOverlay').classList.remove('open'); }
+function overlayClick(e) { if(e.target===document.getElementById('addOverlay')) closeModal(); }
+
+// ═══════════════════════
+//  FORM BUILDER
+// ═══════════════════════
+function buildForm(type, v) {
+  v = v||{};
+  var f = '';
+  f += fi('Title *','title','text',v.title||'','full','e.g. The Dark Knight');
+  f += fi('TMDB ID *','tid','number',v.id||'','','e.g. 155');
+  f += fi('Year','year','number',v.year||'','','e.g. 2008');
+  f += fi('Genre','genre','text',v.genre||'','','e.g. Action');
+  f += fi('IMDb Rating','imdb','text',v.imdb||'','','e.g. 9.0');
+  f += fi('Match %','match','number',v.match||95,'','0–100');
+  f += fi('Content Rating','rating','text',v.rating||'','','e.g. PG-13');
+  f += fi('Runtime','runtime','text',v.runtime||'','','e.g. 152 min');
+  f += fi('Director','director','text',v.director||'','','');
+  f += fi('Studio / Network','studio','text',v.studio||'','','');
+  f += ft('Description','desc',v.desc||'','full','Short description...');
+  f += fi('Tags (comma-separated)','tags','text',(Array.isArray(v.tags)?v.tags.join(', '):v.tags)||'','full','e.g. Action, Dark');
+  f += '<div class="form-divider"></div><div class="form-section">TMDB Image Paths</div>';
+  f += fi('Poster Path','poster','text',v.poster||'','','/xxxxxxx.jpg');
+  f += fi('Backdrop Path','backdrop','text',v.backdrop||'','','/xxxxxxx.jpg');
+  f += '<div class="form-divider"></div><div class="form-section">Cast &amp; Related</div>';
+  var castVal = (v.cast||[]).map(function(c){ return c.name+'|'+c.role+'|'+(c.img||''); }).join('\n');
+  f += '<div class="fg full"><label>Cast — one per line: Name | Role | ImgPath</label><textarea id="f_cast" rows="4" placeholder="Robert Downey Jr.|Iron Man|/5qH...jpg">'+esc(castVal)+'</textarea></div>';
+  var relVal = Array.isArray(v.related)?v.related.join(','):(v.related||'');
+  f += fi('Related IDs (comma-separated)','related','text',relVal,'full','e.g. 278,550');
+
+  if (type==='tv') {
+    f += '<div class="form-divider"></div><div class="form-section">Seasons &amp; Episodes</div>';
+    if (!Object.keys(editEps).length) editEps['s1'] = [];
+    f += '<div class="full" id="epBuilder">'+buildSeasonTabs()+'<div id="epBody">'+buildEpList('s1')+'</div></div>';
+  } else if (type==='anime') {
+    f += '<div class="form-divider"></div><div class="form-section">Episodes</div>';
+    if (!editEps['s1']) editEps['s1'] = [];
+    f += '<div class="full" id="epBuilder"><div id="epBody">'+buildEpList('s1')+'</div></div>';
+    f += '<div class="fg full"><label>Is this an Anime Movie?</label><select id="f_isMovie"><option value="false"'+(!v.isMovie?' selected':'')+'>No (Series)</option><option value="true"'+(v.isMovie?' selected':'')+'>Yes (Movie)</option></select></div>';
+  }
+
+  document.getElementById('formGrid').innerHTML = f;
+}
+
+function fi(label, id, type, val, cls, ph) {
+  return '<div class="fg '+(cls||'')+'">'+'<label>'+label+'</label><input type="'+type+'" id="f_'+id+'" value="'+esc(String(val||''))+'" placeholder="'+(ph||'')+'"></div>';
+}
+function ft(label, id, val, cls, ph) {
+  return '<div class="fg '+(cls||'')+'">'+'<label>'+label+'</label><textarea id="f_'+id+'" placeholder="'+(ph||'')+'">'+esc(val||'')+'</textarea></div>';
+}
+
+function buildSeasonTabs() {
+  var ks = Object.keys(editEps).sort();
+  var html = '<div class="stabs" id="sTabsEl">';
+  ks.forEach(function(sk,i){ html += '<div class="stab'+(i===0?' active':'')+'" onclick="switchSTab(\''+sk+'\',this)">'+sk.replace('s','S')+'</div>'; });
+  html += '<div class="stab add-s" onclick="addSeason()">+ Season</div>';
+  html += '</div>';
+  return html;
+}
+
+function buildEpList(sk) {
+  var eps = editEps[sk]||[];
+  var html = '';
+  eps.forEach(function(ep,i){
+    html += '<div class="ep-row">'+
+      '<span class="ep-n">'+(i+1)+'</span>'+
+      '<input placeholder="Episode name" value="'+esc(ep.name||'')+'" oninput="setEp(\''+sk+'\','+i+',\'name\',this.value)">'+
+      '<input class="ep-dur" placeholder="24m" value="'+esc(ep.dur||'')+'" oninput="setEp(\''+sk+'\','+i+',\'dur\',this.value)">'+
+      '<input placeholder="Short description (optional)" style="flex:2" value="'+esc(ep.desc||'')+'" oninput="setEp(\''+sk+'\','+i+',\'desc\',this.value)">'+
+      '<button class="ep-rm" onclick="rmEp(\''+sk+'\','+i+')">✕</button>'+
+    '</div>';
+  });
+  html += '<button class="btn btn-secondary btn-sm" style="margin-top:.4rem" onclick="addEp(\''+sk+'\')">+ Add Episode</button>';
+  return html;
+}
+
+function switchSTab(sk, el) {
+  editSeason = parseInt(sk.replace('s',''));
+  document.querySelectorAll('.stab').forEach(function(t){ t.classList.remove('active'); });
+  el.classList.add('active');
+  document.getElementById('epBody').innerHTML = buildEpList(sk);
+}
+function addSeason() {
+  var n = Object.keys(editEps).length+1;
+  var sk = 's'+n;
+  editEps[sk] = [];
+  var tabs = document.getElementById('sTabsEl');
+  var addBtn = tabs.lastChild;
+  var t = document.createElement('div');
+  t.className = 'stab';
+  t.textContent = 'S'+n;
+  t.onclick = function(){ switchSTab(sk,t); };
+  tabs.insertBefore(t, addBtn);
+  switchSTab(sk, t);
+}
+function addEp(sk) {
+  if (!editEps[sk]) editEps[sk] = [];
+  editEps[sk].push({e:editEps[sk].length+1,name:'',dur:'24m',desc:''});
+  document.getElementById('epBody').innerHTML = buildEpList(sk);
+}
+function rmEp(sk,i) {
+  editEps[sk].splice(i,1);
+  editEps[sk].forEach(function(ep,j){ ep.e=j+1; });
+  document.getElementById('epBody').innerHTML = buildEpList(sk);
+}
+function setEp(sk,i,field,val) {
+  if (!editEps[sk]) editEps[sk]=[];
+  if (!editEps[sk][i]) editEps[sk][i]={};
+  editEps[sk][i][field]=val;
+}
+
+// ═══════════════════════
+//  SAVE
+// ═══════════════════════
+function gv(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; }
+
+function saveItem() {
+  var title = gv('f_title');
+  if (!title) { toast('Title is required','err'); return; }
+  var id = parseInt(gv('f_tid')) || Date.now();
+  var cast = gv('f_cast').split('\n').filter(Boolean).map(function(l){
+    var p = l.split('|');
+    return {name:(p[0]||'').trim(),role:(p[1]||'').trim(),img:(p[2]||'').trim()};
+  });
+  var tags = gv('f_tags').split(',').map(function(t){ return t.trim(); }).filter(Boolean);
+  var related = gv('f_related').split(',').map(function(r){ return parseInt(r.trim()); }).filter(Boolean);
+  var item = {
+    id:id, title:title, year:gv('f_year'), genre:gv('f_genre'),
+    rating:gv('f_rating'), match:parseInt(gv('f_match'))||95,
+    imdb:gv('f_imdb'), runtime:gv('f_runtime'),
+    director:gv('f_director'), studio:gv('f_studio'),
+    poster:gv('f_poster'), backdrop:gv('f_backdrop'),
+    desc:gv('f_desc'), tags:tags, cast:cast, related:related,
+  };
+  if (editType==='tv') {
+    item.seasons = Object.keys(editEps).sort().map(function(sk){
+      return {s:parseInt(sk.replace('s','')), episodes:(editEps[sk]||[]).filter(function(e){return e.name;}).map(function(e,i){return {e:i+1,name:e.name,dur:e.dur||'45m',desc:e.desc||''};})};
+    });
+  }
+  if (editType==='anime') {
+    item.isMovie = gv('f_isMovie')==='true';
+    item.episodes = (editEps['s1']||[]).filter(function(e){return e.name;}).map(function(e,i){return {e:i+1,name:e.name,dur:e.dur||'24m',desc:e.desc||''};});
+  }
+
+  var method = editId ? 'PUT' : 'POST';
+  var path = editId ? '/api/content/'+editType+'/'+editId : '/api/content/'+editType;
+  setSyncing('Saving...');
+  api(method, path, item).then(function(res) {
+    if (res.success || res.item) {
+      if (editId) {
+        var list = editType==='movie'?DB.movies:editType==='tv'?DB.tvshows:DB.anime;
+        var idx = list.findIndex(function(x){return x.id===editId;});
+        if (idx!==-1) list[idx]=item; else list.push(item);
+      } else {
+        var list2 = editType==='movie'?DB.movies:editType==='tv'?DB.tvshows:DB.anime;
+        list2.push(item);
+      }
+      updateCounts(); renderRecent(); renderGrid('movie'); renderGrid('tv'); renderGrid('anime');
+      setSynced();
+      toast((editId?'Updated':'Added')+': '+title, 'ok');
+      closeModal();
+    } else {
+      setSyncErr(); toast('Save failed: '+(res.error||'unknown'), 'err');
+    }
+  }).catch(function(){ setSyncErr(); toast('Network error — check Worker', 'err'); });
+}
+
+// ═══════════════════════
+//  DELETE
+// ═══════════════════════
+function delItem(id, type) {
+  if (!confirm('Delete this title from Cloudflare?')) return;
+  setSyncing('Deleting...');
+  api('DELETE', '/api/content/'+type+'/'+id).then(function(res){
+    if (res.success) {
+      var key = type==='movie'?'movies':type==='tv'?'tvshows':'anime';
+      DB[key] = DB[key].filter(function(x){ return x.id!==id; });
+      updateCounts(); renderRecent(); renderGrid(type);
+      setSynced(); toast('Deleted','ok');
+    } else { setSyncErr(); toast('Delete failed','err'); }
+  }).catch(function(){ setSyncErr(); toast('Network error','err'); });
+}
+
+// ═══════════════════════
+//  ADS
+// ═══════════════════════
+function genAdsense() {
+  var pid = document.getElementById('adsId').value.trim();
+  var slot = document.getElementById('adsSlot').value.trim();
+  if (!pid) { document.getElementById('adsCode').textContent='<!-- Enter Publisher ID above -->'; document.getElementById('adsSt').className='ad-status ad-off'; document.getElementById('adsSt').textContent='● Not configured'; return; }
+  document.getElementById('adsCode').textContent = '<!-- Google AdSense -->\n<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client='+pid+'" crossorigin="anonymous"><\/script>\n<ins class="adsbygoogle"\n  style="display:block"\n  data-ad-client="'+pid+'"\n  data-ad-slot="'+(slot||'AUTO')+'"\n  data-ad-format="auto"\n  data-full-width-responsive="true"></ins>\n<script>(adsbygoogle=window.adsbygoogle||[]).push({});<\/script>';
+  document.getElementById('adsSt').className='ad-status ad-on'; document.getElementById('adsSt').textContent='● Ready — copy to site';
+}
+function genBanner() {
+  var url = document.getElementById('banUrl').value.trim();
+  var img = document.getElementById('banImg').value.trim();
+  var txt = document.getElementById('banText').value.trim()||'Advertisement';
+  if (!url) { document.getElementById('banCode').textContent='<!-- Enter Advertiser URL above -->'; document.getElementById('banSt').className='ad-status ad-off'; document.getElementById('banSt').textContent='● Not configured'; return; }
+  var inner = img ? '<img src="'+url+'" style="max-width:100%;border-radius:6px" alt="Ad">' : '<div style="background:linear-gradient(135deg,#E50914,#ff4444);color:#fff;padding:1.2rem 2rem;border-radius:6px;font-weight:600;font-family:sans-serif;display:inline-block">'+txt+'</div>';
+  document.getElementById('banCode').textContent = '<!-- Banner Ad -->\n<div style="text-align:center;padding:1rem 0;margin:1rem 0">\n  <a href="'+url+'" target="_blank" rel="noopener sponsored">\n    '+inner+'\n  </a>\n</div>';
+  document.getElementById('banSt').className='ad-status ad-on'; document.getElementById('banSt').textContent='● Ready — copy to site';
+}
+function copyEl(id) {
+  var t = document.getElementById(id).textContent;
+  if (t.startsWith('<!--')) { toast('Nothing to copy yet','err'); return; }
+  navigator.clipboard.writeText(t).then(function(){ toast('Code copied!','ok'); }).catch(function(){ toast('Select text manually','err'); });
+}
+
+// ═══════════════════════
+//  UTILS
+// ═══════════════════════
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+Array.prototype.findIndex = Array.prototype.findIndex || function(fn){ for(var i=0;i<this.length;i++) if(fn(this[i])) return i; return -1; };
+
+var _tt;
+function toast(msg, type) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show '+(type||'');
+  clearTimeout(_tt); _tt = setTimeout(function(){ t.classList.remove('show'); }, 3200);
+}
+
+tryAutoLogin();
+</script>
+</body>
+</html>
