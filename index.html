@@ -444,29 +444,29 @@ nav.transparent{background:linear-gradient(to bottom,rgba(0,0,0,.7),transparent)
 /* ── PLAYER PAGE ── */
 #pg-player{background:#0a0a0a;min-height:100vh;display:flex;flex-direction:column}
 
-/* Sticky video wrapper — always visible on mobile */
+/* Video wrapper — no top gap needed since nav is hidden on player */
 .play-video-wrap{
-  position:sticky;top:0;z-index:50;
+  position:relative;
   background:#000;
   box-shadow:0 2px 20px rgba(0,0,0,.8);
 }
 
-/* Top bar — overlaid on video */
+/* Top bar overlaid on video */
 .play-top{
   position:absolute;top:0;left:0;right:0;z-index:10;height:52px;
   display:flex;align-items:center;justify-content:space-between;padding:0 14px;
-  background:linear-gradient(to bottom,rgba(0,0,0,.75) 0%,transparent 100%);
+  background:linear-gradient(to bottom,rgba(0,0,0,.8) 0%,transparent 100%);
   pointer-events:none;
 }
 .play-top>*{pointer-events:all}
 .play-back{
   display:flex;align-items:center;gap:6px;
-  background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.14);
-  border-radius:6px;padding:6px 11px;
-  font-size:.72rem;font-weight:600;color:#ccc;
-  transition:all .2s;backdrop-filter:blur(6px);
+  background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.18);
+  border-radius:6px;padding:7px 12px;
+  font-size:.74rem;font-weight:600;color:#ddd;
+  transition:all .2s;backdrop-filter:blur(8px);
 }
-.play-back:hover,.play-back:active{background:rgba(0,0,0,.8);color:#fff}
+.play-back:hover,.play-back:active{background:rgba(0,0,0,.85);color:#fff}
 .play-title{
   font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.05em;color:#ddd;
   text-overflow:ellipsis;white-space:nowrap;overflow:hidden;max-width:44%;
@@ -474,20 +474,20 @@ nav.transparent{background:linear-gradient(to bottom,rgba(0,0,0,.7),transparent)
 .play-top-actions{display:flex;gap:6px}
 .play-top-btn{
   width:34px;height:34px;border-radius:50%;
-  background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.14);
-  backdrop-filter:blur(6px);color:#ccc;
+  background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.18);
+  backdrop-filter:blur(8px);color:#ccc;
   display:flex;align-items:center;justify-content:center;
   transition:all .2s;
 }
-.play-top-btn:hover,.play-top-btn:active{background:rgba(229,9,20,.7);border-color:#E50914;color:#fff}
+.play-top-btn:hover,.play-top-btn:active{background:rgba(229,9,20,.75);border-color:#E50914;color:#fff}
 
 /* 16:9 iframe */
 .play-frame{position:relative;width:100%;padding-top:56.25%;background:#000}
 .play-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:none}
 
-/* Progress bar below video */
+/* Red progress bar strip below video */
 .play-prog-strip{
-  height:3px;background:rgba(255,255,255,.08);position:relative;
+  height:3px;background:rgba(255,255,255,.08);
 }
 .play-prog-strip-fill{
   height:100%;background:#E50914;
@@ -684,8 +684,6 @@ nav.transparent{background:linear-gradient(to bottom,rgba(0,0,0,.7),transparent)
 @media(max-width:768px){
   .play-panel-desktop{display:none}
   .play-panel-mobile{display:flex;flex-direction:column;flex:1}
-  .play-video-wrap{position:sticky;top:0}
-  .play-top{position:absolute}
 }
 
 /* ── SEARCH OVERLAY ── */
@@ -968,8 +966,8 @@ footer{
   .cast-item{width:66px}
   .cast-av{width:66px;height:66px}
   .ep-thumb{display:none}
-  .play-back span{display:none}
-  .play-title{max-width:55%}
+  /* play-back keeps its text on mobile now since nav is hidden */
+  .play-title{max-width:50%}
   footer{padding:28px 4% 20px}
 }
 </style>
@@ -1429,7 +1427,17 @@ function showPage(id){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   document.getElementById(id).classList.add('active');
   window.scrollTo({top:0,behavior:'instant'});
-  document.getElementById('nav').className=id==='pg-home'?'transparent':'solid';
+  var nav=document.getElementById('nav');
+  var drawer=document.getElementById('drawer');
+  if(id==='pg-player'){
+    // Hide global nav on player — player has its own top bar
+    nav.style.display='none';
+    drawer.style.display='none';
+  } else {
+    nav.style.display='';
+    drawer.style.display='';
+    nav.className=id==='pg-home'?'transparent':'solid';
+  }
 }
 function goHome(){
   CUR_SEC='home';
