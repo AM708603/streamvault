@@ -18,6 +18,15 @@ button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparen
 .page{display:none;min-height:100vh}
 .page.active{display:block}
 
+/* Player page: fixed fullscreen ONLY when active — never affects other pages */
+#pg-player.active{
+  display:flex !important;
+  position:fixed;inset:0;z-index:900;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  min-height:unset;
+}
+
 /* ── NAV ── */
 nav{
   position:fixed;top:0;left:0;right:0;z-index:999;
@@ -163,7 +172,7 @@ nav.transparent{background:linear-gradient(to bottom,rgba(0,0,0,.7),transparent)
 .s-arr.right{right:16px}
 
 /* ── ROWS ── */
-.rows{padding-bottom:60px;margin-top:-50px;position:relative;z-index:10}
+.rows{padding-bottom:80px;margin-top:-50px;position:relative;z-index:5}
 .row{margin-bottom:32px}
 .row-top{
   display:flex;align-items:center;justify-content:space-between;
@@ -442,9 +451,10 @@ nav.transparent{background:linear-gradient(to bottom,rgba(0,0,0,.7),transparent)
 .rel-year{font-size:.57rem;color:#555;margin-top:1px}
 
 /* ── PLAYER PAGE ── */
-#pg-player{background:#0a0a0a;min-height:100vh;display:flex;flex-direction:column}
+/* position:fixed + z-index:900 set in the pages block above */
+#pg-player{background:#0a0a0a;flex-direction:column}
 
-/* Video wrapper — no top gap needed since nav is hidden on player */
+/* Video wrapper */
 .play-video-wrap{
   position:relative;
   background:#000;
@@ -750,63 +760,6 @@ nav.transparent{background:linear-gradient(to bottom,rgba(0,0,0,.7),transparent)
   background:rgba(229,9,20,.12);color:#E50914;flex-shrink:0;
 }
 
-/* ── CONTINUE WATCHING ── */
-.card-progress{
-  position:absolute;bottom:0;left:0;right:0;height:3px;
-  background:rgba(255,255,255,.12);
-}
-.card-progress-fill{
-  height:100%;background:#E50914;border-radius:0 2px 2px 0;
-  transition:width .4s ease;
-}
-.card-resume-badge{
-  position:absolute;top:6px;left:6px;z-index:5;
-  background:rgba(229,9,20,.85);
-  font-size:.5rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
-  padding:2px 6px;border-radius:3px;color:#fff;
-  backdrop-filter:blur(4px);pointer-events:none;
-}
-.cw-card{
-  flex:0 0 auto;width:220px;cursor:pointer;border-radius:8px;
-  overflow:hidden;background:#1a1a1a;
-  transition:transform .3s cubic-bezier(.16,1,.3,1);
-  box-shadow:0 4px 20px rgba(0,0,0,.5);
-  position:relative;
-}
-.cw-card:hover{transform:scale(1.05)}
-.cw-thumb{width:100%;aspect-ratio:16/9;overflow:hidden;position:relative}
-.cw-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
-.cw-card:hover .cw-thumb img{transform:scale(1.04)}
-.cw-thumb-fb{
-  width:100%;height:100%;display:flex;align-items:center;justify-content:center;
-  font-family:'Bebas Neue',sans-serif;font-size:2rem;color:rgba(255,255,255,.07);
-  background:linear-gradient(135deg,#1a1a1a,#252525);
-}
-.cw-play-ov{
-  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  background:rgba(0,0,0,.5);opacity:0;transition:opacity .2s;
-}
-.cw-card:hover .cw-play-ov{opacity:1}
-.cw-play-circle{
-  width:44px;height:44px;border-radius:50%;
-  background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;
-  transform:scale(.85);transition:transform .2s;
-}
-.cw-card:hover .cw-play-circle{transform:scale(1)}
-.cw-prog-bar{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(255,255,255,.15)}
-.cw-prog-fill{height:100%;background:#E50914;border-radius:0 2px 2px 0}
-.cw-info{padding:10px 12px 12px;background:#161616}
-.cw-title{font-size:.76rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
-.cw-sub{font-size:.62rem;color:#555;margin-bottom:6px}
-.cw-meta-row{display:flex;align-items:center;justify-content:space-between}
-.cw-time-left{font-size:.6rem;color:#888}
-.cw-remove{
-  font-size:.58rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
-  color:#444;padding:3px 7px;border-radius:3px;border:1px solid rgba(255,255,255,.06);
-  transition:color .15s,border-color .15s;
-}
-.cw-remove:hover{color:#E50914;border-color:rgba(229,9,20,.4)}
-
 /* ── MY LIST PAGE ── */
 #pg-mylist{background:#111;min-height:100vh;padding-top:72px}
 .mylist-header{
@@ -875,6 +828,7 @@ nav.transparent{background:linear-gradient(to bottom,rgba(0,0,0,.7),transparent)
 footer{
   background:#141414;border-top:1px solid rgba(255,255,255,.06);
   padding:48px 5% 32px;
+  position:relative;z-index:6;
 }
 .ft-grid{
   display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;
@@ -973,6 +927,58 @@ footer{
 </style>
 </head>
 <body>
+
+<!-- ════ PLAYER ════ -->
+<div id="pg-player" class="page">
+  <!-- Video + sticky top bar -->
+  <div class="play-video-wrap">
+    <div style="position:relative">
+      <div class="play-top">
+        <button class="play-back" id="playBackBtn">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>
+          <span>Back</span>
+        </button>
+        <div class="play-title" id="playTitle"></div>
+        <div class="play-top-actions">
+          <button class="play-top-btn" id="playListBtn" onclick="playerToggleList()" title="My List">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="play-frame" id="playFrame"></div>
+      <div class="play-prog-strip"><div class="play-prog-strip-fill" id="progStrip"></div></div>
+    </div>
+  </div>
+
+  <!-- ── MOBILE panel ── -->
+  <div class="play-panel-mobile" id="pipMobile">
+    <!-- Title + meta -->
+    <div class="play-info-head">
+      <div class="play-info-title" id="mobTitle"></div>
+      <div class="play-info-meta" id="mobMeta"></div>
+    </div>
+    <!-- Action buttons -->
+    <div class="play-actions" id="mobActions"></div>
+    <!-- Progress row -->
+    <div class="play-prog-row">
+      <span class="play-prog-label">Progress</span>
+      <div class="play-prog-bar-wrap"><div class="play-prog-bar-fill" id="progFill"></div></div>
+      <span class="play-prog-pct" id="progPct">0%</span>
+      <span class="play-prog-time" id="progTime"></span>
+    </div>
+    <!-- Tabs -->
+    <div class="play-tabs" id="mobTabs"></div>
+    <!-- Tab content -->
+    <div class="play-tab-body" id="mobTabBody"></div>
+  </div>
+
+  <!-- ── DESKTOP panel ── -->
+  <div class="play-panel-desktop">
+    <div id="pipL"></div>
+    <div id="pipR"></div>
+  </div>
+</div>
+
 
 <!-- ════ NAV ════ -->
 <nav id="nav" class="transparent">
@@ -1096,57 +1102,6 @@ footer{
   </div>
 </div>
 
-<!-- ════ PLAYER ════ -->
-<div id="pg-player" class="page">
-  <!-- Video + sticky top bar -->
-  <div class="play-video-wrap">
-    <div style="position:relative">
-      <div class="play-top">
-        <button class="play-back" id="playBackBtn">
-          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>
-          <span>Back</span>
-        </button>
-        <div class="play-title" id="playTitle"></div>
-        <div class="play-top-actions">
-          <button class="play-top-btn" id="playListBtn" onclick="playerToggleList()" title="My List">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-          </button>
-        </div>
-      </div>
-      <div class="play-frame" id="playFrame"></div>
-      <div class="play-prog-strip"><div class="play-prog-strip-fill" id="progStrip"></div></div>
-    </div>
-  </div>
-
-  <!-- ── MOBILE panel ── -->
-  <div class="play-panel-mobile" id="pipMobile">
-    <!-- Title + meta -->
-    <div class="play-info-head">
-      <div class="play-info-title" id="mobTitle"></div>
-      <div class="play-info-meta" id="mobMeta"></div>
-    </div>
-    <!-- Action buttons -->
-    <div class="play-actions" id="mobActions"></div>
-    <!-- Progress row -->
-    <div class="play-prog-row">
-      <span class="play-prog-label">Progress</span>
-      <div class="play-prog-bar-wrap"><div class="play-prog-bar-fill" id="progFill"></div></div>
-      <span class="play-prog-pct" id="progPct">0%</span>
-      <span class="play-prog-time" id="progTime"></span>
-    </div>
-    <!-- Tabs -->
-    <div class="play-tabs" id="mobTabs"></div>
-    <!-- Tab content -->
-    <div class="play-tab-body" id="mobTabBody"></div>
-  </div>
-
-  <!-- ── DESKTOP panel ── -->
-  <div class="play-panel-desktop">
-    <div id="pipL"></div>
-    <div id="pipR"></div>
-  </div>
-</div>
-
 <!-- ════ SEARCH ════ -->
 <div id="search-ov">
   <div class="search-box">
@@ -1215,129 +1170,6 @@ var SLIDE_IDX=0,SLIDE_TMR=null,HERO_ITEMS=[];
 var DRAWER_OPEN=false,CUR_SEC='home';
 
 // ══════════════════════
-//  CONTINUE WATCHING — persisted in sessionStorage
-// ══════════════════════
-var CW_HISTORY=[];  // [{id, type, pct, timestamp, duration, ep:{s,e}, epName, addedAt}]
-
-function cwLoad(){
-  try{var s=sessionStorage.getItem('sv_cw');if(s)CW_HISTORY=JSON.parse(s);}
-  catch(e){CW_HISTORY=[];}
-}
-function cwSave(){
-  try{sessionStorage.setItem('sv_cw',JSON.stringify(CW_HISTORY));}catch(e){}
-}
-function cwKey(item,ep){
-  // unique key per title+episode
-  if(!ep)return 'mv-'+item.id;
-  if(ep.s)return 'tv-'+item.id+'-s'+ep.s+'e'+ep.e;
-  return 'an-'+item.id+'-e'+ep.e;
-}
-function cwUpsert(item,type,ep,pct,timestamp,duration){
-  if(!item)return;
-  // Don't track if watched >95% (treat as done — remove from CW)
-  if(pct>=95){cwRemoveByKey(cwKey(item,ep));cwSave();return;}
-  // Don't track if less than 2% (just started, not meaningful)
-  if(pct<2)return;
-  var key=cwKey(item,ep);
-  var idx=CW_HISTORY.findIndex(function(e){return e.key===key;});
-  var entry={
-    key:key,id:item.id,type:type,
-    ep:ep||null,pct:pct,
-    timestamp:timestamp||0,duration:duration||0,
-    addedAt:Date.now()
-  };
-  if(idx>=0){CW_HISTORY[idx]=entry;}
-  else{CW_HISTORY.unshift(entry);}
-  // Keep max 20 entries, most recent first
-  CW_HISTORY=CW_HISTORY.slice(0,20);
-  cwSave();
-}
-function cwRemoveByKey(key){
-  CW_HISTORY=CW_HISTORY.filter(function(e){return e.key!==key;});
-  cwSave();
-}
-function cwRemoveById(id){
-  CW_HISTORY=CW_HISTORY.filter(function(e){return e.id!==id;});
-  cwSave();
-}
-function cwGetForItem(item,ep){
-  var key=cwKey(item,ep);
-  return CW_HISTORY.find(function(e){return e.key===key;})||null;
-}
-function cwGetAll(){
-  return CW_HISTORY.map(function(e){
-    var f=findById(e.id);
-    if(!f)return null;
-    return Object.assign({},e,{item:f.item,type:f.type});
-  }).filter(Boolean);
-}
-
-// Build the CW card HTML
-function cwCardHTML(entry){
-  var item=entry.item,type=entry.type,ep=entry.ep,pct=entry.pct;
-  var k=reg(item,type);
-  var subLabel='';
-  if(ep&&ep.s&&ep.e)subLabel='S'+ep.s+' · E'+ep.e;
-  else if(ep&&ep.e)subLabel='Episode '+ep.e;
-  else subLabel=(type==='movie'?'Movie':type==='tv'?'Series':'Anime');
-  var timeLeft='';
-  if(entry.duration&&entry.timestamp){
-    var rem=Math.round((entry.duration-entry.timestamp)/60);
-    timeLeft=rem>0?(rem+' min left'):'Almost done';
-  }else{
-    timeLeft=pct+'% watched';
-  }
-  var imgSrc=entry.ep&&entry.ep.backdrop ? IB+entry.ep.backdrop : IB+item.backdrop;
-  return '<div class="cw-card" onclick="cwResume(\''+k+'\')" data-cwkey="'+X(entry.key)+'">'+
-    '<div class="cw-thumb">'+
-      '<img src="'+imgSrc+'" alt="'+X(item.title)+'" loading="lazy" onerror="this.style.display=\'none\'">'+
-      '<div class="cw-play-ov"><div class="cw-play-circle"><svg width="14" height="14" fill="#000" viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg></div></div>'+
-      '<div class="cw-prog-bar"><div class="cw-prog-fill" style="width:'+pct+'%"></div></div>'+
-    '</div>'+
-    '<div class="cw-info">'+
-      '<div class="cw-title">'+X(item.title)+'</div>'+
-      '<div class="cw-sub">'+subLabel+'</div>'+
-      '<div class="cw-meta-row">'+
-        '<span class="cw-time-left">'+timeLeft+'</span>'+
-        '<button class="cw-remove" onclick="event.stopPropagation();cwDismiss(\''+X(entry.key)+'\')">Remove</button>'+
-      '</div>'+
-    '</div>'+
-  '</div>';
-}
-
-function cwResume(k){
-  var r=R[k];if(!r)return;
-  var item=r.item,type=r.type;
-  // Find the most recent CW entry for this item
-  var entries=CW_HISTORY.filter(function(e){return e.id===item.id;});
-  var best=entries.sort(function(a,b){return b.addedAt-a.addedAt;})[0];
-  if(best&&best.ep){
-    startPlayer(item,type,best.ep.s||null,best.ep.e);
-  }else{
-    startPlayer(item,type,null,null);
-  }
-}
-
-function cwDismiss(key){
-  cwRemoveByKey(key);
-  // Remove card from DOM instantly
-  var card=document.querySelector('[data-cwkey="'+key+'"]');
-  if(card){
-    card.style.transition='opacity .25s,transform .25s';
-    card.style.opacity='0';card.style.transform='scale(.92)';
-    setTimeout(function(){
-      if(card.parentNode)card.parentNode.removeChild(card);
-      // If row is now empty, remove the whole row
-      var track=document.getElementById('cw-track');
-      if(track&&!track.children.length){
-        var row=document.getElementById('cw-row');
-        if(row)row.parentNode.removeChild(row);
-      }
-    },280);
-  }
-}
-
-// ══════════════════════
 //  MY LIST — persisted in sessionStorage (survives reload within tab)
 // ══════════════════════
 var MY_LIST=[];
@@ -1372,7 +1204,6 @@ function updateHeartNav(){
 //  INIT
 // ══════════════════════
 async function init(){
-  cwLoad();
   mlLoad();
   updateHeartNav();
   showPage('pg-home');
@@ -1426,14 +1257,15 @@ async function init(){
 function showPage(id){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   document.getElementById(id).classList.add('active');
-  window.scrollTo({top:0,behavior:'instant'});
   var nav=document.getElementById('nav');
   var drawer=document.getElementById('drawer');
   if(id==='pg-player'){
-    // Hide global nav on player — player has its own top bar
+    document.getElementById('pg-player').scrollTop=0;
     nav.style.display='none';
     drawer.style.display='none';
-  } else {
+    drawer.classList.remove('show');
+  }else{
+    window.scrollTo({top:0,behavior:'instant'});
     nav.style.display='';
     drawer.style.display='';
     nav.className=id==='pg-home'?'transparent':'solid';
@@ -1530,20 +1362,6 @@ function buildRows(){
 
   var html='';
 
-  // ── Continue Watching row (first if entries exist) ──
-  var cwEntries=cwGetAll();
-  if(cwEntries.length){
-    html+='<div class="row" id="cw-row">'+
-      '<div class="row-top">'+
-        '<div class="row-title">Continue <b>Watching</b></div>'+
-        '<button class="row-more" onclick="cwClearAll()">Clear all</button>'+
-      '</div>'+
-      '<div class="track-outer"><div class="track" id="cw-track">'+
-        cwEntries.map(cwCardHTML).join('')+
-      '</div></div>'+
-    '</div>';
-  }
-
   // ── My List row ──
   var mlItems=mlGetItems();
   if(mlItems.length){
@@ -1571,12 +1389,6 @@ function buildRows(){
 
   document.getElementById('rowsWrap').innerHTML=html;
 }
-function cwClearAll(){
-  CW_HISTORY=[];cwSave();
-  var row=document.getElementById('cw-row');
-  if(row){row.style.opacity='0';row.style.transition='opacity .3s';setTimeout(function(){if(row.parentNode)row.parentNode.removeChild(row);},320);}
-  showToast('Watch history cleared');
-}
 function A(v,n){var a=[];for(var i=0;i<n;i++)a.push(v);return a;}
 
 // ══════════════════════
@@ -1585,16 +1397,11 @@ function A(v,n){var a=[];for(var i=0;i<n;i++)a.push(v);return a;}
 function cardHTML(item,type){
   var k=reg(item,type);
   var inList=mlHas(item);
-  // Check if this item has a CW entry (use first matching episode or movie entry)
-  var cwEntry=CW_HISTORY.find(function(e){return e.id===item.id;});
-  var cwPct=cwEntry?cwEntry.pct:0;
   return '<div class="card" data-k="'+k+'">'+
     '<div class="card-inner">'+
       '<div class="card-img" style="position:relative">'+
         '<img src="'+(item.poster ? IP+item.poster : IB+item.backdrop)+'" alt="'+X(item.title)+'" loading="lazy" onerror="imgFail(this)">'+
         '<div class="card-fb" style="display:none">'+X(item.title.slice(0,3).toUpperCase())+'</div>'+
-        (cwPct>2?'<div class="card-resume-badge">Resume</div>':'')+
-        (cwPct>2?'<div class="card-progress"><div class="card-progress-fill" style="width:'+cwPct+'%"></div></div>':'')+
         '<button class="card-remove" title="'+(inList?'Remove from':'Add to')+' My List" onclick="event.stopPropagation();cardToggleList(\''+k+'\',this)">'+
           (inList ? '♥' : '♡')+
         '</button>'+
@@ -1608,7 +1415,7 @@ function cardHTML(item,type){
       '</div>'+
       '<div class="card-info">'+
         '<div class="card-info-row1">'+
-          '<button class="c-play" onclick="event.stopPropagation();'+(cwPct>2?'cwResume(\''+k+'\')':'playItem(\''+k+'\')')+'" title="'+(cwPct>2?'Resume':'Play')+'"><svg width="10" height="10" fill="#000" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></button>'+
+          '<button class="c-play" onclick="event.stopPropagation();playItem(\''+k+'\')"><svg width="10" height="10" fill="#000" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></button>'+
           '<button class="c-btn" onclick="event.stopPropagation();openDetail(\''+k+'\')"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></button>'+
           '<button class="c-btn c-list-btn" id="clb-'+k+'" onclick="event.stopPropagation();cardToggleList(\''+k+'\',this)" title="My List" style="'+(inList?'border-color:#E50914;color:#E50914':'')+'">'+
             (inList
@@ -1616,7 +1423,7 @@ function cardHTML(item,type){
               : '<svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
             )+
           '</button>'+
-          '<span class="c-pct">'+(cwPct>2?cwPct+'%':item.match+'%')+'</span>'+
+          '<span class="c-pct">'+item.match+'%</span>'+
         '</div>'+
         '<div class="c-title">'+X(item.title)+'</div>'+
         '<div class="c-tags">'+
@@ -1733,19 +1540,6 @@ function showDetail(item,type){
   };
   var k=reg(item,type);
   var label=(type==='movie'||item.isM)?'Feature Film':type==='tv'?'TV Series':'Anime';
-  // Check for resume point
-  var cwEntry=CW_HISTORY.find(function(e){return e.id===item.id;});
-  var resumeBtn='';
-  if(cwEntry&&cwEntry.pct>2&&cwEntry.pct<95){
-    var resumeLabel='Resume';
-    if(cwEntry.ep&&cwEntry.ep.s)resumeLabel='Resume · S'+cwEntry.ep.s+' E'+cwEntry.ep.e;
-    else if(cwEntry.ep&&cwEntry.ep.e)resumeLabel='Resume · Ep '+cwEntry.ep.e;
-    var timeLeftStr=cwEntry.duration&&cwEntry.timestamp
-      ?(' — '+Math.round((cwEntry.duration-cwEntry.timestamp)/60)+' min left')
-      :(' — '+cwEntry.pct+'% watched');
-    resumeBtn='<button class="dp-btn play" style="background:#E50914;color:#fff" onclick="cwResume(\''+k+'\')">'+
-      '<svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>'+resumeLabel+'</button>';
-  }
   document.getElementById('dpHinfo').innerHTML=
     '<div class="dp-badge">'+label+'</div>'+
     '<div class="dp-htitle">'+X(item.title)+'</div>'+
@@ -1761,29 +1555,11 @@ function showDetail(item,type){
       '<span>'+item.runtime+'</span>'+
     '</div>'+
     '<div class="dp-acts">'+
-      (resumeBtn||'<button class="dp-btn play" onclick="playItem(\''+k+'\')"><svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>Play</button>')+
-      (resumeBtn?'<button class="dp-btn ghost" onclick="playItem(\''+k+'\')">Play from Start</button>':'')+
+      '<button class="dp-btn play" onclick="playItem(\''+k+'\')"><svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>Play</button>'+
       '<button class="dp-btn ghost" id="dpListBtn" onclick="dpToggleList(\''+k+'\')" style="'+(mlHas(item)?'background:rgba(229,9,20,.15);border-color:rgba(229,9,20,.4);color:#ff6b6b':'')+'">'+dpListBtnHTML(item)+'</button>'+
       '<button class="dp-btn share" onclick="showToast(\'Link copied!\')"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Share</button>'+
     '</div>';
   var L='';
-  // Show watch progress at the top of the left column if applicable
-  if(cwEntry&&cwEntry.pct>2&&cwEntry.pct<95){
-    var timeLeftInfo='';
-    if(cwEntry.duration&&cwEntry.timestamp){
-      var remMins=Math.round((cwEntry.duration-cwEntry.timestamp)/60);
-      timeLeftInfo=remMins>0?remMins+' min left':'Almost done';
-    }
-    L+='<div style="background:#161616;border:1px solid rgba(229,9,20,.2);border-radius:8px;padding:12px 14px;margin-bottom:20px">'+
-      '<div style="display:flex;justify-content:space-between;margin-bottom:7px">'+
-        '<span style="font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#E50914">Watch Progress</span>'+
-        '<span style="font-size:.6rem;font-weight:700;color:#888">'+(timeLeftInfo||cwEntry.pct+'% watched')+'</span>'+
-      '</div>'+
-      '<div style="height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden">'+
-        '<div style="height:100%;width:'+cwEntry.pct+'%;background:#E50914;border-radius:2px"></div>'+
-      '</div>'+
-    '</div>';
-  }
   L+='<div class="sec-title">Overview</div><div class="dp-desc">'+X(item.desc)+'</div>';
   if(item.cast&&item.cast.length){
     L+='<div class="sec-title">Cast</div><div class="cast-row">';
@@ -2136,7 +1912,6 @@ function pipPlay(k,s,ep){
 // ══════════════════════
 //  PROGRESS — receives messages from the player iframe
 // ══════════════════════
-var _lastSave=0;
 window.addEventListener('message',function(e){
   try{
     var d=JSON.parse(e.data);
@@ -2155,7 +1930,6 @@ window.addEventListener('message',function(e){
 
       // Desktop progress
       var fed=document.getElementById('progFillDesktop');
-      var ped=document.getElementById('progPct');
       if(fed)fed.style.width=pct+'%';
 
       // Mark episode as watched at 80%+
@@ -2164,17 +1938,9 @@ window.addEventListener('message',function(e){
         if(!WATCHED[key]){
           WATCHED[key]=true;
           buildPipEps();
-          // refresh mob ep list too
           var mobList=document.getElementById('mobEpList');
           if(mobList&&CUR_ITEM)mobList.innerHTML=buildMobEpList(CUR_ITEM,CUR_TYPE,CUR_S);
         }
-      }
-
-      // Save to CW_HISTORY — throttle to once every 5 seconds
-      var now=Date.now();
-      if(CUR_ITEM&&(now-_lastSave>5000)){
-        _lastSave=now;
-        cwUpsert(CUR_ITEM,CUR_TYPE,CUR_EP,pct,d.timestamp||0,d.duration||0);
       }
     }
   }catch(err){}
