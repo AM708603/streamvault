@@ -931,13 +931,14 @@ function goHome(){
 //  SLIDER
 // ══════════════════════
 function buildSlides(){
-  HERO_ITEMS=[
-    {item:MOVIES[4]||MOVIES[0],type:'movie'},
-    {item:MOVIES[0],type:'movie'},
-    {item:MOVIES[5]||MOVIES[1],type:'movie'},
-    {item:TV[0],type:'tv'},
-    {item:ANIME[1]||ANIME[0],type:'anime'},
-  ].filter(function(x){return x.item;});
+ // ── Last 10 items from all lists ─────────────────────────────
+const all = [...MOVIES, ...TV, ...ANIME];
+HERO_ITEMS = all.slice(-10).map(item => {
+    let type = MOVIES.includes(item) ? 'movie' :
+               TV.includes(item)     ? 'tv'    :
+                                       'anime';
+    return { item, type };
+}).reverse(); // so newest is first
   var wrap=document.getElementById('slidesWrap');
   var dots=document.getElementById('dotsWrap');
   wrap.innerHTML=''; dots.innerHTML=''; SLIDE_IDX=0;
