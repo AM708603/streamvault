@@ -925,6 +925,38 @@ footer{
   footer{padding:28px 4% 20px}
 }
 </style>
+<script>
+// ── Block all ad redirects & popups from embedded iframes ──
+(function(){
+  // Block window.open (popups)
+  window.open = function(){ return null; };
+
+  // Block top-level navigation attempts from iframes
+  window.addEventListener('beforeunload', function(e){
+    // Only block if triggered from iframe context, not user navigation
+    if(document.activeElement && document.activeElement.tagName === 'IFRAME'){
+      e.preventDefault(); e.returnValue=''; return false;
+    }
+  });
+
+  // Block clicks that try to navigate the parent frame
+  window.addEventListener('click', function(e){
+    if(e.target && e.target.tagName === 'A'){
+      var href = e.target.getAttribute('href');
+      if(href && href.indexOf('javascript:')===-1 && !href.startsWith('#')){
+        // Check if this is an ad link (not our own navigation)
+        var isOurLink = e.target.closest('[onclick]') || e.target.closest('.ft-col');
+        if(!isOurLink){ e.preventDefault(); e.stopPropagation(); return false; }
+      }
+    }
+  }, true);
+
+  // Prevent iframe from navigating the top page
+  if(window.top !== window.self){
+    window.top.location = window.self.location;
+  }
+})();
+</script>
 </head>
 <body>
 
@@ -1671,7 +1703,7 @@ function startPlayer(item,type,s,ep){
 
   // Iframe
   document.getElementById('playFrame').innerHTML=
-    '<iframe src="'+buildSrc(type,item,s,ep)+'" frameborder="0" allowfullscreen allow="autoplay;encrypted-media;picture-in-picture;fullscreen"></iframe>';
+    '<iframe src="'+buildSrc(type,item,s,ep)+'" frameborder="0" allowfullscreen sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-fullscreen" allow="autoplay;encrypted-media;picture-in-picture;fullscreen"></iframe>';
 
   // Update My List heart in top bar
   updatePlayerListBtn();
@@ -1824,7 +1856,7 @@ function mobSwitchSeason(s,btn){
 function mobPlayEp(k,s,ep){
   var r=R[k];if(!r)return;
   CUR_EP=s?{s:s,e:ep}:{e:ep};
-  document.getElementById('playFrame').innerHTML='<iframe src="'+buildSrc(r.type,r.item,s,ep)+'" frameborder="0" allowfullscreen allow="autoplay;encrypted-media;picture-in-picture;fullscreen"></iframe>';
+  document.getElementById('playFrame').innerHTML='<iframe src="'+buildSrc(r.type,r.item,s,ep)+'" frameborder="0" allowfullscreen sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-fullscreen" allow="autoplay;encrypted-media;picture-in-picture;fullscreen"></iframe>';
   document.getElementById('playTitle').textContent=r.item.title+(s?' · S'+s+'E'+ep:' · Ep'+ep);
   document.getElementById('mobTitle').textContent=r.item.title;
   if(document.getElementById('mobMeta'))
@@ -1904,7 +1936,7 @@ function pipS(s,btn){
 function pipPlay(k,s,ep){
   var r=R[k];if(!r)return;
   CUR_EP=s?{s:s,e:ep}:{e:ep};
-  document.getElementById('playFrame').innerHTML='<iframe src="'+buildSrc(r.type,r.item,s,ep)+'" frameborder="0" allowfullscreen allow="autoplay;encrypted-media;picture-in-picture;fullscreen"></iframe>';
+  document.getElementById('playFrame').innerHTML='<iframe src="'+buildSrc(r.type,r.item,s,ep)+'" frameborder="0" allowfullscreen sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-fullscreen" allow="autoplay;encrypted-media;picture-in-picture;fullscreen"></iframe>';
   document.getElementById('playTitle').textContent=r.item.title+(s?' · S'+s+'E'+ep:' · Ep'+ep);
   buildPipEps();resetProg();
 }
