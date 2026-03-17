@@ -6,180 +6,473 @@
 <title>StreamVault Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--red:#E50914;--red-dim:rgba(229,9,20,.12);--bg:#0a0a0a;--bg2:#141414;--bg3:#1e1e1e;--bg4:#282828;--border:rgba(255,255,255,.08);--glass:rgba(255,255,255,.04);--text:#fff;--text2:#bbb;--text3:#666;--green:#46d369;--gold:#f5c518;--r:8px;--r2:12px}
+:root{
+  --red:#E50914;--red-dim:rgba(229,9,20,.12);--red-glow:rgba(229,9,20,.25);
+  --bg:#0a0a0a;--bg2:#141414;--bg3:#1e1e1e;--bg4:#282828;
+  --border:rgba(255,255,255,.08);--glass:rgba(255,255,255,.04);
+  --text:#fff;--text2:#bbb;--text3:#666;
+  --green:#46d369;--gold:#f5c518;--blue:#60a5fa;
+  --r:8px;--r2:12px;
+}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}
-::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#333;border-radius:4px}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:#333}
 
-/* LOGIN */
-#loginScreen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999}
-.login-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:2.5rem;width:100%;max-width:400px;text-align:center}
-.login-logo{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:.06em;color:var(--red);margin-bottom:.2rem}
+/* ═══ LOGIN ═══ */
+#loginScreen{
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;z-index:9999;
+  background-image:radial-gradient(ellipse at 60% 40%,rgba(229,9,20,.06) 0%,transparent 60%);
+}
+.login-box{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:16px;padding:2.8rem 2.5rem;width:100%;max-width:420px;
+  box-shadow:0 24px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.04);
+}
+.login-logo{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.06em;color:var(--red);margin-bottom:.15rem}
 .login-logo span{color:var(--text)}
-.login-sub{font-size:.7rem;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:2rem}
-.login-label{font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);display:block;text-align:left;margin-bottom:.3rem;margin-top:.8rem}
-.login-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:.75rem 1rem;transition:border-color .2s}
-.login-input:focus{outline:none;border-color:rgba(255,255,255,.2)}
+.login-sub{font-size:.65rem;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:2rem;display:flex;align-items:center;gap:.5rem}
+.login-sub::before{content:'';display:block;width:18px;height:1px;background:var(--border)}
+.login-label{font-size:.63rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);display:block;text-align:left;margin-bottom:.35rem;margin-top:1rem}
+.login-input{
+  width:100%;background:var(--bg3);border:1.5px solid var(--border);
+  border-radius:var(--r);color:var(--text);font-family:'DM Sans',sans-serif;
+  font-size:.88rem;padding:.75rem 1rem;transition:border-color .2s,box-shadow .2s;
+}
+.login-input:focus{outline:none;border-color:rgba(229,9,20,.5);box-shadow:0 0 0 3px rgba(229,9,20,.08)}
 .login-input::placeholder{color:var(--text3)}
-.login-btn{width:100%;background:var(--red);color:#fff;border:none;border-radius:var(--r);padding:.85rem;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;margin-top:1.2rem;transition:background .2s}
-.login-btn:hover{background:#c8070f}
-.login-err{color:#ff6b6b;font-size:.75rem;margin-top:.6rem;display:none}
+.login-btn{
+  width:100%;background:var(--red);color:#fff;border:none;border-radius:var(--r);
+  padding:.9rem;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;
+  cursor:pointer;margin-top:1.5rem;transition:all .2s;letter-spacing:.02em;
+}
+.login-btn:hover{background:#c8070f;box-shadow:0 4px 20px rgba(229,9,20,.3)}
+.login-err{color:#ff6b6b;font-size:.75rem;margin-top:.7rem;display:none;padding:.5rem .8rem;background:rgba(255,68,68,.08);border-radius:5px;border:1px solid rgba(255,68,68,.2)}
 
-/* LAYOUT */
+/* ═══ APP LAYOUT ═══ */
 #app{display:none;min-height:100vh}
 #app.visible{display:flex}
-.sidebar{width:240px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100}
-.sb-logo{padding:1.4rem;border-bottom:1px solid var(--border)}
-.sb-logo h1{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:.06em;color:var(--red)}
+.sidebar{
+  width:248px;flex-shrink:0;background:var(--bg2);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;bottom:0;z-index:100;
+}
+.sb-logo{padding:1.4rem 1.4rem 1.2rem;border-bottom:1px solid var(--border)}
+.sb-logo h1{font-family:'Bebas Neue',sans-serif;font-size:1.45rem;letter-spacing:.06em;color:var(--red)}
 .sb-logo h1 span{color:var(--text)}
 .sb-logo p{font-size:.6rem;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-top:.2rem}
-.sb-nav{padding:1rem 0;flex:1;overflow-y:auto}
-.sb-sec{padding:.3rem 1rem .1rem;font-size:.58rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--text3);margin-top:.8rem}
-.sb-link{display:flex;align-items:center;gap:.75rem;padding:.6rem 1.4rem;font-size:.8rem;font-weight:500;color:var(--text3);cursor:pointer;transition:all .15s;border-left:2px solid transparent}
+.sb-nav{padding:.8rem 0;flex:1;overflow-y:auto}
+.sb-sec{padding:.4rem 1.2rem .2rem;font-size:.57rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--text3);margin-top:.6rem}
+.sb-link{
+  display:flex;align-items:center;gap:.7rem;padding:.6rem 1.4rem;
+  font-size:.79rem;font-weight:500;color:var(--text3);cursor:pointer;
+  transition:all .15s;border-left:2px solid transparent;
+}
 .sb-link:hover{color:var(--text2);background:var(--glass)}
 .sb-link.active{color:var(--text);background:var(--red-dim);border-left-color:var(--red)}
-.sb-count{margin-left:auto;font-size:.6rem;font-weight:700;padding:.1rem .4rem;border-radius:3px}
+.sb-count{
+  margin-left:auto;font-size:.58rem;font-weight:700;
+  padding:.12rem .45rem;border-radius:4px;
+}
 .sb-bottom{padding:1rem 1.4rem;border-top:1px solid var(--border)}
-.sb-stat{display:flex;justify-content:space-between;padding:.25rem 0;font-size:.7rem}
+.sb-stat{display:flex;justify-content:space-between;padding:.22rem 0;font-size:.68rem}
 .sb-stat-l{color:var(--text3)}
 .sb-stat-v{color:var(--text2);font-weight:600}
+.sb-user{
+  display:flex;align-items:center;gap:.7rem;
+  padding:.6rem .8rem;background:var(--glass);
+  border-radius:var(--r);border:1px solid var(--border);
+  margin-bottom:.7rem;
+}
+.sb-avatar{
+  width:30px;height:30px;border-radius:50%;
+  background:var(--red-dim);border:1px solid var(--red-glow);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.65rem;font-weight:700;color:var(--red);flex-shrink:0;
+}
+.sb-user-info{flex:1;min-width:0}
+.sb-user-email{font-size:.65rem;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-user-role{font-size:.58rem;color:var(--text3)}
 
-.main{margin-left:240px;flex:1;min-height:100vh;display:flex;flex-direction:column}
-.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:.9rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;gap:1rem}
+.main{margin-left:248px;flex:1;min-height:100vh;display:flex;flex-direction:column}
+.topbar{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:.85rem 2rem;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:50;gap:1rem;
+}
 .topbar-l{display:flex;align-items:center;gap:1rem}
-.topbar-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.08em;color:var(--text2)}
-.sync-wrap{display:flex;align-items:center;gap:.4rem;font-size:.68rem;color:var(--text3);padding:.3rem .7rem;border-radius:20px;border:1px solid var(--border)}
-.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.topbar-title{font-family:'Bebas Neue',sans-serif;font-size:1.35rem;letter-spacing:.08em;color:var(--text2)}
+.sync-wrap{
+  display:flex;align-items:center;gap:.4rem;font-size:.67rem;
+  color:var(--text3);padding:.28rem .7rem;border-radius:20px;border:1px solid var(--border);
+}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0}
 .sync-dot.loading{background:var(--gold);animation:pulse .8s infinite}
 .sync-dot.err{background:#ff4444}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.topbar-r{display:flex;gap:.7rem;flex-shrink:0}
-.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.55rem 1.2rem;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
-.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#c8070f}
-.btn-sec{background:var(--bg3);color:var(--text2);border:1px solid var(--border)}.btn-sec:hover{background:var(--bg4);color:var(--text)}
-.btn-danger{background:transparent;color:#ff4444;border:1px solid rgba(255,68,68,.3)}.btn-danger:hover{background:rgba(255,68,68,.1)}
-.btn-sm{padding:.35rem .8rem;font-size:.7rem}
+.topbar-r{display:flex;gap:.6rem;flex-shrink:0;align-items:center}
 
-.view{display:none;padding:2rem;flex:1}
+/* Buttons */
+.btn{
+  display:inline-flex;align-items:center;gap:.45rem;
+  padding:.52rem 1.1rem;border-radius:var(--r);
+  font-family:'DM Sans',sans-serif;font-size:.77rem;font-weight:600;
+  cursor:pointer;border:none;transition:all .2s;white-space:nowrap;
+}
+.btn-red{background:var(--red);color:#fff}
+.btn-red:hover{background:#c8070f;box-shadow:0 4px 14px rgba(229,9,20,.3)}
+.btn-sec{background:var(--bg3);color:var(--text2);border:1px solid var(--border)}
+.btn-sec:hover{background:var(--bg4);color:var(--text)}
+.btn-green{background:rgba(70,211,105,.12);color:var(--green);border:1px solid rgba(70,211,105,.25)}
+.btn-green:hover{background:rgba(70,211,105,.2)}
+.btn-danger{background:transparent;color:#ff4444;border:1px solid rgba(255,68,68,.3)}
+.btn-danger:hover{background:rgba(255,68,68,.1)}
+.btn-sm{padding:.32rem .75rem;font-size:.7rem}
+.btn-xs{padding:.2rem .55rem;font-size:.65rem}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* Views */
+.view{display:none;padding:2rem;flex:1;animation:fadeIn .2s ease}
 .view.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
-/* DASHBOARD */
-.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
-.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:1.4rem}
-.stat-v{font-family:'Bebas Neue',sans-serif;font-size:2.5rem;letter-spacing:.04em;margin-bottom:.2rem}
-.stat-l{font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em}
-.recent-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden}
-.rc-hdr{padding:1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-.rc-title{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.1em;color:var(--text2)}
+/* ═══ DASHBOARD ═══ */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
+.stat-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r2);padding:1.4rem 1.5rem;
+  position:relative;overflow:hidden;transition:border-color .2s;
+}
+.stat-card:hover{border-color:rgba(255,255,255,.12)}
+.stat-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--glass),transparent);pointer-events:none}
+.stat-v{font-family:'Bebas Neue',sans-serif;font-size:2.6rem;letter-spacing:.04em;margin-bottom:.15rem;line-height:1}
+.stat-l{font-size:.68rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em}
+.stat-trend{font-size:.62rem;color:var(--green);margin-top:.4rem;display:flex;align-items:center;gap:.3rem}
+
+.section-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;margin-bottom:1.5rem}
+.sc-hdr{
+  padding:1rem 1.5rem;border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;gap:1rem;
+}
+.sc-title{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.1em;color:var(--text2)}
+.sc-actions{display:flex;gap:.5rem;align-items:center}
+
+/* Table */
 .tbl{width:100%;border-collapse:collapse}
-.tbl th{padding:.65rem 1rem;font-size:.63rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);text-align:left;border-bottom:1px solid var(--border)}
-.tbl td{padding:.75rem 1rem;font-size:.78rem;border-bottom:1px solid rgba(255,255,255,.03);color:var(--text2)}
+.tbl th{
+  padding:.6rem 1rem;font-size:.62rem;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--text3);
+  text-align:left;border-bottom:1px solid var(--border);background:rgba(255,255,255,.01);
+}
+.tbl td{
+  padding:.7rem 1rem;font-size:.78rem;
+  border-bottom:1px solid rgba(255,255,255,.03);color:var(--text2);
+  vertical-align:middle;
+}
 .tbl tr:last-child td{border-bottom:none}
 .tbl tr:hover td{background:var(--glass)}
-.tbl-thumb{width:50px;height:30px;border-radius:4px;overflow:hidden;background:var(--bg3)}
+.tbl-thumb{width:52px;height:32px;border-radius:5px;overflow:hidden;background:var(--bg3);flex-shrink:0}
 .tbl-thumb img{width:100%;height:100%;object-fit:cover}
-.badge{display:inline-block;padding:.15rem .5rem;border-radius:3px;font-size:.6rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.badge{
+  display:inline-block;padding:.13rem .5rem;border-radius:4px;
+  font-size:.6rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+}
 .b-movie{background:rgba(229,9,20,.15);color:var(--red)}
-.b-tv{background:rgba(59,130,246,.15);color:#60a5fa}
+.b-tv{background:rgba(59,130,246,.15);color:var(--blue)}
 .b-anime{background:rgba(245,197,24,.12);color:var(--gold)}
 
-/* CONTENT GRID */
+/* Search/Filter */
 .filter-bar{display:flex;align-items:center;gap:.8rem;margin-bottom:1.5rem;flex-wrap:wrap}
-.filter-input{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.82rem;padding:.55rem 1rem;width:260px;transition:border-color .2s}
+.filter-wrap{position:relative;flex:1;min-width:220px;max-width:340px}
+.filter-wrap svg{position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none}
+.filter-input{
+  width:100%;background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r);color:var(--text);font-family:'DM Sans',sans-serif;
+  font-size:.82rem;padding:.55rem .9rem .55rem 2.2rem;transition:border-color .2s;
+}
 .filter-input:focus{outline:none;border-color:rgba(255,255,255,.2)}
 .filter-input::placeholder{color:var(--text3)}
-.content-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem}
-.cc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;transition:border-color .2s}
-.cc:hover{border-color:rgba(255,255,255,.14)}
+.filter-select{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+  color:var(--text2);font-family:'DM Sans',sans-serif;font-size:.78rem;
+  padding:.5rem .8rem;cursor:pointer;
+}
+.filter-select:focus{outline:none}
+.filter-select option{background:var(--bg3)}
+
+/* Content Grid */
+.content-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:.9rem}
+.cc{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r2);overflow:hidden;transition:border-color .2s,transform .2s;
+  cursor:pointer;
+}
+.cc:hover{border-color:rgba(255,255,255,.15);transform:translateY(-2px)}
 .cc-img{aspect-ratio:16/9;overflow:hidden;background:var(--bg3);position:relative}
-.cc-img img{width:100%;height:100%;object-fit:cover}
-.cc-fb{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:2rem;color:rgba(255,255,255,.08)}
+.cc-img img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.cc:hover .cc-img img{transform:scale(1.04)}
+.cc-fb{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:rgba(255,255,255,.06);
+}
 .cc-typebadge{position:absolute;top:6px;left:6px}
-.cc-body{padding:.8rem}
-.cc-title{font-size:.8rem;font-weight:600;margin-bottom:.25rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cc-meta{font-size:.67rem;color:var(--text3);margin-bottom:.6rem}
+.cc-imdb{position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.7);padding:.15rem .4rem;border-radius:4px;font-size:.62rem;color:var(--gold);font-weight:700}
+.cc-body{padding:.85rem}
+.cc-title{font-size:.8rem;font-weight:600;margin-bottom:.2rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cc-meta{font-size:.67rem;color:var(--text3);margin-bottom:.65rem}
 .cc-actions{display:flex;gap:.4rem}
 
-/* ═══ TMDB FETCH MODAL ═══ */
-.overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.88);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:1.5rem}
-.overlay.open{display:flex}
-.modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);width:100%;max-width:680px;max-height:92vh;overflow-y:auto;animation:mIn .2s ease}
-@keyframes mIn{from{opacity:0;transform:scale(.96) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
-.modal-hdr{padding:1.3rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg2);z-index:1}
-.modal-hdr-title{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:.08em}
-.modal-close{background:none;border:none;cursor:pointer;color:var(--text3);font-size:1.2rem;padding:.3rem;transition:color .15s}
-.modal-close:hover{color:var(--text)}
-.modal-body{padding:1.5rem}
-.modal-footer{padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;gap:.7rem;justify-content:flex-end;position:sticky;bottom:0;background:var(--bg2)}
+/* ═══ STATS VIEW ═══ */
+.stats-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem}
+.genre-bar{display:flex;align-items:center;gap:.7rem;padding:.5rem 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.genre-bar:last-child{border-bottom:none}
+.genre-name{font-size:.75rem;color:var(--text2);min-width:80px}
+.genre-track{flex:1;height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
+.genre-fill{height:100%;background:var(--red);border-radius:3px;transition:width 1s ease}
+.genre-count{font-size:.68rem;color:var(--text3);min-width:24px;text-align:right}
+.year-grid{display:flex;flex-wrap:wrap;gap:.35rem}
+.year-tag{
+  padding:.2rem .55rem;border-radius:5px;font-size:.65rem;font-weight:600;
+  background:var(--bg3);border:1px solid var(--border);color:var(--text3);
+  transition:all .2s;cursor:default;
+}
+.year-tag:hover{border-color:var(--red);color:var(--red);background:var(--red-dim)}
 
-/* TMDB ID input section */
-.fetch-section{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:1.2rem;margin-bottom:1.2rem}
-.fetch-label{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:.6rem;display:block}
+/* ═══ SETTINGS ═══ */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.setting-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:1.4rem}
+.setting-card.full{grid-column:1/-1}
+.setting-title{font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:.1em;color:var(--text2);margin-bottom:1rem}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:.65rem 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.setting-row:last-child{border-bottom:none}
+.setting-label{font-size:.78rem;color:var(--text2)}
+.setting-desc{font-size:.65rem;color:var(--text3);margin-top:.15rem}
+.toggle{
+  position:relative;width:38px;height:21px;cursor:pointer;flex-shrink:0;
+}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{
+  position:absolute;inset:0;background:var(--bg4);border:1px solid var(--border);
+  border-radius:21px;transition:all .2s;
+}
+.toggle input:checked+.toggle-track{background:var(--red);border-color:var(--red)}
+.toggle-thumb{
+  position:absolute;left:3px;top:2px;width:15px;height:15px;
+  background:#fff;border-radius:50%;transition:left .2s;
+}
+.toggle input:checked~.toggle-thumb{left:20px}
+.api-key-wrap{display:flex;gap:.5rem;align-items:center}
+.api-key-display{
+  flex:1;background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--r);padding:.55rem .9rem;font-size:.8rem;
+  color:var(--text2);font-family:monospace;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+/* ═══ MODAL ═══ */
+.overlay{
+  display:none;position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,.88);backdrop-filter:blur(8px);
+  align-items:center;justify-content:center;padding:1.5rem;
+}
+.overlay.open{display:flex}
+.modal{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r2);width:100%;max-width:700px;
+  max-height:92vh;overflow-y:auto;
+  animation:mIn .22s cubic-bezier(.16,1,.3,1);
+  box-shadow:0 32px 80px rgba(0,0,0,.7);
+}
+@keyframes mIn{from{opacity:0;transform:scale(.94) translateY(14px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-hdr{
+  padding:1.3rem 1.5rem;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;background:var(--bg2);z-index:1;
+}
+.modal-hdr-title{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:.08em}
+.modal-close{
+  background:var(--bg3);border:1px solid var(--border);cursor:pointer;
+  color:var(--text3);font-size:.9rem;padding:.35rem .65rem;border-radius:6px;
+  transition:all .15s;line-height:1;
+}
+.modal-close:hover{color:var(--text);background:var(--bg4)}
+.modal-body{padding:1.5rem}
+.modal-footer{
+  padding:1rem 1.5rem;border-top:1px solid var(--border);
+  display:flex;gap:.7rem;justify-content:flex-end;
+  position:sticky;bottom:0;background:var(--bg2);
+}
+
+/* TMDB Fetch */
+.fetch-section{
+  background:linear-gradient(135deg,rgba(229,9,20,.05),transparent);
+  border:1px solid rgba(229,9,20,.2);
+  border-radius:var(--r2);padding:1.2rem;margin-bottom:1.2rem;
+}
+.fetch-label{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem}
 .fetch-row{display:flex;gap:.6rem;align-items:stretch}
-.fetch-input{flex:1;background:var(--bg4);border:1.5px solid var(--border);border-radius:var(--r);color:var(--text);font-family:'DM Sans',sans-serif;font-size:1rem;padding:.7rem 1rem;transition:border-color .2s}
+.fetch-input{
+  flex:1;background:var(--bg4);border:1.5px solid var(--border);
+  border-radius:var(--r);color:var(--text);font-family:'DM Sans',sans-serif;
+  font-size:.95rem;padding:.7rem 1rem;transition:border-color .2s;
+}
 .fetch-input:focus{outline:none;border-color:var(--red)}
 .fetch-input::placeholder{color:var(--text3)}
-.fetch-btn{background:var(--red);color:#fff;border:none;border-radius:var(--r);padding:.7rem 1.4rem;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .2s;display:flex;align-items:center;gap:.5rem}
+.fetch-btn{
+  background:var(--red);color:#fff;border:none;border-radius:var(--r);
+  padding:.7rem 1.4rem;font-family:'DM Sans',sans-serif;font-size:.85rem;
+  font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s;
+  display:flex;align-items:center;gap:.5rem;
+}
 .fetch-btn:hover{background:#c8070f}
 .fetch-btn:disabled{opacity:.5;cursor:not-allowed}
-.fetch-hint{font-size:.68rem;color:var(--text3);margin-top:.5rem}
+.fetch-hint{font-size:.67rem;color:var(--text3);margin-top:.45rem}
 
-/* Fetched result preview */
-.result-preview{background:var(--bg3);border:1px solid rgba(70,211,105,.25);border-radius:var(--r2);padding:1.2rem;margin-bottom:1.2rem;display:none}
+/* Preview */
+.result-preview{
+  background:rgba(70,211,105,.04);border:1px solid rgba(70,211,105,.2);
+  border-radius:var(--r2);padding:1.2rem;margin-bottom:1.2rem;display:none;
+}
 .result-preview.show{display:flex;gap:1rem}
-.rp-poster{width:80px;height:120px;border-radius:var(--r);overflow:hidden;flex-shrink:0;background:var(--bg4)}
+.rp-poster{width:78px;height:116px;border-radius:var(--r);overflow:hidden;flex-shrink:0;background:var(--bg4)}
 .rp-poster img{width:100%;height:100%;object-fit:cover}
 .rp-info{flex:1;min-width:0}
-.rp-title{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:.04em;margin-bottom:.3rem;color:var(--text)}
-.rp-meta{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.5rem}
-.rp-tag{font-size:.65rem;font-weight:600;padding:.2rem .6rem;border-radius:3px;background:var(--bg4);border:1px solid var(--border);color:var(--text2)}
+.rp-title{font-family:'Bebas Neue',sans-serif;font-size:1.25rem;letter-spacing:.03em;margin-bottom:.3rem}
+.rp-meta{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem}
+.rp-tag{font-size:.63rem;font-weight:600;padding:.18rem .55rem;border-radius:4px;background:var(--bg4);border:1px solid var(--border);color:var(--text2)}
 .rp-tag.green{background:rgba(70,211,105,.1);border-color:rgba(70,211,105,.3);color:var(--green)}
-.rp-desc{font-size:.78rem;color:var(--text2);line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.rp-desc{font-size:.77rem;color:var(--text2);line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .auto-filled{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;margin-top:.7rem}
-.af-item{background:rgba(70,211,105,.06);border:1px solid rgba(70,211,105,.15);border-radius:5px;padding:.35rem .6rem;text-align:center}
-.af-label{font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em}
-.af-val{font-size:.7rem;color:var(--green);font-weight:600;margin-top:1px}
+.af-item{background:rgba(70,211,105,.05);border:1px solid rgba(70,211,105,.12);border-radius:5px;padding:.3rem .5rem;text-align:center}
+.af-label{font-size:.58rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em}
+.af-val{font-size:.68rem;color:var(--green);font-weight:600;margin-top:1px}
 
-/* Form fields */
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
-.form-grid .full{grid-column:1/-1}
-.fg{display:flex;flex-direction:column;gap:.35rem}
-.fg label{font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3)}
-.fg input,.fg select,.fg textarea{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.84rem;padding:.6rem .9rem;transition:border-color .2s}
-.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:rgba(255,255,255,.22)}
-.fg input::placeholder,.fg textarea::placeholder{color:var(--text3)}
-.fg textarea{resize:vertical;min-height:85px;line-height:1.6}
-.fg select option{background:var(--bg3)}
-.fg .hint{font-size:.62rem;color:var(--text3)}
-.fg input.autofilled{border-color:rgba(70,211,105,.3);background:rgba(70,211,105,.04)}
-.form-divider{grid-column:1/-1;height:1px;background:var(--border);margin:.3rem 0}
-.form-section{grid-column:1/-1;font-family:'Bebas Neue',sans-serif;font-size:.9rem;letter-spacing:.1em;color:var(--text3);padding-top:.3rem}
-
-/* type selector */
+/* Form */
 .type-tabs{display:flex;gap:.5rem;margin-bottom:1.2rem}
-.type-tab{flex:1;padding:.55rem;border-radius:var(--r);font-size:.75rem;font-weight:600;border:1.5px solid var(--border);color:var(--text3);cursor:pointer;text-align:center;transition:all .2s;background:var(--bg3)}
+.type-tab{
+  flex:1;padding:.52rem;border-radius:var(--r);font-size:.75rem;font-weight:600;
+  border:1.5px solid var(--border);color:var(--text3);cursor:pointer;
+  text-align:center;transition:all .2s;background:var(--bg3);
+}
 .type-tab.active{border-color:var(--red);color:var(--red);background:var(--red-dim)}
 
-/* EP builder */
-.ep-row{display:flex;gap:.5rem;align-items:center;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:.55rem .8rem;margin-bottom:.4rem}
-.ep-row input{background:transparent;border:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.78rem;flex:1;outline:none;min-width:0}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.85rem}
+.form-grid .full{grid-column:1/-1}
+.fg{display:flex;flex-direction:column;gap:.3rem}
+.fg label{font-size:.63rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3)}
+.fg input,.fg select,.fg textarea{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--r);color:var(--text);font-family:'DM Sans',sans-serif;
+  font-size:.84rem;padding:.58rem .88rem;transition:border-color .2s;
+}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:rgba(255,255,255,.2)}
+.fg input::placeholder,.fg textarea::placeholder{color:var(--text3)}
+.fg textarea{resize:vertical;min-height:80px;line-height:1.6}
+.fg select option{background:var(--bg3)}
+.fg .hint{font-size:.61rem;color:var(--text3)}
+.fg input.autofilled{border-color:rgba(70,211,105,.35);background:rgba(70,211,105,.04)}
+.form-divider{grid-column:1/-1;height:1px;background:var(--border);margin:.2rem 0}
+.form-section{
+  grid-column:1/-1;font-family:'Bebas Neue',sans-serif;font-size:.88rem;
+  letter-spacing:.1em;color:var(--text3);padding-top:.2rem;
+  display:flex;align-items:center;gap:.7rem;
+}
+.form-section::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* Episodes */
+.ep-row{
+  display:flex;gap:.5rem;align-items:center;
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--r);padding:.5rem .75rem;margin-bottom:.35rem;
+  transition:border-color .15s;
+}
+.ep-row:hover{border-color:rgba(255,255,255,.12)}
+.ep-row input{
+  background:transparent;border:none;color:var(--text);
+  font-family:'DM Sans',sans-serif;font-size:.78rem;flex:1;outline:none;min-width:0;
+}
 .ep-row input::placeholder{color:var(--text3)}
-.ep-n{font-family:'Bebas Neue',sans-serif;font-size:.95rem;color:var(--text3);min-width:18px;flex-shrink:0}
-.ep-dur{width:55px;flex:none;text-align:center}
-.ep-rm{background:none;border:none;cursor:pointer;color:var(--text3);font-size:.9rem;flex-shrink:0;transition:color .15s}
+.ep-n{
+  font-family:'Bebas Neue',sans-serif;font-size:.9rem;
+  color:var(--text3);min-width:20px;flex-shrink:0;
+}
+.ep-dur{width:52px;flex:none;text-align:center}
+.ep-rm{
+  background:none;border:none;cursor:pointer;color:var(--text3);
+  font-size:.85rem;flex-shrink:0;transition:color .15s;padding:.1rem;
+}
 .ep-rm:hover{color:#ff4444}
 .stabs{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.6rem}
-.stab{padding:.28rem .7rem;border-radius:20px;font-size:.68rem;font-weight:600;background:var(--bg3);border:1px solid var(--border);color:var(--text3);cursor:pointer;transition:all .15s}
+.stab{
+  padding:.26rem .7rem;border-radius:20px;font-size:.67rem;font-weight:600;
+  background:var(--bg3);border:1px solid var(--border);color:var(--text3);
+  cursor:pointer;transition:all .15s;
+}
 .stab.active{background:var(--red-dim);border-color:var(--red);color:var(--red)}
 
+/* Confirm Dialog */
+.confirm-overlay{
+  display:none;position:fixed;inset:0;z-index:300;
+  background:rgba(0,0,0,.8);backdrop-filter:blur(6px);
+  align-items:center;justify-content:center;
+}
+.confirm-overlay.open{display:flex}
+.confirm-box{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r2);padding:2rem;max-width:360px;width:90%;
+  text-align:center;animation:mIn .18s ease;
+}
+.confirm-icon{font-size:2.5rem;margin-bottom:.8rem}
+.confirm-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.05em;margin-bottom:.5rem}
+.confirm-msg{font-size:.82rem;color:var(--text2);line-height:1.6;margin-bottom:1.5rem}
+.confirm-btns{display:flex;gap:.6rem;justify-content:center}
+
 /* TOAST */
-.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:.65rem 1.1rem;font-size:.78rem;color:var(--text2);transform:translateY(80px);transition:transform .3s;z-index:9999;pointer-events:none;display:flex;align-items:center;gap:.55rem;max-width:320px}
-.toast.show{transform:translateY(0)}
+.toast{
+  position:fixed;bottom:1.4rem;right:1.4rem;
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);
+  padding:.65rem 1.1rem;font-size:.78rem;color:var(--text2);
+  transform:translateX(120%);transition:transform .3s cubic-bezier(.16,1,.3,1);
+  z-index:9999;pointer-events:none;display:flex;align-items:center;gap:.55rem;
+  max-width:340px;box-shadow:0 8px 24px rgba(0,0,0,.4);
+}
+.toast.show{transform:translateX(0)}
 .toast.ok{border-color:rgba(70,211,105,.3);color:var(--green)}
 .toast.err{border-color:rgba(255,68,68,.3);color:#ff6b6b}
 .toast.info{border-color:rgba(245,197,24,.3);color:var(--gold)}
 
-@media(max-width:768px){.sidebar{display:none}.main{margin-left:0}.stats-grid{grid-template-columns:1fr 1fr}.form-grid{grid-template-columns:1fr}}
+/* Empty state */
+.empty-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:4rem 2rem;color:var(--text3);text-align:center;gap:.8rem;
+}
+.empty-state svg{opacity:.2}
+.empty-state h3{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.06em;color:var(--text3)}
+.empty-state p{font-size:.8rem;max-width:280px;line-height:1.7}
+
+/* Pill tabs for content filter */
+.pill-tabs{display:flex;gap:.4rem;flex-wrap:wrap}
+.pill-tab{
+  padding:.3rem .8rem;border-radius:20px;font-size:.7rem;font-weight:600;
+  background:var(--bg3);border:1px solid var(--border);color:var(--text3);
+  cursor:pointer;transition:all .15s;
+}
+.pill-tab.active{background:var(--red-dim);border-color:var(--red);color:var(--red)}
+
+/* Bulk import */
+.bulk-area{
+  width:100%;background:var(--bg3);border:1.5px dashed var(--border);
+  border-radius:var(--r2);padding:1rem;font-family:monospace;font-size:.75rem;
+  color:var(--text2);resize:vertical;min-height:200px;transition:border-color .2s;
+}
+.bulk-area:focus{outline:none;border-color:rgba(255,255,255,.2)}
+.bulk-area::placeholder{color:var(--text3)}
+
+@media(max-width:900px){.sidebar{display:none}.main{margin-left:0}.stats-grid{grid-template-columns:1fr 1fr}.settings-grid{grid-template-columns:1fr}}
+@media(max-width:600px){.stats-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.content-grid{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -190,11 +483,13 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
     <div class="login-logo">Stream<span>Vault</span></div>
     <div class="login-sub">Admin Portal</div>
     <label class="login-label">Worker URL</label>
-    <input type="text" class="login-input" id="cfgUrl" placeholder="https://streamvault.yourname.workers.dev">
-    <label class="login-label">Admin Password</label>
-    <input type="password" class="login-input" id="cfgPass" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()">
-    <button class="login-btn" onclick="doLogin()">Sign In</button>
-    <div class="login-err" id="loginErr">Wrong password or Worker URL</div>
+    <input type="text" class="login-input" id="cfgUrl" placeholder="https://streamvault.yourname.workers.dev" autocomplete="off">
+    <label class="login-label">Email</label>
+    <input type="email" class="login-input" id="cfgEmail" placeholder="amworkmanage@gmail.com" autocomplete="email">
+    <label class="login-label">Password</label>
+    <input type="password" class="login-input" id="cfgPass" placeholder="••••••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Sign In →</button>
+    <div class="login-err" id="loginErr">⚠ Wrong credentials or Worker URL unreachable</div>
   </div>
 </div>
 
@@ -205,8 +500,12 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
     <nav class="sb-nav">
       <div class="sb-sec">Overview</div>
       <div class="sb-link active" onclick="switchView('dashboard',this)">
-        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
         Dashboard
+      </div>
+      <div class="sb-link" onclick="switchView('stats',this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Analytics
       </div>
       <div class="sb-sec">Content</div>
       <div class="sb-link" onclick="switchView('movies',this)">
@@ -215,17 +514,39 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
       </div>
       <div class="sb-link" onclick="switchView('tvshows',this)">
         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17,2 12,7 7,2"/></svg>
-        TV Shows <span class="sb-count" style="background:rgba(59,130,246,.15);color:#60a5fa" id="sbT">0</span>
+        TV Shows <span class="sb-count" style="background:rgba(59,130,246,.15);color:var(--blue)" id="sbT">0</span>
       </div>
       <div class="sb-link" onclick="switchView('anime',this)">
         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8 17.72m2.54-15.38c-3.72 4.35-8.94 5.66-16.88 5.85m19.5 1.9c-3.5-.93-6.63-.82-8.94 0-2.58.92-5.01 2.86-7.44 6.32"/></svg>
         Anime <span class="sb-count" style="background:rgba(245,197,24,.1);color:var(--gold)" id="sbA">0</span>
       </div>
+      <div class="sb-sec">Tools</div>
+      <div class="sb-link" onclick="switchView('bulk',this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="17,1 21,5 17,9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7,23 3,19 7,15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+        Bulk Import
+      </div>
+      <div class="sb-link" onclick="switchView('settings',this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        Settings
+      </div>
     </nav>
     <div class="sb-bottom">
-      <div class="sb-stat"><span class="sb-stat-l">Total</span><span class="sb-stat-v" id="sbTot">0</span></div>
+      <div class="sb-user">
+        <div class="sb-avatar" id="sbAvatar">A</div>
+        <div class="sb-user-info">
+          <div class="sb-user-email" id="sbEmail">—</div>
+          <div class="sb-user-role">Administrator</div>
+        </div>
+      </div>
+      <div class="sb-stat"><span class="sb-stat-l">Total titles</span><span class="sb-stat-v" id="sbTot">0</span></div>
       <div class="sb-stat"><span class="sb-stat-l">Last sync</span><span class="sb-stat-v" id="sbSync">—</span></div>
-      <div style="margin-top:.8rem"><button class="btn btn-danger btn-sm" onclick="logout()" style="width:100%;justify-content:center">Sign Out</button></div>
+      <div style="margin-top:.8rem;display:flex;gap:.4rem">
+        <button class="btn btn-sec btn-sm" onclick="loadData()" style="flex:1;justify-content:center">
+          <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="23,4 23,10 17,10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+          Sync
+        </button>
+        <button class="btn btn-danger btn-sm" onclick="logout()" style="flex:1;justify-content:center">Sign Out</button>
+      </div>
     </div>
   </aside>
 
@@ -236,10 +557,10 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
         <div class="sync-wrap"><div class="sync-dot" id="syncDot"></div><span id="syncLbl">Synced</span></div>
       </div>
       <div class="topbar-r">
-        <button class="btn btn-sec" onclick="loadData()">
-          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="23,4 23,10 17,10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
-          Refresh
-        </button>
+        <div class="filter-wrap" style="max-width:220px">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="left:.7rem"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input class="filter-input" id="globalSearch" placeholder="Quick search..." oninput="globalSearchFn(this.value)" style="padding-left:2rem">
+        </div>
         <button class="btn btn-red" onclick="openAdd()">
           <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Add Title
@@ -250,22 +571,87 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
     <!-- DASHBOARD -->
     <div class="view active" id="view-dashboard">
       <div class="stats-grid">
-        <div class="stat-card"><div class="stat-v" id="dM" style="color:var(--red)">0</div><div class="stat-l">Movies</div></div>
-        <div class="stat-card"><div class="stat-v" id="dT" style="color:#60a5fa">0</div><div class="stat-l">TV Shows</div></div>
-        <div class="stat-card"><div class="stat-v" id="dA" style="color:var(--gold)">0</div><div class="stat-l">Anime</div></div>
-        <div class="stat-card"><div class="stat-v" id="dTot" style="color:var(--green)">0</div><div class="stat-l">Total Titles</div></div>
+        <div class="stat-card">
+          <div class="stat-v" id="dM" style="color:var(--red)">0</div>
+          <div class="stat-l">Movies</div>
+          <div class="stat-trend"><svg width="10" height="10" fill="currentColor" viewBox="0 0 24 24"><polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/></svg><span id="mTrend">—</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-v" id="dT" style="color:var(--blue)">0</div>
+          <div class="stat-l">TV Shows</div>
+          <div class="stat-trend" style="color:var(--blue)"><svg width="10" height="10" fill="currentColor" viewBox="0 0 24 24"><polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/></svg><span id="tTrend">—</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-v" id="dA" style="color:var(--gold)">0</div>
+          <div class="stat-l">Anime</div>
+          <div class="stat-trend" style="color:var(--gold)"><svg width="10" height="10" fill="currentColor" viewBox="0 0 24 24"><polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/></svg><span id="aTrend">—</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-v" id="dTot" style="color:var(--green)">0</div>
+          <div class="stat-l">Total Titles</div>
+          <div class="stat-trend"><svg width="10" height="10" fill="currentColor" viewBox="0 0 24 24"><polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/></svg><span id="totTrend">Library size</span></div>
+        </div>
       </div>
-      <div class="recent-card">
-        <div class="rc-hdr"><div class="rc-title">All Titles</div><button class="btn btn-sec btn-sm" onclick="loadData()">Refresh</button></div>
-        <table class="tbl"><thead><tr><th>Poster</th><th>Title</th><th>Type</th><th>Year</th><th>IMDb</th><th>Actions</th></tr></thead>
+      <div class="section-card">
+        <div class="sc-hdr">
+          <div class="sc-title">All Titles</div>
+          <div class="sc-actions">
+            <select class="filter-select" id="dashTypeFilter" onchange="renderRecent()">
+              <option value="">All Types</option>
+              <option value="movie">Movies</option>
+              <option value="tv">TV Shows</option>
+              <option value="anime">Anime</option>
+            </select>
+            <select class="filter-select" id="dashSortFilter" onchange="renderRecent()">
+              <option value="recent">Recently Added</option>
+              <option value="az">A → Z</option>
+              <option value="za">Z → A</option>
+              <option value="year">By Year</option>
+              <option value="imdb">By IMDb</option>
+            </select>
+            <button class="btn btn-sec btn-sm" onclick="exportContent()">
+              <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export
+            </button>
+          </div>
+        </div>
+        <table class="tbl"><thead><tr><th>Poster</th><th>Title</th><th>Type</th><th>Year</th><th>IMDb</th><th>Genre</th><th>Actions</th></tr></thead>
         <tbody id="recentBody"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="view" id="view-stats">
+      <div class="stats-detail-grid">
+        <div class="section-card">
+          <div class="sc-hdr"><div class="sc-title">Genre Breakdown</div></div>
+          <div style="padding:1rem 1.5rem" id="genreBreakdown"></div>
+        </div>
+        <div class="section-card">
+          <div class="sc-hdr"><div class="sc-title">Content by Year</div></div>
+          <div style="padding:1rem 1.5rem" id="yearBreakdown"></div>
+        </div>
+      </div>
+      <div class="section-card">
+        <div class="sc-hdr"><div class="sc-title">Top Rated Titles</div></div>
+        <table class="tbl"><thead><tr><th>#</th><th>Poster</th><th>Title</th><th>Type</th><th>IMDb</th><th>Match %</th><th>Year</th></tr></thead>
+        <tbody id="topRatedBody"></tbody></table>
       </div>
     </div>
 
     <!-- MOVIES -->
     <div class="view" id="view-movies">
       <div class="filter-bar">
-        <input class="filter-input" placeholder="Search movies..." oninput="renderGrid('movie',this.value)">
+        <div class="filter-wrap">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input class="filter-input" placeholder="Search movies..." oninput="renderGrid('movie',this.value)" id="movieSearch">
+        </div>
+        <select class="filter-select" onchange="renderGrid('movie',document.getElementById('movieSearch').value,this.value)" id="movieGenreFilter">
+          <option value="">All Genres</option>
+        </select>
+        <select class="filter-select" onchange="renderGrid('movie',document.getElementById('movieSearch').value,'',this.value)" id="movieSortFilter">
+          <option value="recent">Recent</option><option value="az">A-Z</option><option value="imdb">IMDb</option><option value="year">Year</option>
+        </select>
         <button class="btn btn-red" onclick="openAdd('movie')">+ Add Movie</button>
       </div>
       <div class="content-grid" id="grid-movies"></div>
@@ -274,7 +660,13 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
     <!-- TV -->
     <div class="view" id="view-tvshows">
       <div class="filter-bar">
-        <input class="filter-input" placeholder="Search TV shows..." oninput="renderGrid('tv',this.value)">
+        <div class="filter-wrap">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input class="filter-input" placeholder="Search TV shows..." oninput="renderGrid('tv',this.value)" id="tvSearch">
+        </div>
+        <select class="filter-select" onchange="renderGrid('tv',document.getElementById('tvSearch').value,this.value)" id="tvGenreFilter">
+          <option value="">All Genres</option>
+        </select>
         <button class="btn btn-red" onclick="openAdd('tv')">+ Add TV Show</button>
       </div>
       <div class="content-grid" id="grid-tv"></div>
@@ -283,10 +675,139 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
     <!-- ANIME -->
     <div class="view" id="view-anime">
       <div class="filter-bar">
-        <input class="filter-input" placeholder="Search anime..." oninput="renderGrid('anime',this.value)">
+        <div class="filter-wrap">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input class="filter-input" placeholder="Search anime..." oninput="renderGrid('anime',this.value)" id="animeSearch">
+        </div>
         <button class="btn btn-red" onclick="openAdd('anime')">+ Add Anime</button>
       </div>
       <div class="content-grid" id="grid-anime"></div>
+    </div>
+
+    <!-- BULK IMPORT -->
+    <div class="view" id="view-bulk">
+      <div class="section-card" style="margin-bottom:1rem">
+        <div class="sc-hdr">
+          <div class="sc-title">📥 Bulk Import / Export</div>
+          <div class="sc-actions">
+            <button class="btn btn-green btn-sm" onclick="exportContent()">
+              <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export Current
+            </button>
+          </div>
+        </div>
+        <div style="padding:1.5rem">
+          <p style="font-size:.82rem;color:var(--text2);margin-bottom:1rem;line-height:1.7">
+            Paste a full JSON database below to bulk-replace all content, or export the current database.
+            Format: <code style="background:var(--bg3);padding:.1rem .4rem;border-radius:4px;font-size:.78rem;color:var(--green)">{"movies":[...],"tvshows":[...],"anime":[...]}</code>
+          </p>
+          <textarea class="bulk-area" id="bulkInput" placeholder='{"movies":[...],"tvshows":[...],"anime":[]}'></textarea>
+          <div style="display:flex;gap:.7rem;margin-top:1rem;align-items:center;flex-wrap:wrap">
+            <button class="btn btn-red" onclick="bulkImport()">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Import & Replace All
+            </button>
+            <button class="btn btn-sec" onclick="validateBulk()">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>
+              Validate JSON
+            </button>
+            <button class="btn btn-sec" onclick="document.getElementById('bulkInput').value=''">Clear</button>
+            <span id="bulkStatus" style="font-size:.75rem;color:var(--text3)"></span>
+          </div>
+        </div>
+      </div>
+      <div class="section-card">
+        <div class="sc-hdr"><div class="sc-title">🗑️ Danger Zone</div></div>
+        <div style="padding:1.5rem;display:flex;gap:1rem;flex-wrap:wrap;align-items:center">
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:.82rem;color:var(--text2);font-weight:600;margin-bottom:.3rem">Delete All Content</div>
+            <div style="font-size:.73rem;color:var(--text3)">Permanently removes all movies, TV shows, and anime from the database. This cannot be undone.</div>
+          </div>
+          <button class="btn btn-danger" onclick="confirmDeleteAll()">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            Delete All Content
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="view" id="view-settings">
+      <div class="settings-grid">
+        <div class="setting-card">
+          <div class="setting-title">Account</div>
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">Email Address</div>
+              <div class="setting-desc" id="settingEmail">—</div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">Worker URL</div>
+              <div class="setting-desc" id="settingUrl" style="font-family:monospace;font-size:.65rem;word-break:break-all">—</div>
+            </div>
+            <button class="btn btn-sec btn-xs" onclick="reconnect()">Change</button>
+          </div>
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">Session</div>
+              <div class="setting-desc">Credentials saved locally in browser</div>
+            </div>
+            <button class="btn btn-danger btn-xs" onclick="logout()">Sign Out</button>
+          </div>
+        </div>
+        <div class="setting-card">
+          <div class="setting-title">TMDB API</div>
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">API Key</div>
+              <div class="setting-desc">Used for auto-fetching metadata</div>
+            </div>
+          </div>
+          <div class="api-key-wrap" style="margin-top:.6rem">
+            <div class="api-key-display" id="tmdbKeyDisplay">••••••••••••••••••••••••••</div>
+            <button class="btn btn-sec btn-xs" onclick="toggleApiKey()">Show</button>
+            <button class="btn btn-sec btn-xs" onclick="editApiKey()">Edit</button>
+          </div>
+        </div>
+        <div class="setting-card full">
+          <div class="setting-title">Preferences</div>
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">Auto-save credentials</div>
+              <div class="setting-desc">Remember URL and password between sessions</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="toggleAutoSave" checked onchange="savePrefs()">
+              <div class="toggle-track"></div>
+              <div class="toggle-thumb"></div>
+            </label>
+          </div>
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">Confirm before delete</div>
+              <div class="setting-desc">Show a confirmation dialog when deleting titles</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="toggleConfirmDel" checked onchange="savePrefs()">
+              <div class="toggle-track"></div>
+              <div class="toggle-thumb"></div>
+            </label>
+          </div>
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">Fetch episodes automatically</div>
+              <div class="setting-desc">Pull all seasons/episodes when fetching TV shows from TMDB</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="toggleAutoEps" checked onchange="savePrefs()">
+              <div class="toggle-track"></div>
+              <div class="toggle-thumb"></div>
+            </label>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -299,28 +820,25 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
     <div class="modal-body">
-
-      <!-- TYPE SELECTOR -->
       <div class="type-tabs" id="typeTabs">
         <div class="type-tab active" onclick="setType('movie',this)">🎬 Movie</div>
         <div class="type-tab" onclick="setType('tv',this)">📺 TV Show</div>
         <div class="type-tab" onclick="setType('anime',this)">🎌 Anime</div>
       </div>
-
-      <!-- TMDB FETCH SECTION -->
       <div class="fetch-section">
-        <span class="fetch-label">🔍 Auto-fetch from TMDB — just paste the ID or URL</span>
+        <span class="fetch-label">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Auto-fetch from TMDB
+        </span>
         <div class="fetch-row">
-          <input type="text" class="fetch-input" id="tmdbInput" placeholder="e.g. 27205  or  themoviedb.org/movie/27205" onkeydown="if(event.key==='Enter')fetchTMDB()">
+          <input type="text" class="fetch-input" id="tmdbInput" placeholder="Paste TMDB ID or full URL (e.g. themoviedb.org/movie/27205)" onkeydown="if(event.key==='Enter')fetchTMDB()">
           <button class="fetch-btn" id="fetchBtn" onclick="fetchTMDB()">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             Fetch
           </button>
         </div>
-        <div class="fetch-hint">Paste the TMDB ID or full URL → click Fetch → all fields fill automatically ✨</div>
+        <div class="fetch-hint">Paste a TMDB ID or URL → all fields fill automatically ✨</div>
       </div>
-
-      <!-- RESULT PREVIEW -->
       <div class="result-preview" id="resultPreview">
         <div class="rp-poster"><img id="rpPoster" src="" alt=""></div>
         <div class="rp-info">
@@ -328,48 +846,47 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
           <div class="rp-meta" id="rpMeta"></div>
           <div class="rp-desc" id="rpDesc"></div>
           <div class="auto-filled">
-            <div class="af-item"><div class="af-label">Poster</div><div class="af-val">✓ Fetched</div></div>
-            <div class="af-item"><div class="af-label">Backdrop</div><div class="af-val">✓ Fetched</div></div>
-            <div class="af-item"><div class="af-label">Cast</div><div class="af-val" id="afCast">✓ Fetched</div></div>
-            <div class="af-item"><div class="af-label">Director</div><div class="af-val">✓ Fetched</div></div>
-            <div class="af-item"><div class="af-label">Genres</div><div class="af-val">✓ Fetched</div></div>
-            <div class="af-item"><div class="af-label">Runtime</div><div class="af-val">✓ Fetched</div></div>
+            <div class="af-item"><div class="af-label">Poster</div><div class="af-val">✓</div></div>
+            <div class="af-item"><div class="af-label">Backdrop</div><div class="af-val">✓</div></div>
+            <div class="af-item"><div class="af-label">Cast</div><div class="af-val" id="afCast">✓</div></div>
+            <div class="af-item"><div class="af-label">Director</div><div class="af-val">✓</div></div>
+            <div class="af-item"><div class="af-label">Genres</div><div class="af-val">✓</div></div>
+            <div class="af-item"><div class="af-label">Runtime</div><div class="af-val">✓</div></div>
           </div>
         </div>
       </div>
-
-      <!-- FORM FIELDS -->
       <div class="form-grid" id="formGrid">
-        <div class="fg full"><label>Title *</label><input type="text" id="f_title" placeholder="Movie title"></div>
+        <div class="fg full"><label>Title *</label><input type="text" id="f_title" placeholder="Title"></div>
         <div class="fg"><label>TMDB ID</label><input type="number" id="f_id" placeholder="27205"></div>
         <div class="fg"><label>Year</label><input type="number" id="f_year" placeholder="2010"></div>
-        <div class="fg"><label>Genre</label><input type="text" id="f_genre" placeholder="Sci-Fi"></div>
+        <div class="fg"><label>Primary Genre</label><input type="text" id="f_genre" placeholder="Sci-Fi"></div>
         <div class="fg"><label>IMDb Rating</label><input type="text" id="f_imdb" placeholder="8.8"></div>
         <div class="fg"><label>Match %</label><input type="number" id="f_match" placeholder="95" value="95"></div>
         <div class="fg"><label>Content Rating</label><input type="text" id="f_rating" placeholder="PG-13"></div>
         <div class="fg"><label>Runtime</label><input type="text" id="f_runtime" placeholder="148 min"></div>
-        <div class="fg"><label>Director</label><input type="text" id="f_director" placeholder="Christopher Nolan"></div>
-        <div class="fg"><label>Studio / Network</label><input type="text" id="f_studio" placeholder="Warner Bros."></div>
-        <div class="fg full"><label>Description</label><textarea id="f_desc" placeholder="Short description..."></textarea></div>
-        <div class="fg full"><label>Tags (comma separated)</label><input type="text" id="f_tags" placeholder="Dreams, Heist, Mind-Bending"></div>
+        <div class="fg"><label>Director</label><input type="text" id="f_director" placeholder="Director name"></div>
+        <div class="fg"><label>Studio / Network</label><input type="text" id="f_studio" placeholder="Studio name"></div>
+        <div class="fg full"><label>Description</label><textarea id="f_desc" placeholder="Short overview..."></textarea></div>
+        <div class="fg full"><label>Tags (comma separated)</label><input type="text" id="f_tags" placeholder="Action, Thriller, Sci-Fi"></div>
         <div class="form-divider"></div>
-        <div class="form-section">Images (auto-filled by Fetch)</div>
+        <div class="form-section">Images</div>
         <div class="fg"><label>Poster Path</label><input type="text" id="f_poster" placeholder="/xxxxxx.jpg"></div>
         <div class="fg"><label>Backdrop Path</label><input type="text" id="f_backdrop" placeholder="/xxxxxx.jpg"></div>
         <div class="form-divider"></div>
-        <div class="form-section">Cast (auto-filled by Fetch)</div>
-        <div class="fg full"><label>Cast — one per line: Name | Role | ImgPath</label><textarea id="f_cast" rows="4" placeholder="Leonardo DiCaprio|Cobb|/wo2hJ...jpg"></textarea></div>
-        <div class="fg full"><label>Related TMDB IDs (comma separated)</label><input type="text" id="f_related" placeholder="157336,603,155"></div>
-        <!-- Episodes section (TV/Anime only) -->
+        <div class="form-section">Cast & Relations</div>
+        <div class="fg full"><label>Cast — one per line: Name | Role | ImgPath</label><textarea id="f_cast" rows="4" placeholder="Leonardo DiCaprio|Cobb|/wo2hJ...jpg&#10;Joseph Gordon-Levitt|Arthur|/msug...jpg"></textarea></div>
+        <div class="fg full"><label>Related TMDB IDs (comma separated)</label><input type="text" id="f_related" placeholder="157336, 603, 155"></div>
         <div id="epSection" style="display:none;grid-column:1/-1">
           <div class="form-divider"></div>
           <div class="form-section" style="margin-bottom:.8rem">Seasons &amp; Episodes</div>
           <div id="epBuilder"></div>
         </div>
-        <!-- Anime movie toggle -->
         <div class="fg full" id="isMovieSection" style="display:none">
-          <label>Is this an Anime Movie? (not a series)</label>
-          <select id="f_isMovie"><option value="false">No — it's a series</option><option value="true">Yes — it's a movie</option></select>
+          <label>Anime type</label>
+          <select id="f_isMovie">
+            <option value="false">Series (has episodes)</option>
+            <option value="true">Movie (single watch)</option>
+          </select>
         </div>
       </div>
     </div>
@@ -379,6 +896,19 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/></svg>
         Save to Cloudflare
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM DIALOG -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirmIcon">🗑️</div>
+    <div class="confirm-title" id="confirmTitle">Delete Title?</div>
+    <div class="confirm-msg" id="confirmMsg">This action cannot be undone.</div>
+    <div class="confirm-btns">
+      <button class="btn btn-sec" onclick="closeConfirm()">Cancel</button>
+      <button class="btn btn-danger" id="confirmOkBtn">Delete</button>
     </div>
   </div>
 </div>
@@ -394,250 +924,261 @@ var TMDB_BASE = 'https://api.themoviedb.org/3';
 var IMG_BASE = 'https://image.tmdb.org/t/p/';
 var WORKER_URL = '';
 var ADMIN_PASS = '';
+var ADMIN_EMAIL = '';
 var DB = { movies:[], tvshows:[], anime:[] };
-var editId = null, editType = 'movie', editEps = {}, editSeason = 1;
+var editId = null, editType = 'movie', editEps = {};
+
+// Credentials
+var ADMIN_EMAIL_REQUIRED = 'amworkmanage@gmail.com';
+var ADMIN_PASS_REQUIRED = 'streamvault2025';
 
 // ═══════════════════════════════
-//  LOGIN
+//  LOGIN — email + password
 // ═══════════════════════════════
 function doLogin() {
   var url = (document.getElementById('cfgUrl').value||'').trim().replace(/\/$/,'');
+  var email = (document.getElementById('cfgEmail').value||'').trim().toLowerCase();
   var pass = (document.getElementById('cfgPass').value||'').trim();
-  if (!url||!pass){showErr('Enter both Worker URL and password');return;}
-  WORKER_URL=url; ADMIN_PASS=pass;
+  if (!url || !email || !pass) { showLoginErr('All fields are required'); return; }
+  if (email !== ADMIN_EMAIL_REQUIRED) { showLoginErr('Email not authorized'); return; }
+  if (pass !== ADMIN_PASS_REQUIRED) { showLoginErr('Incorrect password'); return; }
+  WORKER_URL = url; ADMIN_PASS = pass; ADMIN_EMAIL = email;
   setSyncing('Connecting...');
-  fetch(url+'/api/auth',{method:'POST',headers:{'Content-Type':'application/json','X-Admin-Password':pass}})
-    .then(function(r){
-      if(r.ok){
-        localStorage.setItem('sv_url',url);
-        localStorage.setItem('sv_pass',pass);
-        document.getElementById('loginScreen').style.display='none';
-        document.getElementById('app').classList.add('visible');
-        loadData();
-      } else { showErr('Wrong password or Worker URL'); setSynced(); }
-    }).catch(function(){ showErr('Cannot reach Worker — check URL'); setSynced(); });
+  fetch(url + '/api/auth', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json', 'X-Admin-Password': pass}
+  }).then(function(r) {
+    if (r.ok) {
+      if (document.getElementById('toggleAutoSave') && document.getElementById('toggleAutoSave').checked) {
+        localStorage.setItem('sv_url', url);
+        localStorage.setItem('sv_pass', pass);
+        localStorage.setItem('sv_email', email);
+      }
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('app').classList.add('visible');
+      // Update sidebar user info
+      document.getElementById('sbEmail').textContent = email;
+      document.getElementById('sbAvatar').textContent = email[0].toUpperCase();
+      document.getElementById('settingEmail').textContent = email;
+      document.getElementById('settingUrl').textContent = url;
+      loadData();
+    } else { showLoginErr('Worker rejected the request — check URL and Worker password'); setSynced(); }
+  }).catch(function() { showLoginErr('Cannot reach Worker — verify the URL is correct'); setSynced(); });
 }
-function showErr(m){var e=document.getElementById('loginErr');e.textContent=m;e.style.display='block';setTimeout(function(){e.style.display='none';},4000);}
-function logout(){localStorage.removeItem('sv_url');localStorage.removeItem('sv_pass');location.reload();}
-function tryAutoLogin(){
-  var u=localStorage.getItem('sv_url'),p=localStorage.getItem('sv_pass');
-  if(u&&p){document.getElementById('cfgUrl').value=u;document.getElementById('cfgPass').value=p;}
+
+function showLoginErr(m) {
+  var e = document.getElementById('loginErr');
+  e.textContent = '⚠ ' + m; e.style.display = 'block';
+  setTimeout(function(){ e.style.display = 'none'; }, 5000);
+}
+function logout() {
+  localStorage.removeItem('sv_url'); localStorage.removeItem('sv_pass'); localStorage.removeItem('sv_email');
+  location.reload();
+}
+function reconnect() {
+  localStorage.removeItem('sv_url'); localStorage.removeItem('sv_pass'); localStorage.removeItem('sv_email');
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+function tryAutoLogin() {
+  var u = localStorage.getItem('sv_url');
+  var p = localStorage.getItem('sv_pass');
+  var em = localStorage.getItem('sv_email');
+  if (u) document.getElementById('cfgUrl').value = u;
+  if (em) document.getElementById('cfgEmail').value = em;
+  if (p) document.getElementById('cfgPass').value = p;
 }
 
 // ═══════════════════════════════
-//  SYNC
+//  PREFS
 // ═══════════════════════════════
-function setSyncing(l){document.getElementById('syncDot').className='sync-dot loading';document.getElementById('syncLbl').textContent=l||'Syncing...';}
-function setSynced(){document.getElementById('syncDot').className='sync-dot';document.getElementById('syncLbl').textContent='Synced';document.getElementById('sbSync').textContent=new Date().toLocaleTimeString();}
-function setSyncErr(){document.getElementById('syncDot').className='sync-dot err';document.getElementById('syncLbl').textContent='Error';}
+function savePrefs() {
+  localStorage.setItem('sv_prefs', JSON.stringify({
+    autoSave: document.getElementById('toggleAutoSave').checked,
+    confirmDel: document.getElementById('toggleConfirmDel').checked,
+    autoEps: document.getElementById('toggleAutoEps').checked,
+  }));
+}
+function loadPrefs() {
+  try {
+    var p = JSON.parse(localStorage.getItem('sv_prefs') || '{}');
+    if (typeof p.autoSave !== 'undefined') document.getElementById('toggleAutoSave').checked = p.autoSave;
+    if (typeof p.confirmDel !== 'undefined') document.getElementById('toggleConfirmDel').checked = p.confirmDel;
+    if (typeof p.autoEps !== 'undefined') document.getElementById('toggleAutoEps').checked = p.autoEps;
+  } catch(e) {}
+}
+
+// ═══════════════════════════════
+//  SYNC INDICATORS
+// ═══════════════════════════════
+function setSyncing(l) { document.getElementById('syncDot').className = 'sync-dot loading'; document.getElementById('syncLbl').textContent = l||'Syncing...'; }
+function setSynced() { document.getElementById('syncDot').className = 'sync-dot'; document.getElementById('syncLbl').textContent = 'Synced'; document.getElementById('sbSync').textContent = new Date().toLocaleTimeString(); }
+function setSyncErr() { document.getElementById('syncDot').className = 'sync-dot err'; document.getElementById('syncLbl').textContent = 'Error'; }
 
 // ═══════════════════════════════
 //  API
 // ═══════════════════════════════
-function api(method,path,body){
-  var opts={method:method,headers:{'Content-Type':'application/json','X-Admin-Password':ADMIN_PASS}};
-  if(body) opts.body=JSON.stringify(body);
-  return fetch(WORKER_URL+path,opts).then(function(r){return r.json();});
+function api(method, path, body) {
+  var opts = { method:method, headers:{'Content-Type':'application/json','X-Admin-Password':ADMIN_PASS} };
+  if (body) opts.body = JSON.stringify(body);
+  return fetch(WORKER_URL + path, opts).then(function(r){ return r.json(); });
 }
-function loadData(){
+function loadData() {
   setSyncing('Loading...');
-  api('GET','/api/content').then(function(data){
-    DB.movies=data.movies||[];DB.tvshows=data.tvshows||[];DB.anime=data.anime||[];
-    updateCounts();renderRecent();renderGrid('movie');renderGrid('tv');renderGrid('anime');
-    setSynced();toast('Content loaded','ok');
-  }).catch(function(){setSyncErr();toast('Failed to load','err');});
+  api('GET', '/api/content').then(function(data) {
+    DB.movies = data.movies||[]; DB.tvshows = data.tvshows||[]; DB.anime = data.anime||[];
+    updateCounts(); renderRecent(); renderGrid('movie'); renderGrid('tv'); renderGrid('anime');
+    renderStats(); populateGenreFilters();
+    setSynced(); toast('Content loaded ✓', 'ok');
+  }).catch(function(){ setSyncErr(); toast('Failed to load content', 'err'); });
 }
-function updateCounts(){
-  var m=DB.movies.length,t=DB.tvshows.length,a=DB.anime.length,tot=m+t+a;
-  ['dM','sbM'].forEach(function(id){document.getElementById(id).textContent=m;});
-  ['dT','sbT'].forEach(function(id){document.getElementById(id).textContent=t;});
-  ['dA','sbA'].forEach(function(id){document.getElementById(id).textContent=a;});
-  ['dTot','sbTot'].forEach(function(id){document.getElementById(id).textContent=tot;});
+function updateCounts() {
+  var m = DB.movies.length, t = DB.tvshows.length, a = DB.anime.length, tot = m+t+a;
+  document.getElementById('dM').textContent = m;
+  document.getElementById('dT').textContent = t;
+  document.getElementById('dA').textContent = a;
+  document.getElementById('dTot').textContent = tot;
+  document.getElementById('sbM').textContent = m;
+  document.getElementById('sbT').textContent = t;
+  document.getElementById('sbA').textContent = a;
+  document.getElementById('sbTot').textContent = tot;
+  document.getElementById('mTrend').textContent = m + ' titles';
+  document.getElementById('tTrend').textContent = t + ' series';
+  document.getElementById('aTrend').textContent = a + ' titles';
+  document.getElementById('totTrend').textContent = tot + ' in library';
 }
 
 // ═══════════════════════════════
-//  TMDB AUTO-FETCH ⭐
+//  ANALYTICS
 // ═══════════════════════════════
-function parseTMDBInput(raw) {
-  raw = raw.trim();
-  // Full URL like themoviedb.org/movie/27205 or /tv/1399
-  var urlMatch = raw.match(/\/(movie|tv|anime)\/(\d+)/i);
-  if (urlMatch) return { type: urlMatch[1].toLowerCase(), id: parseInt(urlMatch[2]) };
-  // Pure number
-  if (/^\d+$/.test(raw)) return { type: editType === 'tv' ? 'tv' : editType === 'anime' ? 'tv' : 'movie', id: parseInt(raw) };
-  return null;
-}
+function renderStats() {
+  var all = DB.movies.concat(DB.tvshows).concat(DB.anime);
 
-async function fetchTMDB() {
-  var raw = document.getElementById('tmdbInput').value;
-  if (!raw) { toast('Paste a TMDB ID or URL first', 'err'); return; }
-  var parsed = parseTMDBInput(raw);
-  if (!parsed) { toast('Could not read that ID — try just the number', 'err'); return; }
+  // Genre breakdown
+  var genres = {};
+  all.forEach(function(it) { var g = it.genre||'Unknown'; genres[g] = (genres[g]||0)+1; });
+  var sortedGenres = Object.keys(genres).sort(function(a,b){ return genres[b]-genres[a]; }).slice(0,12);
+  var maxG = sortedGenres.length ? genres[sortedGenres[0]] : 1;
+  document.getElementById('genreBreakdown').innerHTML = sortedGenres.length ? sortedGenres.map(function(g){
+    return '<div class="genre-bar"><div class="genre-name">'+esc(g)+'</div><div class="genre-track"><div class="genre-fill" style="width:'+Math.round((genres[g]/maxG)*100)+'%"></div></div><div class="genre-count">'+genres[g]+'</div></div>';
+  }).join('') : '<div style="color:var(--text3);padding:1rem 0;font-size:.82rem">No data yet</div>';
 
-  var btn = document.getElementById('fetchBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> Fetching...';
-  setSyncing('Fetching from TMDB...');
+  // Year breakdown
+  var years = {};
+  all.forEach(function(it){ var y = it.year; if(y) years[y] = (years[y]||0)+1; });
+  var sortedYears = Object.keys(years).sort(function(a,b){ return b-a; });
+  document.getElementById('yearBreakdown').innerHTML = sortedYears.length ?
+    '<div class="year-grid">' + sortedYears.map(function(y){
+      return '<div class="year-tag">'+y+' <span style="color:var(--red)">·</span> '+years[y]+'</div>';
+    }).join('') + '</div>' :
+    '<div style="color:var(--text3);padding:1rem 0;font-size:.82rem">No data yet</div>';
 
-  try {
-    var endpoint = editType === 'tv' ? '/tv/' : '/movie/';
-    // If URL explicitly says tv, use tv endpoint
-    if (parsed.type === 'tv') endpoint = '/tv/';
-
-    var [details, credits] = await Promise.all([
-      fetch(TMDB_BASE + endpoint + parsed.id + '?api_key=' + TMDB_KEY + '&language=en-US').then(r=>r.json()),
-      fetch(TMDB_BASE + endpoint + parsed.id + '/credits?api_key=' + TMDB_KEY).then(r=>r.json())
-    ]);
-
-    if (details.success === false || details.status_code) {
-      toast('Movie not found — check the ID', 'err'); btn.disabled=false; btn.innerHTML='<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Fetch';
-      setSynced(); return;
-    }
-
-    // Fill form fields
-    var title = details.title || details.name || '';
-    var year = (details.release_date || details.first_air_date || '').slice(0,4);
-    var genres = (details.genres||[]).map(function(g){return g.name;}).join(', ');
-    var runtime = details.runtime ? details.runtime + ' min' : (details.episode_run_time && details.episode_run_time[0] ? details.episode_run_time[0] + ' min/ep' : '');
-    var rating = details.vote_average ? details.vote_average.toFixed(1) : '';
-    var desc = details.overview || '';
-    var poster = details.poster_path || '';
-    var backdrop = details.backdrop_path || '';
-    var studio = editType === 'tv'
-      ? ((details.networks||[])[0]||{}).name || ''
-      : ((details.production_companies||[])[0]||{}).name || '';
-
-    // Director from credits
-    var crew = credits.crew || [];
-    var directorObj = crew.find(function(c){return c.job==='Director';}) || crew.find(function(c){return c.department==='Directing';}) || {};
-    var director = directorObj.name || '';
-
-    // Cast (top 6)
-    var castArr = (credits.cast||[]).slice(0,6).map(function(c){
-      return { name:c.name, role:c.character, img:c.profile_path||'' };
-    });
-
-    // Fill all form fields first
-    setVal('f_title', title);
-    setVal('f_id', parsed.id);
-    setVal('f_year', year);
-    setVal('f_genre', (details.genres||[])[0] ? details.genres[0].name : '');
-    setVal('f_imdb', rating);
-    setVal('f_rating', details.adult ? 'R' : 'PG-13');
-    setVal('f_runtime', runtime);
-    setVal('f_director', director);
-    setVal('f_studio', studio);
-    setVal('f_desc', desc);
-    setVal('f_tags', genres);
-    setVal('f_poster', poster);
-    setVal('f_backdrop', backdrop);
-    setVal('f_cast', castArr.map(function(c){return c.name+'|'+c.role+'|'+c.img;}).join('\n'));
-    setVal('f_related', '');
-
-    // FETCH SEASONS & EPISODES FOR TV SHOWS
-    if (editType === 'tv' && details.seasons && details.seasons.length) {
-      btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> Fetching episodes...';
-      var realSeasons = details.seasons.filter(function(s){ return s.season_number > 0; });
-      if (!realSeasons.length) realSeasons = details.seasons;
-      var seasonsToFetch = realSeasons.slice(0, 8);
-      editEps = {};
-      try {
-        var seasonDataArr = await Promise.all(
-          seasonsToFetch.map(function(s) {
-            return fetch(TMDB_BASE + '/tv/' + parsed.id + '/season/' + s.season_number + '?api_key=' + TMDB_KEY + '&language=en-US')
-              .then(function(r){ return r.json(); })
-              .catch(function(){ return { season_number: s.season_number, episodes: [] }; });
-          })
-        );
-        seasonDataArr.forEach(function(seasonData, idx) {
-          var sNum = seasonsToFetch[idx].season_number;
-          editEps['s' + sNum] = (seasonData.episodes || []).map(function(ep) {
-            return {
-              e: ep.episode_number,
-              name: ep.name || ('Episode ' + ep.episode_number),
-              dur: (ep.runtime ? ep.runtime + 'm' : '45m'),
-              desc: ep.overview || ''
-            };
-          });
-        });
-        renderEpBuilder();
-        var totalEps = Object.keys(editEps).reduce(function(sum,sk){ return sum + editEps[sk].length; }, 0);
-        toast('Fetched ' + seasonsToFetch.length + ' seasons, ' + totalEps + ' episodes!', 'ok');
-      } catch(seasonErr) {
-        toast('Show info filled! Season fetch failed — add episodes manually', 'ok');
-      }
-    } else {
-      toast('All fields auto-filled from TMDB!', 'ok');
-    }
-
-    // Mark fields as auto-filled (green border)
-    ['f_title','f_year','f_genre','f_imdb','f_runtime','f_director','f_studio','f_desc','f_tags','f_poster','f_backdrop','f_cast'].forEach(function(id){
-      var el = document.getElementById(id);
-      if (el) el.classList.add('autofilled');
-    });
-
-    // Show preview card
-    var preview = document.getElementById('resultPreview');
-    preview.classList.add('show');
-    document.getElementById('rpPoster').src = IMG_BASE + 'w185' + poster;
-    document.getElementById('rpTitle').textContent = title + (year ? ' ('+year+')' : '');
-    document.getElementById('rpMeta').innerHTML =
-      '<span class="rp-tag green">★ '+rating+'</span>' +
-      '<span class="rp-tag">'+year+'</span>' +
-      (runtime ? '<span class="rp-tag">'+runtime+'</span>' : '') +
-      (director ? '<span class="rp-tag">'+director+'</span>' : '');
-    document.getElementById('rpDesc').textContent = desc;
-    document.getElementById('afCast').textContent = '✓ '+castArr.length+' actors';
-
-    setSynced();
-  } catch(e) {
-    toast('Fetch failed — check your connection', 'err');
-    setSyncErr();
-  }
-
-  btn.disabled = false;
-  btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Fetch';
-}
-
-function setVal(id, val) {
-  var el = document.getElementById(id);
-  if (el) el.value = val || '';
+  // Top rated
+  var rated = all.filter(function(it){ return parseFloat(it.imdb) > 0; })
+    .sort(function(a,b){ return parseFloat(b.imdb||0) - parseFloat(a.imdb||0); }).slice(0,15);
+  var typeOf = function(it) {
+    if(DB.movies.indexOf(it)!==-1) return 'movie';
+    if(DB.tvshows.indexOf(it)!==-1) return 'tv';
+    return 'anime';
+  };
+  document.getElementById('topRatedBody').innerHTML = rated.map(function(it,i){
+    var tp = typeOf(it);
+    var bc = tp==='movie'?'b-movie':tp==='tv'?'b-tv':'b-anime';
+    var bl = tp==='movie'?'Movie':tp==='tv'?'TV':'Anime';
+    return '<tr>'+
+      '<td style="color:var(--text3);font-weight:700">'+(i+1)+'</td>'+
+      '<td><div class="tbl-thumb"><img src="'+IMG_BASE+'w200'+(it.poster||'')+'" onerror="this.style.display=\'none\'" alt=""></div></td>'+
+      '<td><strong>'+esc(it.title||'')+'</strong></td>'+
+      '<td><span class="badge '+bc+'">'+bl+'</span></td>'+
+      '<td><span style="color:var(--gold);font-weight:600">★ '+(it.imdb||'?')+'</span></td>'+
+      '<td><span style="color:var(--green)">'+(it.match||'?')+'%</span></td>'+
+      '<td>'+(it.year||'—')+'</td>'+
+    '</tr>';
+  }).join('');
 }
 
 // ═══════════════════════════════
 //  VIEWS
 // ═══════════════════════════════
-var viewTitles = {dashboard:'Dashboard',movies:'Movies',tvshows:'TV Shows',anime:'Anime'};
+var viewTitles = {dashboard:'Dashboard',stats:'Analytics',movies:'Movies',tvshows:'TV Shows',anime:'Anime',bulk:'Bulk Import',settings:'Settings'};
 function switchView(id, el) {
-  document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
+  document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
   document.getElementById('view-'+id).classList.add('active');
-  document.querySelectorAll('.sb-link').forEach(function(l){l.classList.remove('active');});
-  if(el) el.classList.add('active');
+  document.querySelectorAll('.sb-link').forEach(function(l){ l.classList.remove('active'); });
+  if (el) el.classList.add('active');
   document.getElementById('topTitle').textContent = viewTitles[id]||id;
+}
+
+// ═══════════════════════════════
+//  GLOBAL SEARCH
+// ═══════════════════════════════
+function globalSearchFn(q) {
+  if (!q) return;
+  q = q.toLowerCase();
+  var all = [];
+  DB.movies.forEach(function(m){ all.push({item:m,type:'movie'}); });
+  DB.tvshows.forEach(function(t){ all.push({item:t,type:'tv'}); });
+  DB.anime.forEach(function(a){ all.push({item:a,type:'anime'}); });
+  var found = all.filter(function(r){ return r.item.title.toLowerCase().indexOf(q) !== -1 || (r.item.genre||'').toLowerCase().indexOf(q) !== -1; });
+  // Switch to dashboard and show results
+  switchView('dashboard', document.querySelector('.sb-link'));
+  var tbody = document.getElementById('recentBody');
+  if (!found.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:2rem">No results for "'+esc(q)+'"</td></tr>';
+    return;
+  }
+  renderRecentFromList(found);
+}
+
+// ═══════════════════════════════
+//  GENRE FILTERS
+// ═══════════════════════════════
+function populateGenreFilters() {
+  var movieGenres = [...new Set(DB.movies.map(function(m){return m.genre;}).filter(Boolean))].sort();
+  var tvGenres = [...new Set(DB.tvshows.map(function(t){return t.genre;}).filter(Boolean))].sort();
+  var mgf = document.getElementById('movieGenreFilter');
+  var tgf = document.getElementById('tvGenreFilter');
+  mgf.innerHTML = '<option value="">All Genres</option>' + movieGenres.map(function(g){ return '<option value="'+esc(g)+'">'+esc(g)+'</option>'; }).join('');
+  tgf.innerHTML = '<option value="">All Genres</option>' + tvGenres.map(function(g){ return '<option value="'+esc(g)+'">'+esc(g)+'</option>'; }).join('');
 }
 
 // ═══════════════════════════════
 //  RECENT TABLE
 // ═══════════════════════════════
 function renderRecent() {
+  var typeF = document.getElementById('dashTypeFilter') ? document.getElementById('dashTypeFilter').value : '';
+  var sortF = document.getElementById('dashSortFilter') ? document.getElementById('dashSortFilter').value : 'recent';
   var all = [];
-  DB.movies.forEach(function(m){all.push({item:m,type:'movie'});});
-  DB.tvshows.forEach(function(t){all.push({item:t,type:'tv'});});
-  DB.anime.forEach(function(a){all.push({item:a,type:'anime'});});
-  all.reverse();
-  document.getElementById('recentBody').innerHTML = all.map(function(r) {
-    var it=r.item,tp=r.type;
-    var bc=tp==='movie'?'b-movie':tp==='tv'?'b-tv':'b-anime';
-    var bl=tp==='movie'?'Movie':tp==='tv'?'TV Show':'Anime';
+  if (!typeF || typeF === 'movie') DB.movies.forEach(function(m){ all.push({item:m,type:'movie'}); });
+  if (!typeF || typeF === 'tv') DB.tvshows.forEach(function(t){ all.push({item:t,type:'tv'}); });
+  if (!typeF || typeF === 'anime') DB.anime.forEach(function(a){ all.push({item:a,type:'anime'}); });
+  // Sort
+  if (sortF === 'az') all.sort(function(a,b){ return (a.item.title||'').localeCompare(b.item.title||''); });
+  else if (sortF === 'za') all.sort(function(a,b){ return (b.item.title||'').localeCompare(a.item.title||''); });
+  else if (sortF === 'year') all.sort(function(a,b){ return parseInt(b.item.year||0) - parseInt(a.item.year||0); });
+  else if (sortF === 'imdb') all.sort(function(a,b){ return parseFloat(b.item.imdb||0) - parseFloat(a.item.imdb||0); });
+  else all.reverse();
+  renderRecentFromList(all);
+}
+function renderRecentFromList(list) {
+  if (!list.length) {
+    document.getElementById('recentBody').innerHTML = '<tr><td colspan="7"><div class="empty-state"><svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2"/></svg><h3>No Titles Yet</h3><p>Add your first movie, show or anime to get started</p></div></td></tr>';
+    return;
+  }
+  document.getElementById('recentBody').innerHTML = list.map(function(r) {
+    var it = r.item, tp = r.type;
+    var bc = tp==='movie'?'b-movie':tp==='tv'?'b-tv':'b-anime';
+    var bl = tp==='movie'?'Movie':tp==='tv'?'TV Show':'Anime';
     return '<tr>'+
       '<td><div class="tbl-thumb"><img src="'+IMG_BASE+'w200'+(it.poster||'')+'" onerror="this.style.display=\'none\'" alt=""></div></td>'+
       '<td><strong>'+esc(it.title||'')+'</strong></td>'+
       '<td><span class="badge '+bc+'">'+bl+'</span></td>'+
       '<td>'+(it.year||'—')+'</td>'+
       '<td><span style="color:var(--gold)">★ '+(it.imdb||'?')+'</span></td>'+
-      '<td><div style="display:flex;gap:.4rem">'+
-        '<button class="btn btn-sec btn-sm" onclick="editItem('+it.id+',\''+tp+'\')">Edit</button>'+
-        '<button class="btn btn-danger btn-sm" onclick="delItem('+it.id+',\''+tp+'\')">Del</button>'+
+      '<td><span style="color:var(--text3)">'+(it.genre||'—')+'</span></td>'+
+      '<td><div style="display:flex;gap:.35rem">'+
+        '<button class="btn btn-sec btn-xs" onclick="editItem('+it.id+',\''+tp+'\')">Edit</button>'+
+        '<button class="btn btn-danger btn-xs" onclick="handleDelete('+it.id+',\''+tp+'\',\''+esc(it.title||'')+'\')">Del</button>'+
       '</div></td>'+
     '</tr>';
   }).join('');
@@ -646,24 +1187,43 @@ function renderRecent() {
 // ═══════════════════════════════
 //  CONTENT GRID
 // ═══════════════════════════════
-function renderGrid(type, filter) {
-  filter=(filter||'').toLowerCase();
-  var list=type==='movie'?DB.movies:type==='tv'?DB.tvshows:DB.anime;
-  var gid=type==='movie'?'grid-movies':type==='tv'?'grid-tv':'grid-anime';
-  var bc=type==='movie'?'b-movie':type==='tv'?'b-tv':'b-anime';
-  var bl=type==='movie'?'Movie':type==='tv'?'TV Show':'Anime';
-  var items=list.filter(function(it){return !filter||it.title.toLowerCase().indexOf(filter)!==-1||(it.genre||'').toLowerCase().indexOf(filter)!==-1;});
-  var grid=document.getElementById(gid);
-  if(!items.length){grid.innerHTML='<div style="color:var(--text3);font-size:.85rem;padding:2rem">No titles yet. Click "+ Add" to get started.</div>';return;}
-  grid.innerHTML=items.map(function(it){
-    return '<div class="cc">'+
-      '<div class="cc-img"><img src="'+IMG_BASE+'w500'+(it.poster||'')+'" alt="'+esc(it.title||'')+'" onerror="this.style.display=\'none\'"><div class="cc-fb">'+esc((it.title||'').slice(0,3).toUpperCase())+'</div><div class="cc-typebadge"><span class="badge '+bc+'">'+bl+'</span></div></div>'+
+function renderGrid(type, filter, genreFilter, sortMode) {
+  filter = (filter||'').toLowerCase();
+  genreFilter = genreFilter || '';
+  sortMode = sortMode || 'recent';
+  var list = type==='movie' ? DB.movies : type==='tv' ? DB.tvshows : DB.anime;
+  var gid = type==='movie' ? 'grid-movies' : type==='tv' ? 'grid-tv' : 'grid-anime';
+  var bc = type==='movie'?'b-movie':type==='tv'?'b-tv':'b-anime';
+  var bl = type==='movie'?'Movie':type==='tv'?'TV Show':'Anime';
+  var items = list.filter(function(it){
+    var matchSearch = !filter || it.title.toLowerCase().indexOf(filter) !== -1 || (it.genre||'').toLowerCase().indexOf(filter) !== -1;
+    var matchGenre = !genreFilter || (it.genre||'') === genreFilter;
+    return matchSearch && matchGenre;
+  });
+  // Sort
+  var sorted = items.slice();
+  if (sortMode === 'az') sorted.sort(function(a,b){ return a.title.localeCompare(b.title); });
+  else if (sortMode === 'imdb') sorted.sort(function(a,b){ return parseFloat(b.imdb||0) - parseFloat(a.imdb||0); });
+  else if (sortMode === 'year') sorted.sort(function(a,b){ return parseInt(b.year||0) - parseInt(a.year||0); });
+  var grid = document.getElementById(gid);
+  if (!sorted.length) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><h3>No Results</h3><p>Try a different search or add new content</p></div>';
+    return;
+  }
+  grid.innerHTML = sorted.map(function(it) {
+    return '<div class="cc" onclick="editItem('+it.id+',\''+type+'\')">'+
+      '<div class="cc-img">'+
+        '<img src="'+IMG_BASE+'w500'+(it.poster||'')+'" alt="'+esc(it.title||'')+'" onerror="this.style.display=\'none\'">'+
+        '<div class="cc-fb">'+esc((it.title||'').slice(0,3).toUpperCase())+'</div>'+
+        '<div class="cc-typebadge"><span class="badge '+bc+'">'+bl+'</span></div>'+
+        (it.imdb ? '<div class="cc-imdb">★ '+it.imdb+'</div>' : '')+
+      '</div>'+
       '<div class="cc-body">'+
         '<div class="cc-title">'+esc(it.title||'')+'</div>'+
-        '<div class="cc-meta">'+(it.year||'')+(it.genre?' · '+it.genre:'')+(it.imdb?' · ★'+it.imdb:'')+'</div>'+
+        '<div class="cc-meta">'+(it.year||'')+((it.year&&it.genre)?' · ':'')+esc(it.genre||'')+'</div>'+
         '<div class="cc-actions">'+
-          '<button class="btn btn-sec btn-sm" onclick="editItem('+it.id+',\''+type+'\')" style="flex:1">Edit</button>'+
-          '<button class="btn btn-danger btn-sm" onclick="delItem('+it.id+',\''+type+'\')">✕</button>'+
+          '<button class="btn btn-sec btn-xs" onclick="event.stopPropagation();editItem('+it.id+',\''+type+'\')" style="flex:1">Edit</button>'+
+          '<button class="btn btn-danger btn-xs" onclick="event.stopPropagation();handleDelete('+it.id+',\''+type+'\',\''+esc(it.title||'')+'\')">✕</button>'+
         '</div>'+
       '</div>'+
     '</div>';
@@ -671,168 +1231,377 @@ function renderGrid(type, filter) {
 }
 
 // ═══════════════════════════════
+//  TMDB FETCH
+// ═══════════════════════════════
+function parseTMDBInput(raw) {
+  raw = raw.trim();
+  var urlMatch = raw.match(/\/(movie|tv|anime)\/(\d+)/i);
+  if (urlMatch) return { type:urlMatch[1].toLowerCase(), id:parseInt(urlMatch[2]) };
+  if (/^\d+$/.test(raw)) return { type: editType==='tv'?'tv':editType==='anime'?'tv':'movie', id:parseInt(raw) };
+  return null;
+}
+async function fetchTMDB() {
+  var raw = document.getElementById('tmdbInput').value;
+  if (!raw) { toast('Paste a TMDB ID or URL first', 'err'); return; }
+  var parsed = parseTMDBInput(raw);
+  if (!parsed) { toast('Cannot read that ID — try just the number', 'err'); return; }
+  var btn = document.getElementById('fetchBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> Fetching...';
+  setSyncing('Fetching TMDB...');
+  try {
+    var endpoint = (editType === 'tv' || parsed.type === 'tv') ? '/tv/' : '/movie/';
+    var [details, credits] = await Promise.all([
+      fetch(TMDB_BASE + endpoint + parsed.id + '?api_key=' + TMDB_KEY + '&language=en-US').then(r=>r.json()),
+      fetch(TMDB_BASE + endpoint + parsed.id + '/credits?api_key=' + TMDB_KEY).then(r=>r.json())
+    ]);
+    if (details.success === false || details.status_code) {
+      toast('Not found — check the TMDB ID', 'err');
+      btn.disabled=false; btn.innerHTML='<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Fetch';
+      setSynced(); return;
+    }
+    var title = details.title || details.name || '';
+    var year = (details.release_date || details.first_air_date || '').slice(0,4);
+    var genres = (details.genres||[]).map(function(g){ return g.name; }).join(', ');
+    var runtime = details.runtime ? details.runtime+' min' : (details.episode_run_time&&details.episode_run_time[0] ? details.episode_run_time[0]+' min/ep' : '');
+    var rating = details.vote_average ? details.vote_average.toFixed(1) : '';
+    var poster = details.poster_path || '';
+    var backdrop = details.backdrop_path || '';
+    var studio = editType==='tv' ? ((details.networks||[])[0]||{}).name||'' : ((details.production_companies||[])[0]||{}).name||'';
+    var crew = credits.crew||[];
+    var dirObj = crew.find(function(c){ return c.job==='Director'; }) || crew.find(function(c){ return c.department==='Directing'; }) || {};
+    var director = dirObj.name || (editType==='tv' ? ((details.created_by||[])[0]||{}).name||'' : '');
+    var castArr = (credits.cast||[]).slice(0,6).map(function(c){ return {name:c.name,role:c.character,img:c.profile_path||''}; });
+    setVal('f_title',title); setVal('f_id',parsed.id); setVal('f_year',year);
+    setVal('f_genre',(details.genres||[])[0]?(details.genres[0].name):'');
+    setVal('f_imdb',rating); setVal('f_rating',details.adult?'R':'PG-13');
+    setVal('f_runtime',runtime); setVal('f_director',director); setVal('f_studio',studio);
+    setVal('f_desc',details.overview||''); setVal('f_tags',genres);
+    setVal('f_poster',poster); setVal('f_backdrop',backdrop);
+    setVal('f_cast',castArr.map(function(c){ return c.name+'|'+c.role+'|'+c.img; }).join('\n'));
+    setVal('f_related','');
+    // Episodes for TV
+    var autoEps = document.getElementById('toggleAutoEps') ? document.getElementById('toggleAutoEps').checked : true;
+    if (autoEps && editType==='tv' && details.seasons && details.seasons.length) {
+      btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> Loading episodes...';
+      var realSeasons = details.seasons.filter(function(s){ return s.season_number > 0; });
+      if (!realSeasons.length) realSeasons = details.seasons;
+      editEps = {};
+      try {
+        var seasonDataArr = await Promise.all(
+          realSeasons.slice(0,8).map(function(s) {
+            return fetch(TMDB_BASE+'/tv/'+parsed.id+'/season/'+s.season_number+'?api_key='+TMDB_KEY+'&language=en-US')
+              .then(function(r){ return r.json(); }).catch(function(){ return {season_number:s.season_number,episodes:[]}; });
+          })
+        );
+        seasonDataArr.forEach(function(sd, idx) {
+          var sNum = realSeasons[idx].season_number;
+          editEps['s'+sNum] = (sd.episodes||[]).map(function(ep){
+            return {e:ep.episode_number,name:ep.name||('Ep '+ep.episode_number),dur:(ep.runtime?ep.runtime+'m':'45m'),desc:ep.overview||''};
+          });
+        });
+        renderEpBuilder();
+        var totalEps = Object.keys(editEps).reduce(function(sum,sk){ return sum+editEps[sk].length; },0);
+        toast('✓ '+realSeasons.slice(0,8).length+' seasons, '+totalEps+' episodes fetched', 'ok');
+      } catch(e) { toast('Show filled! Episode fetch failed — add manually', 'info'); }
+    } else { toast('✓ All fields auto-filled from TMDB!', 'ok'); }
+    // Mark autofilled
+    ['f_title','f_year','f_genre','f_imdb','f_runtime','f_director','f_studio','f_desc','f_tags','f_poster','f_backdrop','f_cast'].forEach(function(id){
+      var el = document.getElementById(id); if (el) el.classList.add('autofilled');
+    });
+    // Preview
+    document.getElementById('resultPreview').classList.add('show');
+    document.getElementById('rpPoster').src = IMG_BASE+'w185'+poster;
+    document.getElementById('rpTitle').textContent = title+(year?' ('+year+')':'');
+    document.getElementById('rpMeta').innerHTML = '<span class="rp-tag green">★ '+rating+'</span><span class="rp-tag">'+year+'</span>'+(runtime?'<span class="rp-tag">'+runtime+'</span>':'')+(director?'<span class="rp-tag">'+esc(director)+'</span>':'');
+    document.getElementById('rpDesc').textContent = details.overview||'';
+    document.getElementById('afCast').textContent = '✓ '+castArr.length+' actors';
+    setSynced();
+  } catch(e) { toast('Fetch failed — check connection', 'err'); setSyncErr(); }
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Fetch';
+}
+function setVal(id, val) { var el = document.getElementById(id); if (el) el.value = val||''; }
+
+// ═══════════════════════════════
 //  MODAL
 // ═══════════════════════════════
 function openAdd(type) {
-  type=type||'movie';
-  editId=null; editType=type; editEps={};
-  document.getElementById('modalTitle').textContent='Add Title';
-  document.getElementById('saveBtn').textContent='Save to Cloudflare';
-  resetForm();
-  setTypeTab(type);
+  type = type||'movie'; editId = null; editType = type; editEps = {};
+  document.getElementById('modalTitle').textContent = 'Add Title';
+  resetForm(); setTypeTab(type);
   document.getElementById('addOverlay').classList.add('open');
 }
-
 function editItem(id, type) {
-  var list=type==='movie'?DB.movies:type==='tv'?DB.tvshows:DB.anime;
-  var item=list.filter(function(x){return x.id===id;})[0];
-  if(!item) return;
-  editId=id; editType=type; editEps={};
-  if(type==='tv'&&item.seasons) item.seasons.forEach(function(ss){editEps['s'+ss.s]=ss.episodes.map(function(e){return Object.assign({},e);});});
-  else if(type==='anime'&&item.episodes) editEps['s1']=(item.episodes||[]).map(function(e){return Object.assign({},e);});
-  document.getElementById('modalTitle').textContent='Edit: '+item.title;
-  resetForm();
-  setTypeTab(type);
-  // Fill form with existing data
-  setVal('f_title',item.title);setVal('f_id',item.id);setVal('f_year',item.year);
-  setVal('f_genre',item.genre);setVal('f_imdb',item.imdb);setVal('f_match',item.match||95);
-  setVal('f_rating',item.rating);setVal('f_runtime',item.runtime);setVal('f_director',item.director);
-  setVal('f_studio',item.studio);setVal('f_desc',item.desc);
+  var list = type==='movie'?DB.movies:type==='tv'?DB.tvshows:DB.anime;
+  var item = list.find(function(x){ return x.id===id; });
+  if (!item) return;
+  editId = id; editType = type; editEps = {};
+  if (type==='tv'&&item.seasons) item.seasons.forEach(function(ss){ editEps['s'+ss.s]=(ss.episodes||[]).map(function(e){ return Object.assign({},e); }); });
+  else if (type==='anime'&&item.episodes) editEps['s1']=(item.episodes||[]).map(function(e){ return Object.assign({},e); });
+  document.getElementById('modalTitle').textContent = 'Edit: '+item.title;
+  resetForm(); setTypeTab(type);
+  setVal('f_title',item.title); setVal('f_id',item.id); setVal('f_year',item.year);
+  setVal('f_genre',item.genre); setVal('f_imdb',item.imdb); setVal('f_match',item.match||95);
+  setVal('f_rating',item.rating); setVal('f_runtime',item.runtime); setVal('f_director',item.director);
+  setVal('f_studio',item.studio); setVal('f_desc',item.desc);
   setVal('f_tags',Array.isArray(item.tags)?item.tags.join(', '):(item.tags||''));
-  setVal('f_poster',item.poster);setVal('f_backdrop',item.backdrop);
-  setVal('f_cast',(item.cast||[]).map(function(c){return c.name+'|'+c.role+'|'+(c.img||'');}).join('\n'));
-  setVal('f_related',Array.isArray(item.related)?item.related.join(','):(item.related||''));
-  if(type==='anime') setVal('f_isMovie',item.isMovie?'true':'false');
+  setVal('f_poster',item.poster); setVal('f_backdrop',item.backdrop);
+  setVal('f_cast',(item.cast||[]).map(function(c){ return (c.name||c.n||'')+'|'+(c.role||c.r||'')+'|'+(c.img||c.i||''); }).join('\n'));
+  setVal('f_related',Array.isArray(item.related)?item.related.join(', '):(item.related||''));
+  if (type==='anime') setVal('f_isMovie',item.isMovie?'true':'false');
   renderEpBuilder();
   document.getElementById('addOverlay').classList.add('open');
 }
-
-function closeModal(){document.getElementById('addOverlay').classList.remove('open');}
-function overlayClick(e){if(e.target===document.getElementById('addOverlay'))closeModal();}
-
-function resetForm(){
-  ['f_title','f_id','f_year','f_genre','f_imdb','f_rating','f_runtime','f_director','f_studio','f_desc','f_tags','f_poster','f_backdrop','f_cast','f_related'].forEach(function(id){setVal(id,'');});
+function closeModal() { document.getElementById('addOverlay').classList.remove('open'); }
+function overlayClick(e) { if (e.target===document.getElementById('addOverlay')) closeModal(); }
+function resetForm() {
+  ['f_title','f_id','f_year','f_genre','f_imdb','f_rating','f_runtime','f_director','f_studio','f_desc','f_tags','f_poster','f_backdrop','f_cast','f_related'].forEach(function(id){ setVal(id,''); });
   setVal('f_match',95);
-  document.querySelectorAll('.autofilled').forEach(function(el){el.classList.remove('autofilled');});
+  document.querySelectorAll('.autofilled').forEach(function(el){ el.classList.remove('autofilled'); });
   document.getElementById('resultPreview').classList.remove('show');
-  document.getElementById('tmdbInput').value='';
+  document.getElementById('tmdbInput').value = '';
 }
-
-function setType(type, el){
-  editType=type;
-  document.querySelectorAll('.type-tab').forEach(function(t){t.classList.remove('active');});
+function setType(type, el) {
+  editType = type;
+  document.querySelectorAll('.type-tab').forEach(function(t){ t.classList.remove('active'); });
   el.classList.add('active');
-  document.getElementById('epSection').style.display=(type==='tv'||type==='anime')?'block':'none';
-  document.getElementById('isMovieSection').style.display=type==='anime'?'block':'none';
-  if(type==='tv'||type==='anime') renderEpBuilder();
+  document.getElementById('epSection').style.display = (type==='tv'||type==='anime')?'block':'none';
+  document.getElementById('isMovieSection').style.display = type==='anime'?'block':'none';
+  if (type==='tv'||type==='anime') renderEpBuilder();
 }
-
-function setTypeTab(type){
-  var tabs=document.querySelectorAll('.type-tab');
-  var map={movie:0,tv:1,anime:2};
-  tabs.forEach(function(t,i){t.classList.toggle('active',i===map[type]);});
-  document.getElementById('epSection').style.display=(type==='tv'||type==='anime')?'block':'none';
-  document.getElementById('isMovieSection').style.display=type==='anime'?'block':'none';
-  if(type==='tv'||type==='anime') renderEpBuilder();
+function setTypeTab(type) {
+  var tabs = document.querySelectorAll('.type-tab');
+  var map = {movie:0,tv:1,anime:2};
+  tabs.forEach(function(t,i){ t.classList.toggle('active', i===map[type]); });
+  document.getElementById('epSection').style.display = (type==='tv'||type==='anime')?'block':'none';
+  document.getElementById('isMovieSection').style.display = type==='anime'?'block':'none';
+  if (type==='tv'||type==='anime') renderEpBuilder();
 }
 
 // ═══════════════════════════════
 //  EPISODE BUILDER
 // ═══════════════════════════════
-function renderEpBuilder(){
-  var el=document.getElementById('epBuilder');
-  if(editType==='tv'){
-    if(!Object.keys(editEps).length) editEps['s1']=[];
-    var tabsHtml=Object.keys(editEps).sort().map(function(sk,i){
+function renderEpBuilder() {
+  var el = document.getElementById('epBuilder');
+  if (editType === 'tv') {
+    if (!Object.keys(editEps).length) editEps['s1'] = [];
+    var tabsHtml = Object.keys(editEps).sort().map(function(sk,i){
       return '<div class="stab'+(i===0?' active':'')+'" onclick="switchEpSeason(\''+sk+'\',this)">'+sk.replace('s','S')+'</div>';
     }).join('');
-    tabsHtml+='<div class="stab" style="border-style:dashed" onclick="addEpSeason()">+ Season</div>';
-    el.innerHTML='<div class="stabs" id="epStabs">'+tabsHtml+'</div><div id="epList">'+buildEpList('s1')+'</div>';
+    tabsHtml += '<div class="stab" style="border-style:dashed;opacity:.6" onclick="addEpSeason()">+ Season</div>';
+    el.innerHTML = '<div class="stabs" id="epStabs">'+tabsHtml+'</div><div id="epList">'+buildEpList('s1')+'</div>';
   } else {
-    if(!editEps['s1']) editEps['s1']=[];
-    el.innerHTML='<div id="epList">'+buildEpList('s1')+'</div>';
+    if (!editEps['s1']) editEps['s1'] = [];
+    el.innerHTML = '<div id="epList">'+buildEpList('s1')+'</div>';
   }
 }
-function buildEpList(sk){
-  var eps=editEps[sk]||[];
-  var html=eps.map(function(ep,i){
+function buildEpList(sk) {
+  var eps = editEps[sk]||[];
+  var html = eps.map(function(ep,i){
     return '<div class="ep-row">'+
       '<span class="ep-n">'+(i+1)+'</span>'+
       '<input placeholder="Episode name" value="'+esc(ep.name||'')+'" oninput="updateEp(\''+sk+'\','+i+',\'name\',this.value)">'+
-      '<input class="ep-dur" placeholder="24m" value="'+esc(ep.dur||'')+'" oninput="updateEp(\''+sk+'\','+i+',\'dur\',this.value)">'+
-      '<input placeholder="Short description" style="flex:2" value="'+esc(ep.desc||'')+'" oninput="updateEp(\''+sk+'\','+i+',\'desc\',this.value)">'+
+      '<input class="ep-dur" placeholder="45m" value="'+esc(ep.dur||'')+'" oninput="updateEp(\''+sk+'\','+i+',\'dur\',this.value)">'+
+      '<input placeholder="Description" style="flex:2" value="'+esc(ep.desc||'')+'" oninput="updateEp(\''+sk+'\','+i+',\'desc\',this.value)">'+
       '<button class="ep-rm" onclick="removeEp(\''+sk+'\','+i+')">✕</button>'+
     '</div>';
   }).join('');
-  html+='<button class="btn btn-sec btn-sm" style="margin-top:.4rem" onclick="addEp(\''+sk+'\')">+ Add Episode</button>';
+  html += '<button class="btn btn-sec btn-xs" style="margin-top:.4rem" onclick="addEp(\''+sk+'\')">+ Add Episode</button>';
   return html;
 }
-function switchEpSeason(sk,el){document.querySelectorAll('.stab').forEach(function(t){t.classList.remove('active');});el.classList.add('active');document.getElementById('epList').innerHTML=buildEpList(sk);}
-function addEpSeason(){var n=Object.keys(editEps).length+1;var sk='s'+n;editEps[sk]=[];var tabs=document.getElementById('epStabs');var addBtn=tabs.lastChild;var t=document.createElement('div');t.className='stab';t.textContent='S'+n;t.onclick=function(){switchEpSeason(sk,t);};tabs.insertBefore(t,addBtn);switchEpSeason(sk,t);}
-function addEp(sk){if(!editEps[sk])editEps[sk]=[];editEps[sk].push({e:editEps[sk].length+1,name:'',dur:'24m',desc:''});document.getElementById('epList').innerHTML=buildEpList(sk);}
-function removeEp(sk,i){editEps[sk].splice(i,1);editEps[sk].forEach(function(ep,j){ep.e=j+1;});document.getElementById('epList').innerHTML=buildEpList(sk);}
-function updateEp(sk,i,field,val){if(!editEps[sk])editEps[sk]=[];if(!editEps[sk][i])editEps[sk][i]={};editEps[sk][i][field]=val;}
+function switchEpSeason(sk,el){ document.querySelectorAll('.stab').forEach(function(t){ t.classList.remove('active'); }); el.classList.add('active'); document.getElementById('epList').innerHTML = buildEpList(sk); }
+function addEpSeason(){ var n=Object.keys(editEps).length+1; var sk='s'+n; editEps[sk]=[]; var tabs=document.getElementById('epStabs'); var addBtn=tabs.lastChild; var t=document.createElement('div'); t.className='stab'; t.textContent='S'+n; t.onclick=function(){ switchEpSeason(sk,t); }; tabs.insertBefore(t,addBtn); switchEpSeason(sk,t); }
+function addEp(sk){ if(!editEps[sk])editEps[sk]=[]; editEps[sk].push({e:editEps[sk].length+1,name:'',dur:'',desc:''}); document.getElementById('epList').innerHTML=buildEpList(sk); }
+function removeEp(sk,i){ editEps[sk].splice(i,1); editEps[sk].forEach(function(ep,j){ ep.e=j+1; }); document.getElementById('epList').innerHTML=buildEpList(sk); }
+function updateEp(sk,i,field,val){ if(!editEps[sk])editEps[sk]=[]; if(!editEps[sk][i])editEps[sk][i]={}; editEps[sk][i][field]=val; }
 
 // ═══════════════════════════════
 //  SAVE
 // ═══════════════════════════════
-function gv(id){var el=document.getElementById(id);return el?el.value.trim():'';}
-function saveItem(){
-  var title=gv('f_title');
-  if(!title){toast('Title is required','err');return;}
-  var id=parseInt(gv('f_id'))||Date.now();
-  var cast=gv('f_cast').split('\n').filter(Boolean).map(function(l){var p=l.split('|');return{name:(p[0]||'').trim(),role:(p[1]||'').trim(),img:(p[2]||'').trim()};});
-  var tags=gv('f_tags').split(',').map(function(t){return t.trim();}).filter(Boolean);
-  var related=gv('f_related').split(',').map(function(r){return parseInt(r.trim());}).filter(Boolean);
-  var item={id:id,title:title,year:gv('f_year'),genre:gv('f_genre'),rating:gv('f_rating'),
-    match:parseInt(gv('f_match'))||95,imdb:gv('f_imdb'),runtime:gv('f_runtime'),
-    director:gv('f_director'),studio:gv('f_studio'),poster:gv('f_poster'),
-    backdrop:gv('f_backdrop'),desc:gv('f_desc'),tags:tags,cast:cast,related:related};
-  if(editType==='tv'){
-    item.seasons=Object.keys(editEps).sort().map(function(sk){
-      return{s:parseInt(sk.replace('s','')),episodes:(editEps[sk]||[]).filter(function(e){return e.name;}).map(function(e,i){return{e:i+1,name:e.name,dur:e.dur||'45m',desc:e.desc||''};})};
+function gv(id){ var el=document.getElementById(id); return el?el.value.trim():''; }
+function saveItem() {
+  var title = gv('f_title');
+  if (!title) { toast('Title is required', 'err'); return; }
+  var id = parseInt(gv('f_id'))||Date.now();
+  var cast = gv('f_cast').split('\n').filter(Boolean).map(function(l){
+    var p = l.split('|');
+    return { name:(p[0]||'').trim(), role:(p[1]||'').trim(), img:(p[2]||'').trim() };
+  });
+  var tags = gv('f_tags').split(',').map(function(t){ return t.trim(); }).filter(Boolean);
+  var related = gv('f_related').split(',').map(function(r){ return parseInt(r.trim()); }).filter(Boolean);
+  var item = {
+    id, title, year:gv('f_year'), genre:gv('f_genre'), rating:gv('f_rating'),
+    match:parseInt(gv('f_match'))||95, imdb:gv('f_imdb'), runtime:gv('f_runtime'),
+    director:gv('f_director'), studio:gv('f_studio'), poster:gv('f_poster'),
+    backdrop:gv('f_backdrop'), desc:gv('f_desc'), tags, cast, related
+  };
+  if (editType === 'tv') {
+    item.seasons = Object.keys(editEps).sort().map(function(sk){
+      return {
+        s:parseInt(sk.replace('s','')),
+        episodes:(editEps[sk]||[]).filter(function(e){ return e.name; }).map(function(e,i){ return {e:i+1,name:e.name,dur:e.dur||'45m',desc:e.desc||''}; })
+      };
     });
   }
-  if(editType==='anime'){item.isMovie=gv('f_isMovie')==='true';item.episodes=(editEps['s1']||[]).filter(function(e){return e.name;}).map(function(e,i){return{e:i+1,name:e.name,dur:e.dur||'24m',desc:e.desc||''};});}
-  var method=editId?'PUT':'POST';
-  var path=editId?'/api/content/'+editType+'/'+editId:'/api/content/'+editType;
+  if (editType === 'anime') {
+    item.isMovie = gv('f_isMovie') === 'true';
+    item.episodes = (editEps['s1']||[]).filter(function(e){ return e.name; }).map(function(e,i){ return {e:i+1,name:e.name,dur:e.dur||'24m',desc:e.desc||''}; });
+  }
+  var method = editId ? 'PUT' : 'POST';
+  var path = editId ? '/api/content/'+editType+'/'+editId : '/api/content/'+editType;
   setSyncing('Saving...');
-  api(method,path,item).then(function(res){
-    if(res.success||res.item){
-      var list=editType==='movie'?DB.movies:editType==='tv'?DB.tvshows:DB.anime;
-      var key=editType==='movie'?'movies':editType==='tv'?'tvshows':'anime';
-      if(editId){var idx=list.findIndex(function(x){return x.id===editId;});if(idx!==-1)list[idx]=item;else list.push(item);}
-      else{list.push(item);}
-      updateCounts();renderRecent();renderGrid('movie');renderGrid('tv');renderGrid('anime');
-      setSynced();toast((editId?'Updated':'Added')+': '+title,'ok');closeModal();
-    } else {setSyncErr();toast('Save failed: '+(res.error||'unknown'),'err');}
-  }).catch(function(){setSyncErr();toast('Network error','err');});
+  api(method, path, item).then(function(res){
+    if (res.success||res.item) {
+      var list = editType==='movie'?DB.movies:editType==='tv'?DB.tvshows:DB.anime;
+      if (editId) { var idx = list.findIndex(function(x){ return x.id===editId; }); if (idx!==-1) list[idx]=item; else list.push(item); }
+      else list.push(item);
+      updateCounts(); renderRecent(); renderGrid('movie'); renderGrid('tv'); renderGrid('anime'); renderStats(); populateGenreFilters();
+      setSynced(); toast((editId?'Updated':'Added')+': '+title, 'ok'); closeModal();
+    } else { setSyncErr(); toast('Save failed: '+(res.error||'unknown'), 'err'); }
+  }).catch(function(){ setSyncErr(); toast('Network error', 'err'); });
 }
 
 // ═══════════════════════════════
-//  DELETE
+//  DELETE (with confirm dialog)
 // ═══════════════════════════════
-function delItem(id,type){
-  if(!confirm('Delete this title?')) return;
+var _pendingDel = null;
+function handleDelete(id, type, title) {
+  var useConfirm = document.getElementById('toggleConfirmDel') ? document.getElementById('toggleConfirmDel').checked : true;
+  if (!useConfirm) { delItem(id, type); return; }
+  _pendingDel = {id, type};
+  document.getElementById('confirmTitle').textContent = 'Delete "'+title+'"?';
+  document.getElementById('confirmMsg').textContent = 'This title will be permanently removed from your Cloudflare KV database. This cannot be undone.';
+  document.getElementById('confirmOkBtn').onclick = function(){ closeConfirm(); delItem(_pendingDel.id, _pendingDel.type); };
+  document.getElementById('confirmOverlay').classList.add('open');
+}
+function closeConfirm(){ document.getElementById('confirmOverlay').classList.remove('open'); _pendingDel = null; }
+function delItem(id, type) {
   setSyncing('Deleting...');
-  api('DELETE','/api/content/'+type+'/'+id).then(function(res){
-    if(res.success){
-      var key=type==='movie'?'movies':type==='tv'?'tvshows':'anime';
-      DB[key]=DB[key].filter(function(x){return x.id!==id;});
-      updateCounts();renderRecent();renderGrid(type);setSynced();toast('Deleted','ok');
-    } else {setSyncErr();toast('Delete failed','err');}
-  }).catch(function(){setSyncErr();toast('Network error','err');});
+  api('DELETE', '/api/content/'+type+'/'+id).then(function(res){
+    if (res.success) {
+      var key = type==='movie'?'movies':type==='tv'?'tvshows':'anime';
+      DB[key] = DB[key].filter(function(x){ return x.id!==id; });
+      updateCounts(); renderRecent(); renderGrid(type); renderStats(); populateGenreFilters();
+      setSynced(); toast('Deleted successfully', 'ok');
+    } else { setSyncErr(); toast('Delete failed', 'err'); }
+  }).catch(function(){ setSyncErr(); toast('Network error', 'err'); });
+}
+
+// ═══════════════════════════════
+//  BULK IMPORT / EXPORT
+// ═══════════════════════════════
+function exportContent() {
+  var json = JSON.stringify(DB, null, 2);
+  var blob = new Blob([json], {type:'application/json'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'streamvault-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('Exported successfully ✓', 'ok');
+  // Also put in bulk area for convenience
+  if (document.getElementById('bulkInput')) document.getElementById('bulkInput').value = json;
+}
+function validateBulk() {
+  var raw = document.getElementById('bulkInput').value.trim();
+  if (!raw) { document.getElementById('bulkStatus').textContent = '⚠ Empty'; return; }
+  try {
+    var d = JSON.parse(raw);
+    var m = (d.movies||[]).length, t = (d.tvshows||[]).length, a = (d.anime||[]).length;
+    document.getElementById('bulkStatus').textContent = '✓ Valid — '+m+' movies, '+t+' TV, '+a+' anime';
+    document.getElementById('bulkStatus').style.color = 'var(--green)';
+    toast('JSON is valid ✓ ('+m+' movies, '+t+' TV, '+a+' anime)', 'ok');
+  } catch(e) {
+    document.getElementById('bulkStatus').textContent = '✗ Invalid JSON: '+e.message;
+    document.getElementById('bulkStatus').style.color = '#ff6b6b';
+    toast('Invalid JSON: '+e.message, 'err');
+  }
+}
+function bulkImport() {
+  var raw = document.getElementById('bulkInput').value.trim();
+  if (!raw) { toast('Paste JSON first', 'err'); return; }
+  var data;
+  try { data = JSON.parse(raw); } catch(e) { toast('Invalid JSON: '+e.message, 'err'); return; }
+  if (!data.movies && !data.tvshows && !data.anime) { toast('JSON must have movies, tvshows, or anime keys', 'err'); return; }
+  _pendingDel = null;
+  document.getElementById('confirmTitle').textContent = 'Replace All Content?';
+  document.getElementById('confirmIcon').textContent = '⚠️';
+  document.getElementById('confirmMsg').textContent = 'This will REPLACE ALL existing content in your database with the imported data ('+(data.movies||[]).length+' movies, '+(data.tvshows||[]).length+' TV shows, '+(data.anime||[]).length+' anime). This cannot be undone.';
+  document.getElementById('confirmOkBtn').textContent = 'Yes, Replace All';
+  document.getElementById('confirmOkBtn').onclick = function() {
+    closeConfirm();
+    setSyncing('Importing...');
+    api('POST', '/api/bulk', data).then(function(res){
+      if (res.success) {
+        DB.movies = data.movies||[]; DB.tvshows = data.tvshows||[]; DB.anime = data.anime||[];
+        updateCounts(); renderRecent(); renderGrid('movie'); renderGrid('tv'); renderGrid('anime'); renderStats(); populateGenreFilters();
+        setSynced(); toast('Import successful ✓', 'ok');
+        document.getElementById('confirmOkBtn').textContent = 'Delete';
+      } else { setSyncErr(); toast('Import failed: '+(res.error||'unknown'), 'err'); }
+    }).catch(function(){ setSyncErr(); toast('Network error', 'err'); });
+  };
+  document.getElementById('confirmOverlay').classList.add('open');
+}
+function confirmDeleteAll() {
+  document.getElementById('confirmTitle').textContent = 'Delete ALL Content?';
+  document.getElementById('confirmIcon').textContent = '🔥';
+  document.getElementById('confirmMsg').textContent = 'This will permanently delete ALL movies, TV shows, and anime from your database. There is no undo.';
+  document.getElementById('confirmOkBtn').textContent = 'Delete Everything';
+  document.getElementById('confirmOkBtn').onclick = function() {
+    closeConfirm();
+    setSyncing('Deleting all...');
+    api('POST', '/api/bulk', {movies:[],tvshows:[],anime:[]}).then(function(res){
+      if (res.success) {
+        DB = {movies:[],tvshows:[],anime:[]};
+        updateCounts(); renderRecent(); renderGrid('movie'); renderGrid('tv'); renderGrid('anime'); renderStats(); populateGenreFilters();
+        setSynced(); toast('All content deleted', 'info');
+        document.getElementById('confirmOkBtn').textContent = 'Delete';
+      } else { setSyncErr(); toast('Failed', 'err'); }
+    }).catch(function(){ setSyncErr(); toast('Network error', 'err'); });
+  };
+  document.getElementById('confirmOverlay').classList.add('open');
+}
+
+// ═══════════════════════════════
+//  SETTINGS
+// ═══════════════════════════════
+var apiKeyVisible = false;
+function toggleApiKey() {
+  apiKeyVisible = !apiKeyVisible;
+  document.getElementById('tmdbKeyDisplay').textContent = apiKeyVisible ? TMDB_KEY : '••••••••••••••••••••••••••';
+  document.querySelector('[onclick="toggleApiKey()"]').textContent = apiKeyVisible ? 'Hide' : 'Show';
+}
+function editApiKey() {
+  var newKey = prompt('Enter new TMDB API Key:', TMDB_KEY);
+  if (newKey && newKey.trim()) {
+    TMDB_KEY = newKey.trim();
+    localStorage.setItem('sv_tmdb', TMDB_KEY);
+    document.getElementById('tmdbKeyDisplay').textContent = apiKeyVisible ? TMDB_KEY : '••••••••••••••••••••••••••';
+    toast('TMDB API key updated ✓', 'ok');
+  }
 }
 
 // ═══════════════════════════════
 //  UTILS
 // ═══════════════════════════════
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-Array.prototype.findIndex=Array.prototype.findIndex||function(fn){for(var i=0;i<this.length;i++)if(fn(this[i]))return i;return -1;};
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 var _tt;
-function toast(msg,type){var t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+(type||'');clearTimeout(_tt);_tt=setTimeout(function(){t.classList.remove('show');},3200);}
+function toast(msg, type) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show '+(type||'');
+  clearTimeout(_tt); _tt = setTimeout(function(){ t.classList.remove('show'); }, 3500);
+}
 
-tryAutoLogin();
+// ═══════════════════════════════
+//  INIT
+// ═══════════════════════════════
+(function(){
+  loadPrefs();
+  tryAutoLogin();
+  var savedKey = localStorage.getItem('sv_tmdb');
+  if (savedKey) TMDB_KEY = savedKey;
+})();
 </script>
 </body>
 </html>
