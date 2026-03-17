@@ -33,7 +33,6 @@ nav.transparent{background:linear-gradient(to bottom,rgba(0,0,0,.7),transparent)
   white-space:nowrap;
 }
 .nav-logo span{color:#fff}
-/* Desktop nav links */
 .nav-desktop{display:flex;align-items:center;gap:4px}
 .nav-desktop button{
   background:none;border:none;font-size:.68rem;font-weight:600;
@@ -43,7 +42,6 @@ nav.transparent{background:linear-gradient(to bottom,rgba(0,0,0,.7),transparent)
 }
 .nav-desktop button:hover{color:#ccc;background:rgba(255,255,255,.06)}
 .nav-desktop button.on{color:#fff;background:rgba(255,255,255,.1)}
-/* Nav right icons */
 .nav-right{display:flex;align-items:center;gap:4px}
 .nav-btn{
   width:36px;height:36px;border-radius:50%;
@@ -51,10 +49,8 @@ nav.transparent{background:linear-gradient(to bottom,rgba(0,0,0,.7),transparent)
   color:#888;transition:color .2s,background .2s;
 }
 .nav-btn:hover,.nav-btn:active{color:#fff;background:rgba(255,255,255,.08)}
-/* Hamburger — 3 bars, shown only on mobile */
 .ham{display:none;flex-direction:column;justify-content:center;gap:5px;width:36px;height:36px;padding:6px}
 .ham span{display:block;height:2px;background:#ccc;border-radius:2px;transition:all .25s}
-/* Mobile drawer */
 .drawer{
   display:none;position:fixed;top:56px;left:0;right:0;z-index:998;
   background:rgba(10,10,10,.98);
@@ -142,7 +138,6 @@ nav.transparent{background:linear-gradient(to bottom,rgba(0,0,0,.7),transparent)
   transition:background .15s;
 }
 .btn-info:hover,.btn-info:active{background:rgba(255,255,255,.22)}
-/* Dots */
 .dots{
   position:absolute;bottom:5%;left:50%;
   transform:translateX(-50%);
@@ -154,7 +149,6 @@ nav.transparent{background:linear-gradient(to bottom,rgba(0,0,0,.7),transparent)
   transition:all .3s;cursor:pointer;
 }
 .dot.on{background:#E50914;width:22px;border-radius:4px}
-/* Prev/Next arrows — only desktop */
 .s-arr{
   position:absolute;top:50%;transform:translateY(-50%);
   z-index:10;width:44px;height:44px;border-radius:50%;
@@ -178,38 +172,49 @@ nav.transparent{background:linear-gradient(to bottom,rgba(0,0,0,.7),transparent)
   font-size:1.1rem;letter-spacing:.08em;color:#ccc;
 }
 .row-title b{color:#E50914;font-family:inherit;font-size:inherit}
+
+/* FIX 2: See All button — always visible and clickable */
 .row-more{
   font-size:.62rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
-  color:#46d369;opacity:0;transition:opacity .2s;
+  color:#46d369;cursor:pointer;padding:4px 10px;border-radius:4px;
+  border:1px solid rgba(70,211,105,.25);
+  transition:background .2s,color .2s,border-color .2s;
+  white-space:nowrap;
+  opacity:1;
 }
-.row:hover .row-more{opacity:1}
+.row-more:hover,.row-more:active{background:rgba(70,211,105,.1);border-color:rgba(70,211,105,.5)}
+
 .track-outer{position:relative;padding:4px 4%;overflow:hidden}
 .track{
-  display:flex;gap:8px;
+  display:flex;gap:10px;
   overflow-x:auto;scroll-behavior:smooth;
   scrollbar-width:none;padding-bottom:6px;
   -webkit-overflow-scrolling:touch;
 }
 .track::-webkit-scrollbar{display:none}
 
-/* ── CARD ── */
+/* ── CARD — FIX 1: VERTICAL (poster) layout ── */
 .card{
   flex:0 0 auto;
-  width:170px;
+  /* FIX 1: narrower width suits 2:3 poster */
+  width:140px;
   cursor:pointer;
   border-radius:8px;
   overflow:visible;
   transition:transform .3s cubic-bezier(.16,1,.3,1),z-index 0s .3s;
   z-index:1;
 }
-.card:hover{transform:scale(1.3);z-index:100;transition:transform .3s cubic-bezier(.16,1,.3,1),z-index 0s}
-.card:first-child:hover{transform:scale(1.3) translateX(11%)}
-.card:last-child:hover{transform:scale(1.3) translateX(-11%)}
+.card:hover{transform:scale(1.22);z-index:100;transition:transform .3s cubic-bezier(.16,1,.3,1),z-index 0s}
+.card:first-child:hover{transform:scale(1.22) translateX(9%)}
+.card:last-child:hover{transform:scale(1.22) translateX(-9%)}
 .card-inner{border-radius:8px;overflow:hidden;background:#222;box-shadow:0 4px 20px rgba(0,0,0,.6)}
 .card:hover .card-inner{box-shadow:0 16px 48px rgba(0,0,0,.9),0 0 0 1px rgba(229,9,20,.3)}
-/* Thumbnail — 16:9 */
+
+/* FIX 1: vertical 2:3 poster ratio */
 .card-img{
-  width:100%;aspect-ratio:16/9;overflow:hidden;
+  width:100%;
+  aspect-ratio:2/3;
+  overflow:hidden;
   position:relative;background:#1a1a1a;
 }
 .card-img img{
@@ -222,6 +227,22 @@ nav.transparent{background:linear-gradient(to bottom,rgba(0,0,0,.7),transparent)
   font-family:'Bebas Neue',sans-serif;font-size:2rem;
   color:rgba(255,255,255,.07);background:linear-gradient(135deg,#1a1a1a,#252525);
 }
+/* Card title label below poster */
+.card-label{
+  padding:7px 8px 8px;
+  background:#161616;
+}
+.card-label-title{
+  font-size:.68rem;font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  color:#ccc;margin-bottom:3px;
+}
+.card-label-meta{
+  display:flex;gap:5px;align-items:center;
+}
+.card-label-year{font-size:.58rem;color:#555}
+.card-label-rating{font-size:.55rem;font-weight:700;color:#46d369}
+
 /* Card hover info — desktop only */
 .card-info{
   background:#161616;padding:10px 10px 11px;
@@ -311,7 +332,6 @@ nav.transparent{background:linear-gradient(to bottom,rgba(0,0,0,.7),transparent)
 .dp-btn.ghost:hover{background:rgba(255,255,255,.18)}
 .dp-btn.share{background:transparent;color:#bbb;border:1px solid rgba(255,255,255,.12)}
 .dp-btn.share:hover{color:#fff;border-color:rgba(255,255,255,.25)}
-/* Body */
 .dp-body{padding:28px 5% 60px}
 .dp-cols{display:grid;grid-template-columns:1fr 290px;gap:40px}
 .sec-title{
@@ -320,7 +340,6 @@ nav.transparent{background:linear-gradient(to bottom,rgba(0,0,0,.7),transparent)
 }
 .sec-title::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.07)}
 .dp-desc{font-size:.86rem;line-height:1.82;color:#bbb;margin-bottom:28px}
-/* Cast */
 .cast-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:28px}
 .cast-item{width:78px;cursor:pointer;transition:transform .2s}
 .cast-item:hover{transform:translateY(-3px)}
@@ -339,7 +358,6 @@ nav.transparent{background:linear-gradient(to bottom,rgba(0,0,0,.7),transparent)
 }
 .cast-name{font-size:.62rem;font-weight:600;text-align:center;color:#bbb}
 .cast-role{font-size:.57rem;color:#666;text-align:center;margin-top:2px}
-/* Episodes */
 .season-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
 .s-tab{
   padding:4px 12px;border-radius:20px;
@@ -379,7 +397,6 @@ nav.transparent{background:linear-gradient(to bottom,rgba(0,0,0,.7),transparent)
 .ep-meta{font-size:.62rem;color:#666;margin-bottom:4px}
 .ep-desc{font-size:.68rem;color:#666;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .ep-dot{width:6px;height:6px;border-radius:50%;background:#46d369;flex-shrink:0}
-/* Sidebar */
 .dp-sidebar{}
 .info-box{
   background:#161616;border:1px solid rgba(255,255,255,.06);
@@ -610,25 +627,22 @@ footer{
 
 /* ══ MOBILE ══ */
 @media(max-width:768px){
-  /* Nav */
   .nav-desktop{display:none}
   .ham{display:flex}
-  /* Hero */
   #slider{height:75vh;min-height:440px}
   .slide{padding:0 4% 13%}
   .slide-title{font-size:clamp(2rem,9vw,2.8rem)}
   .slide-desc{display:none}
   .s-arr{display:none}
   .dots{bottom:4%}
-  /* Rows */
   .rows{margin-top:-32px}
   .row-top{padding:0 3.5%}
   .track-outer{padding:4px 3.5%}
-  .card{width:145px}
+  /* FIX 1 mobile: slightly narrower */
+  .card{width:120px}
   .card:hover{transform:scale(1.05)}
   .card:first-child:hover,.card:last-child:hover{transform:scale(1.05)}
   .card-info{display:none!important}
-  /* Detail */
   .dp-cols{grid-template-columns:1fr}
   .dp-hero{height:52vh;min-height:320px}
   .dp-hero-bot{flex-direction:column;align-items:flex-start;gap:12px;padding:0 4% 18px}
@@ -637,10 +651,8 @@ footer{
   .dp-acts{gap:6px}
   .dp-btn{padding:8px 14px;font-size:.74rem}
   .dp-btn.share{display:none}
-  /* Player */
   .play-panel{grid-template-columns:1fr;padding:16px 4% 48px;gap:20px}
   .pip-title{font-size:1.4rem}
-  /* Footer fix — NO blank space */
   footer{padding:36px 5% 24px}
   .ft-grid{grid-template-columns:1fr;gap:24px}
   .ft-col:nth-child(3),.ft-col:nth-child(4){display:none}
@@ -657,7 +669,7 @@ footer{
   .slide-btns{gap:7px}
   .btn-play,.btn-info{padding:8px 14px;font-size:.77rem}
   .btn-info{display:none}
-  .card{width:130px}
+  .card{width:105px}
   .track{gap:6px}
   .dp-poster{display:none}
   .cast-item{width:66px}
@@ -687,7 +699,6 @@ footer{
     <button class="nav-btn" onclick="showToast('My List — coming soon!')" title="Wishlist">
       <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
     </button>
-    <!-- Hamburger — mobile only -->
     <button class="ham" id="hamBtn" onclick="toggleDrawer()" aria-label="Menu">
       <span id="hb1"></span>
       <span id="hb2"></span>
@@ -876,32 +887,32 @@ async function init(){
       if(d.anime&&d.anime.length)ANIME=d.anime;
     }
   }catch(e){}
+
+  // ── FIX 3: Reverse arrays so latest (last added) appear first ──
+  MOVIES = MOVIES.slice().reverse();
+  TV     = TV.slice().reverse();
+  ANIME  = ANIME.slice().reverse();
+
   buildSlides();
   buildRows();
   startSlider();
-  // Mobile: tap card opens detail
   document.getElementById('rowsWrap').addEventListener('click',function(e){
     var c=e.target.closest('[data-k]');
     if(c)openDetail(c.dataset.k);
   });
-  // Swipe on slider
   var sx=0;
   document.getElementById('slider').addEventListener('touchstart',function(e){sx=e.touches[0].clientX;},{passive:true});
   document.getElementById('slider').addEventListener('touchend',function(e){
     var dx=e.changedTouches[0].clientX-sx;
     if(Math.abs(dx)>45)slideBy(dx>0?-1:1);
   },{passive:true});
-  // Search input
   document.getElementById('searchInput').addEventListener('input',function(){runSearch(this.value);});
-  // Close search on overlay click
   document.getElementById('search-ov').addEventListener('click',function(e){
     if(e.target===this)closeSearch();
   });
-  // Nav scroll
   window.addEventListener('scroll',function(){
     document.getElementById('nav').className=window.scrollY>50?'solid':'transparent';
   },{passive:true});
-  // Esc key
   document.addEventListener('keydown',function(e){
     if(e.key==='Escape'){closeSearch();closeDrawer();}
     if(document.getElementById('pg-home').classList.contains('active')){
@@ -928,17 +939,22 @@ function goHome(){
 }
 
 // ══════════════════════
-//  SLIDER
+//  SLIDER — FIX 4: 5 from each category = 15 total
 // ══════════════════════
 function buildSlides(){
- // ── Last 10 items from all lists ─────────────────────────────
-const all = [...MOVIES, ...TV, ...ANIME];
-HERO_ITEMS = all.slice(-10).map(item => {
-    let type = MOVIES.includes(item) ? 'movie' :
-               TV.includes(item)     ? 'tv'    :
-                                       'anime';
-    return { item, type };
-}).reverse(); // so newest is first
+  // Take first 5 from each (already reversed = latest first)
+  var heroMovies = MOVIES.slice(0,5).map(function(item){return{item:item,type:'movie'};});
+  var heroTV     = TV.slice(0,5).map(function(item){return{item:item,type:'tv'};});
+  var heroAnime  = ANIME.slice(0,5).map(function(item){return{item:item,type:'anime'};});
+
+  // Interleave: movie, tv, anime, movie, tv, anime … so all categories show up early
+  HERO_ITEMS=[];
+  for(var i=0;i<5;i++){
+    if(heroMovies[i])HERO_ITEMS.push(heroMovies[i]);
+    if(heroTV[i])HERO_ITEMS.push(heroTV[i]);
+    if(heroAnime[i])HERO_ITEMS.push(heroAnime[i]);
+  }
+
   var wrap=document.getElementById('slidesWrap');
   var dots=document.getElementById('dotsWrap');
   wrap.innerHTML=''; dots.innerHTML=''; SLIDE_IDX=0;
@@ -994,18 +1010,21 @@ function slideBy(d){goSlide(SLIDE_IDX+d);clearInterval(SLIDE_TMR);startSlider();
 function startSlider(){clearInterval(SLIDE_TMR);SLIDE_TMR=setInterval(function(){goSlide(SLIDE_IDX+1);},7000);}
 
 // ══════════════════════
-//  ROWS
+//  ROWS — FIX 2: See All working
 // ══════════════════════
 function buildRows(){
   var rows=[
-    {title:'Trending <b>Now</b>',items:MOVIES.slice(0,5).concat(TV.slice(0,2)),types:A('movie',5).concat(A('tv',2))},
-    {title:'Top <b>Movies</b>',items:MOVIES,types:A('movie',MOVIES.length)},
-    {title:'Binge-Worthy <b>Series</b>',items:TV,types:A('tv',TV.length)},
-    {title:'Anime <b>Picks</b>',items:ANIME,types:A('anime',ANIME.length)},
+    {title:'Trending <b>Now</b>',   items:MOVIES.slice(0,5).concat(TV.slice(0,2)),  types:A('movie',5).concat(A('tv',2)),         sec:'home'},
+    {title:'Top <b>Movies</b>',     items:MOVIES,                                    types:A('movie',MOVIES.length),               sec:'movies'},
+    {title:'Binge-Worthy <b>Series</b>', items:TV,                                   types:A('tv',TV.length),                      sec:'tvshows'},
+    {title:'Anime <b>Picks</b>',    items:ANIME,                                     types:A('anime',ANIME.length),                sec:'anime'},
   ];
   document.getElementById('rowsWrap').innerHTML=rows.map(function(row,ri){
+    var seeAllBtn=row.sec!=='home'
+      ?'<button class="row-more" onclick="goSection(\''+row.sec+'\',null)">See all ›</button>'
+      :'<button class="row-more" onclick="openSearch()">Search ›</button>';
     return '<div class="row">'+
-      '<div class="row-top"><div class="row-title">'+row.title+'</div><span class="row-more">See all ›</span></div>'+
+      '<div class="row-top"><div class="row-title">'+row.title+'</div>'+seeAllBtn+'</div>'+
       '<div class="track-outer">'+
         '<div class="track" id="tr'+ri+'">'+
           row.items.map(function(item,i){return cardHTML(item,row.types[i]);}).join('')+
@@ -1017,15 +1036,24 @@ function buildRows(){
 function A(v,n){var a=[];for(var i=0;i<n;i++)a.push(v);return a;}
 
 // ══════════════════════
-//  CARD
+//  CARD — FIX 1: vertical poster
 // ══════════════════════
 function cardHTML(item,type){
   var k=reg(item,type);
   return '<div class="card" data-k="'+k+'">'+
     '<div class="card-inner">'+
       '<div class="card-img">'+
-        '<img src="'+IP+item.poster+'" alt="'+X(item.title)+'" loading="lazy" onerror="imgFail(this)">'+
+        // Use poster image (2:3 portrait) — fallback to backdrop if no poster
+        '<img src="'+(item.poster ? IP+item.poster : IB+item.backdrop)+'" alt="'+X(item.title)+'" loading="lazy" onerror="imgFail(this)">'+
         '<div class="card-fb" style="display:none">'+X(item.title.slice(0,3).toUpperCase())+'</div>'+
+      '</div>'+
+      // Always-visible label strip below the poster
+      '<div class="card-label">'+
+        '<div class="card-label-title">'+X(item.title)+'</div>'+
+        '<div class="card-label-meta">'+
+          '<span class="card-label-year">'+item.year+'</span>'+
+          '<span class="card-label-rating">'+item.match+'%</span>'+
+        '</div>'+
       '</div>'+
       '<div class="card-info">'+
         '<div class="card-info-row1">'+
@@ -1088,7 +1116,6 @@ function showDetail(item,type){
       '<button class="dp-btn ghost" onclick="showToast(\'Added to My List ✓\')"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>My List</button>'+
       '<button class="dp-btn share" onclick="showToast(\'Link copied!\')"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Share</button>'+
     '</div>';
-  // Left col
   var L='';
   L+='<div class="sec-title">Overview</div><div class="dp-desc">'+X(item.desc)+'</div>';
   if(item.cast&&item.cast.length){
@@ -1114,7 +1141,6 @@ function showDetail(item,type){
     L+='<div class="ep-list" id="dpEps">'+buildEpList(item,type,1)+'</div>';
   }
   document.getElementById('dpLeft').innerHTML=L;
-  // Right col
   var Rv='';
   Rv+='<div class="info-box"><h4>Details</h4>';
   Rv+='<div class="info-row"><span class="lbl">Director</span><span class="val">'+X(item.director||'—')+'</span></div>';
@@ -1285,14 +1311,23 @@ function goSection(sec,btn){
   var rw=document.getElementById('rowsWrap');
   if(sec==='home'){buildSlides();buildRows();startSlider();return;}
   var cfgMap={
-    movies:{hero:MOVIES[4]||MOVIES[0],htype:'movie',label:'All <b>Movies</b>',items:MOVIES,type:'movie'},
+    movies:{hero:MOVIES[0],htype:'movie',label:'All <b>Movies</b>',items:MOVIES,type:'movie'},
     tvshows:{hero:TV[0],htype:'tv',label:'All <b>TV Shows</b>',items:TV,type:'tv'},
-    anime:{hero:ANIME[1]||ANIME[0],htype:'anime',label:'All <b>Anime</b>',items:ANIME,type:'anime'},
+    anime:{hero:ANIME[0],htype:'anime',label:'All <b>Anime</b>',items:ANIME,type:'anime'},
   };
   var cfg=cfgMap[sec];
   buildSingleHero(cfg.hero,cfg.htype);
-  rw.innerHTML='<div class="row"><div class="row-top"><div class="row-title">'+cfg.label+'</div></div>'+
-    '<div class="track-outer"><div class="track">'+cfg.items.map(function(item){return cardHTML(item,cfg.type);}).join('')+'</div></div></div>';
+  // FIX 2: See All page shows full list with a Back to Home button
+  rw.innerHTML=
+    '<div style="padding:16px 4% 8px;display:flex;align-items:center;justify-content:space-between">'+
+      '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.4rem;letter-spacing:.08em;color:#bbb">'+cfg.label+'</div>'+
+      '<button onclick="goHome()" style="font-size:.65rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#888;padding:5px 12px;border-radius:4px;border:1px solid rgba(255,255,255,.1);transition:color .15s,border-color .15s" onmouseover="this.style.color=\'#fff\';this.style.borderColor=\'rgba(255,255,255,.25)\'" onmouseout="this.style.color=\'#888\';this.style.borderColor=\'rgba(255,255,255,.1)\'">← Home</button>'+
+    '</div>'+
+    '<div class="row"><div class="track-outer">'+
+      '<div class="track" style="flex-wrap:wrap;gap:10px;overflow:visible;padding:4px 0">'+
+        cfg.items.map(function(item){return cardHTML(item,cfg.type);}).join('')+
+      '</div>'+
+    '</div></div>';
 }
 function buildSingleHero(item,type){
   if(!item)return;
