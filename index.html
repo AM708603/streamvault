@@ -442,30 +442,207 @@ nav.transparent{background:linear-gradient(to bottom,rgba(0,0,0,.7),transparent)
 .rel-year{font-size:.57rem;color:#555;margin-top:1px}
 
 /* ── PLAYER PAGE ── */
-#play-pg{background:#000;min-height:100vh;display:flex;flex-direction:column}
-.play-top{
-  position:fixed;top:0;left:0;right:0;z-index:999;height:56px;
-  display:flex;align-items:center;justify-content:space-between;padding:0 16px;
-  background:linear-gradient(to bottom,rgba(0,0,0,.85),transparent);
+#pg-player{background:#0a0a0a;min-height:100vh;display:flex;flex-direction:column}
+
+/* Sticky video wrapper — always visible on mobile */
+.play-video-wrap{
+  position:sticky;top:0;z-index:50;
+  background:#000;
+  box-shadow:0 2px 20px rgba(0,0,0,.8);
 }
+
+/* Top bar — overlaid on video */
+.play-top{
+  position:absolute;top:0;left:0;right:0;z-index:10;height:52px;
+  display:flex;align-items:center;justify-content:space-between;padding:0 14px;
+  background:linear-gradient(to bottom,rgba(0,0,0,.75) 0%,transparent 100%);
+  pointer-events:none;
+}
+.play-top>*{pointer-events:all}
 .play-back{
   display:flex;align-items:center;gap:6px;
-  background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.12);
-  border-radius:5px;padding:6px 12px;
-  font-size:.75rem;font-weight:600;color:#bbb;
+  background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.14);
+  border-radius:6px;padding:6px 11px;
+  font-size:.72rem;font-weight:600;color:#ccc;
+  transition:all .2s;backdrop-filter:blur(6px);
+}
+.play-back:hover,.play-back:active{background:rgba(0,0,0,.8);color:#fff}
+.play-title{
+  font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.05em;color:#ddd;
+  text-overflow:ellipsis;white-space:nowrap;overflow:hidden;max-width:44%;
+}
+.play-top-actions{display:flex;gap:6px}
+.play-top-btn{
+  width:34px;height:34px;border-radius:50%;
+  background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.14);
+  backdrop-filter:blur(6px);color:#ccc;
+  display:flex;align-items:center;justify-content:center;
   transition:all .2s;
 }
-.play-back:hover,.play-back:active{background:rgba(0,0,0,.7);color:#fff}
-.play-title{
-  font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.06em;color:#bbb;
-  text-overflow:ellipsis;white-space:nowrap;overflow:hidden;max-width:42%;
-}
+.play-top-btn:hover,.play-top-btn:active{background:rgba(229,9,20,.7);border-color:#E50914;color:#fff}
+
+/* 16:9 iframe */
 .play-frame{position:relative;width:100%;padding-top:56.25%;background:#000}
 .play-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:none}
-.play-panel{
-  background:#111;padding:24px 5% 60px;
-  display:grid;grid-template-columns:1fr 320px;gap:32px;
+
+/* Progress bar below video */
+.play-prog-strip{
+  height:3px;background:rgba(255,255,255,.08);position:relative;
 }
+.play-prog-strip-fill{
+  height:100%;background:#E50914;
+  width:0%;transition:width .6s linear;
+  border-radius:0 2px 2px 0;
+}
+
+/* ── MOBILE INFO PANEL (below video) ── */
+.play-panel{
+  background:#0a0a0a;
+  flex:1;display:flex;flex-direction:column;
+}
+
+/* Title + quick meta row */
+.play-info-head{
+  padding:14px 16px 0;
+}
+.play-info-title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:1.55rem;letter-spacing:.03em;line-height:1;
+  margin-bottom:6px;
+}
+.play-info-meta{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  margin-bottom:12px;
+}
+.play-info-meta span{font-size:.65rem;color:#666}
+.play-info-meta .gn{color:#46d369;font-weight:700}
+.play-info-meta .gy{color:#f5c518;font-weight:700}
+.play-info-meta .box{
+  border:1px solid rgba(255,255,255,.15);padding:1px 5px;
+  border-radius:3px;font-size:.58rem;font-weight:700;color:#666;
+}
+
+/* Action buttons row */
+.play-actions{
+  display:flex;align-items:center;gap:10px;
+  padding:0 16px 14px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.play-act-btn{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  min-width:52px;padding:8px 6px;border-radius:8px;
+  font-size:.56rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  color:#666;transition:color .2s,background .2s;
+  cursor:pointer;
+}
+.play-act-btn:hover,.play-act-btn:active{color:#fff;background:rgba(255,255,255,.06)}
+.play-act-btn.active{color:#E50914}
+.play-act-btn svg{flex-shrink:0}
+.play-act-sep{flex:1}
+
+/* Progress info row */
+.play-prog-row{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 16px;
+  background:#111;
+  border-bottom:1px solid rgba(255,255,255,.05);
+}
+.play-prog-label{font-size:.58rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#555}
+.play-prog-bar-wrap{flex:1;height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden}
+.play-prog-bar-fill{height:100%;background:#E50914;border-radius:2px;width:0%;transition:width .5s}
+.play-prog-pct{font-size:.62rem;font-weight:700;color:#46d369;min-width:32px;text-align:right}
+.play-prog-time{font-size:.6rem;color:#444}
+
+/* Tab bar */
+.play-tabs{
+  display:flex;
+  border-bottom:1px solid rgba(255,255,255,.07);
+  background:#0d0d0d;
+  position:sticky;top:0;z-index:5;
+}
+.play-tab{
+  flex:1;padding:11px 4px;
+  font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:#555;border-bottom:2px solid transparent;
+  transition:color .2s,border-color .2s;text-align:center;
+}
+.play-tab.on{color:#fff;border-bottom-color:#E50914}
+.play-tab:hover{color:#bbb}
+
+/* Tab content panels */
+.play-tab-body{padding:16px 16px 80px;min-height:200px}
+.play-tab-panel{display:none}
+.play-tab-panel.on{display:block}
+
+/* Info tab */
+.play-desc{font-size:.82rem;line-height:1.8;color:#aaa;margin-bottom:20px}
+.play-detail-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:0;
+  background:#161616;border-radius:8px;overflow:hidden;
+  border:1px solid rgba(255,255,255,.06);
+}
+.play-detail-row{
+  padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.05);
+}
+.play-detail-row:nth-child(odd){border-right:1px solid rgba(255,255,255,.05)}
+.play-detail-row:last-child,.play-detail-row:nth-last-child(2):nth-child(odd){border-bottom:none}
+.play-detail-lbl{font-size:.55rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#444;margin-bottom:3px}
+.play-detail-val{font-size:.72rem;color:#bbb;font-weight:500}
+
+/* Episodes tab */
+.play-season-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.play-stab{
+  padding:5px 12px;border-radius:20px;
+  font-size:.62rem;font-weight:600;
+  background:#1e1e1e;border:1px solid rgba(255,255,255,.08);
+  color:#555;transition:all .2s;
+}
+.play-stab.on{background:rgba(229,9,20,.12);border-color:#E50914;color:#E50914}
+
+/* Episode list — horizontal scroll on mobile for quick switching */
+.play-ep-list{display:flex;flex-direction:column;gap:6px}
+.play-ep-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;background:#161616;
+  border-radius:8px;border:1px solid rgba(255,255,255,.05);
+  cursor:pointer;transition:background .15s,border-color .15s,transform .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.play-ep-item:active{transform:scale(.98);background:#1e1e1e}
+.play-ep-item.on{border-color:#E50914;background:rgba(229,9,20,.06)}
+.play-ep-item.done{opacity:.55}
+.play-ep-num{
+  font-family:'Bebas Neue',sans-serif;font-size:1.5rem;
+  color:#252525;min-width:28px;text-align:center;line-height:1;flex-shrink:0;
+}
+.play-ep-item.on .play-ep-num{color:#E50914}
+.play-ep-details{flex:1;min-width:0}
+.play-ep-name{font-size:.74rem;font-weight:600;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.play-ep-meta{font-size:.6rem;color:#555}
+.play-ep-playing{
+  font-size:.52rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:#E50914;flex-shrink:0;
+}
+.play-ep-check{
+  width:18px;height:18px;border-radius:50%;
+  background:rgba(70,211,105,.15);border:1px solid rgba(70,211,105,.3);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+
+/* Related tab */
+.play-rel-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.play-rel-item{
+  cursor:pointer;border-radius:8px;overflow:hidden;background:#161616;
+  transition:transform .2s;-webkit-tap-highlight-color:transparent;
+}
+.play-rel-item:active{transform:scale(.97)}
+.play-rel-thumb{aspect-ratio:16/9;overflow:hidden;position:relative}
+.play-rel-thumb img{width:100%;height:100%;object-fit:cover}
+.play-rel-info{padding:7px 8px 8px}
+.play-rel-title{font-size:.68rem;font-weight:600;color:#ccc;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.play-rel-sub{font-size:.58rem;color:#555}
+
+/* ── DESKTOP player layout (sidebar) ── */
 .pip-title{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:.04em;margin-bottom:6px}
 .pip-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .pip-meta span{font-size:.7rem;color:#666}
@@ -480,20 +657,12 @@ nav.transparent{background:linear-gradient(to bottom,rgba(0,0,0,.7),transparent)
 .prog-time{font-size:.6rem;color:#555;margin-top:4px;text-align:right}
 .pip-ep-title{font-family:'Bebas Neue',sans-serif;font-size:.9rem;letter-spacing:.1em;color:#555;margin-bottom:8px}
 .pip-stabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
-.pip-stab{
-  font-size:.6rem;font-weight:600;padding:3px 8px;border-radius:20px;
-  border:1px solid rgba(255,255,255,.08);color:#555;
-  background:#161616;transition:all .2s;
-}
+.pip-stab{font-size:.6rem;font-weight:600;padding:3px 8px;border-radius:20px;border:1px solid rgba(255,255,255,.08);color:#555;background:#161616;transition:all .2s}
 .pip-stab.on{background:rgba(229,9,20,.12);border-color:#E50914;color:#E50914}
 .pip-ep-list{display:flex;flex-direction:column;gap:4px;max-height:280px;overflow-y:auto}
 .pip-ep-list::-webkit-scrollbar{width:2px}
 .pip-ep-list::-webkit-scrollbar-thumb{background:#252525}
-.pip-ep{
-  display:flex;align-items:center;gap:8px;
-  padding:6px 8px;border-radius:5px;
-  cursor:pointer;transition:background .15s;border-left:2px solid transparent;
-}
+.pip-ep{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:5px;cursor:pointer;transition:background .15s;border-left:2px solid transparent}
 .pip-ep:hover,.pip-ep:active{background:#161616}
 .pip-ep.on{background:rgba(229,9,20,.1);border-left-color:#E50914}
 .pip-ep.done{opacity:.5}
@@ -504,6 +673,20 @@ nav.transparent{background:linear-gradient(to bottom,rgba(0,0,0,.7),transparent)
 .pip-ep-dur{font-size:.58rem;color:#555}
 .pip-ep-dot{width:5px;height:5px;border-radius:50%;background:#252525;flex-shrink:0}
 .pip-ep.done .pip-ep-dot{background:#46d369}
+
+/* Desktop grid layout */
+.play-panel-desktop{
+  background:#111;padding:24px 5% 60px;
+  display:grid;grid-template-columns:1fr 320px;gap:32px;
+}
+/* Mobile panel hidden on desktop, desktop panel hidden on mobile */
+.play-panel-mobile{display:none}
+@media(max-width:768px){
+  .play-panel-desktop{display:none}
+  .play-panel-mobile{display:flex;flex-direction:column;flex:1}
+  .play-video-wrap{position:sticky;top:0}
+  .play-top{position:absolute}
+}
 
 /* ── SEARCH OVERLAY ── */
 #search-ov{
@@ -762,8 +945,7 @@ footer{
   .dp-acts{gap:6px}
   .dp-btn{padding:8px 14px;font-size:.74rem}
   .dp-btn.share{display:none}
-  .play-panel{grid-template-columns:1fr;padding:16px 4% 48px;gap:20px}
-  .pip-title{font-size:1.4rem}
+  /* Player mobile overrides handled by play-panel-mobile/desktop classes */
   footer{padding:36px 5% 24px}
   .ft-grid{grid-template-columns:1fr;gap:24px}
   .ft-col:nth-child(3),.ft-col:nth-child(4){display:none}
@@ -918,20 +1100,52 @@ footer{
 
 <!-- ════ PLAYER ════ -->
 <div id="pg-player" class="page">
-  <div class="play-top">
-    <button class="play-back" id="playBackBtn">
-      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>
-      <span>Back</span>
-    </button>
-    <div class="play-title" id="playTitle"></div>
-    <div style="width:50px"></div>
-  </div>
-  <div style="flex:1;display:flex;flex-direction:column">
-    <div class="play-frame" id="playFrame"></div>
-    <div class="play-panel">
-      <div id="pipL"></div>
-      <div id="pipR"></div>
+  <!-- Video + sticky top bar -->
+  <div class="play-video-wrap">
+    <div style="position:relative">
+      <div class="play-top">
+        <button class="play-back" id="playBackBtn">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>
+          <span>Back</span>
+        </button>
+        <div class="play-title" id="playTitle"></div>
+        <div class="play-top-actions">
+          <button class="play-top-btn" id="playListBtn" onclick="playerToggleList()" title="My List">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="play-frame" id="playFrame"></div>
+      <div class="play-prog-strip"><div class="play-prog-strip-fill" id="progStrip"></div></div>
     </div>
+  </div>
+
+  <!-- ── MOBILE panel ── -->
+  <div class="play-panel-mobile" id="pipMobile">
+    <!-- Title + meta -->
+    <div class="play-info-head">
+      <div class="play-info-title" id="mobTitle"></div>
+      <div class="play-info-meta" id="mobMeta"></div>
+    </div>
+    <!-- Action buttons -->
+    <div class="play-actions" id="mobActions"></div>
+    <!-- Progress row -->
+    <div class="play-prog-row">
+      <span class="play-prog-label">Progress</span>
+      <div class="play-prog-bar-wrap"><div class="play-prog-bar-fill" id="progFill"></div></div>
+      <span class="play-prog-pct" id="progPct">0%</span>
+      <span class="play-prog-time" id="progTime"></span>
+    </div>
+    <!-- Tabs -->
+    <div class="play-tabs" id="mobTabs"></div>
+    <!-- Tab content -->
+    <div class="play-tab-body" id="mobTabBody"></div>
+  </div>
+
+  <!-- ── DESKTOP panel ── -->
+  <div class="play-panel-desktop">
+    <div id="pipL"></div>
+    <div id="pipR"></div>
   </div>
 </div>
 
@@ -1644,8 +1858,11 @@ function switchSeason(s,btn){
 // ══════════════════════
 //  PLAYER
 // ══════════════════════
+var MOB_TAB='info'; // current mobile tab
+
 function playItem(k){var r=R[k];if(!r)return;startPlayer(r.item,r.type,null,null);}
 function playEp(k,s,ep){var r=R[k];if(!r)return;startPlayer(r.item,r.type,s,ep);}
+
 function startPlayer(item,type,s,ep){
   PREV_PG=document.querySelector('.page.active').id;
   clearInterval(SLIDE_TMR);
@@ -1657,20 +1874,34 @@ function startPlayer(item,type,s,ep){
   }
   CUR_EP=s?{s:s,e:ep}:ep?{e:ep}:null;
   showPage('pg-player');
+
+  // Nav title
   document.getElementById('playTitle').textContent=item.title+(s&&ep?' · S'+s+'E'+ep:'');
+
+  // Back button
   document.getElementById('playBackBtn').onclick=function(){
     document.getElementById('playFrame').innerHTML='';
     showPage(PREV_PG);
     if(PREV_PG==='pg-home')startSlider();
   };
+
+  // Iframe
   document.getElementById('playFrame').innerHTML=
     '<iframe src="'+buildSrc(type,item,s,ep)+'" frameborder="0" allowfullscreen allow="autoplay;encrypted-media;picture-in-picture;fullscreen"></iframe>';
+
+  // Update My List heart in top bar
+  updatePlayerListBtn();
+
+  // ── MOBILE PANEL ──
+  buildMobilePanel(item,type,s,ep);
+
+  // ── DESKTOP PANEL ──
   var pL=document.getElementById('pipL');
   pL.innerHTML=
     '<div class="pip-title">'+X(item.title)+'</div>'+
     '<div class="pip-meta"><span class="gn">'+item.match+'% Match</span><span>'+item.year+'</span><span>'+item.rating+'</span><span>'+X(item.genre)+'</span>'+(s&&ep?'<span>S'+s+' E'+ep+'</span>':'')+'</div>'+
     '<div class="pip-desc">'+X(item.desc)+'</div>'+
-    '<div class="prog-box"><div class="prog-top"><span class="prog-lbl">Watch Progress</span><span class="prog-pct" id="progPct">0%</span></div><div class="prog-bar"><div class="prog-fill" id="progFill"></div></div><div class="prog-time" id="progTime">—</div></div>';
+    '<div class="prog-box"><div class="prog-top"><span class="prog-lbl">Watch Progress</span><span class="prog-pct" id="progPct">0%</span></div><div class="prog-bar"><div class="prog-fill" id="progFillDesktop"></div></div><div class="prog-time" id="progTime">—</div></div>';
   var pR=document.getElementById('pipR');
   var hasEps=type==='tv'||(type==='anime'&&!item.isM);
   if(hasEps){
@@ -1681,6 +1912,181 @@ function startPlayer(item,type,s,ep){
   }else{pR.innerHTML='';}
   resetProg();
 }
+
+// ── Build the full mobile panel ──
+function buildMobilePanel(item,type,s,ep){
+  var k=reg(item,type);
+  var hasEps=type==='tv'||(type==='anime'&&!item.isM);
+  var inList=mlHas(item);
+
+  // Title + meta
+  document.getElementById('mobTitle').textContent=item.title;
+  document.getElementById('mobMeta').innerHTML=
+    '<span class="gn">'+item.match+'% Match</span>'+
+    '<span class="gy">★ '+item.imdb+'</span>'+
+    (s&&ep?'<span>S'+s+' · E'+ep+'</span>':'')+
+    '<span class="box">'+item.rating+'</span>'+
+    '<span>'+item.year+'</span>';
+
+  // Action buttons
+  document.getElementById('mobActions').innerHTML=
+    '<button class="play-act-btn" onclick="playItem(\''+k+'\')">'+
+      '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>Play'+
+    '</button>'+
+    '<button class="play-act-btn '+(inList?'active':'')+'" id="mobListBtn" onclick="playerToggleList()">'+
+      '<svg width="18" height="18" fill="'+(inList?'currentColor':'none')+'" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>My List'+
+    '</button>'+
+    '<button class="play-act-btn" onclick="openDetail(\''+k+'\')">'+
+      '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Details'+
+    '</button>'+
+    '<button class="play-act-btn" onclick="showToast(\'Link copied!\')">'+
+      '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Share'+
+    '</button>';
+
+  // Tabs
+  var tabs=[{id:'info',label:'Info'}];
+  if(hasEps)tabs.push({id:'episodes',label:'Episodes'});
+  if(item.related&&item.related.length)tabs.push({id:'related',label:'More Like This'});
+  document.getElementById('mobTabs').innerHTML=tabs.map(function(t){
+    return '<button class="play-tab'+(t.id===MOB_TAB?' on':'')+'" onclick="switchMobTab(\''+t.id+'\')">'+t.label+'</button>';
+  }).join('');
+
+  renderMobTab(item,type,s);
+}
+
+function switchMobTab(tab){
+  MOB_TAB=tab;
+  document.querySelectorAll('.play-tab').forEach(function(b){b.classList.toggle('on',b.textContent.toLowerCase().replace(/\s+/g,'')===tab||b.onclick.toString().includes("'"+tab+"'"));});
+  // Re-render just the tab body
+  if(CUR_ITEM)renderMobTab(CUR_ITEM,CUR_TYPE,CUR_S);
+}
+
+function renderMobTab(item,type,s){
+  var body=document.getElementById('mobTabBody');
+  if(!body)return;
+  var k=reg(item,type);
+
+  if(MOB_TAB==='info'){
+    body.innerHTML=
+      '<p class="play-desc">'+X(item.desc)+'</p>'+
+      '<div class="play-detail-grid">'+
+        '<div class="play-detail-row"><div class="play-detail-lbl">Director</div><div class="play-detail-val">'+X(item.director||'—')+'</div></div>'+
+        '<div class="play-detail-row"><div class="play-detail-lbl">Studio</div><div class="play-detail-val">'+X(item.studio||'—')+'</div></div>'+
+        '<div class="play-detail-row"><div class="play-detail-lbl">Year</div><div class="play-detail-val">'+item.year+'</div></div>'+
+        '<div class="play-detail-row"><div class="play-detail-lbl">Runtime</div><div class="play-detail-val">'+X(item.runtime||'—')+'</div></div>'+
+        '<div class="play-detail-row"><div class="play-detail-lbl">Rating</div><div class="play-detail-val">'+item.rating+'</div></div>'+
+        '<div class="play-detail-row"><div class="play-detail-lbl">Genre</div><div class="play-detail-val">'+X(item.genre)+'</div></div>'+
+      '</div>';
+
+  }else if(MOB_TAB==='episodes'){
+    var stabs='';
+    if(type==='tv'&&item.seasons){
+      stabs='<div class="play-season-tabs" id="mobSeasonTabs">'+
+        item.seasons.map(function(ss){
+          return '<button class="play-stab'+(ss.s===CUR_S?' on':'')+'" onclick="mobSwitchSeason('+ss.s+',this)">Season '+ss.s+'</button>';
+        }).join('')+'</div>';
+    }
+    body.innerHTML=stabs+'<div class="play-ep-list" id="mobEpList">'+buildMobEpList(item,type,CUR_S)+'</div>';
+
+  }else if(MOB_TAB==='related'){
+    var rels=(item.related||[]).map(function(rid){return findById(rid);}).filter(Boolean);
+    if(!rels.length){body.innerHTML='<p style="color:#444;font-size:.8rem;padding:20px 0">No related titles found.</p>';return;}
+    body.innerHTML='<div class="play-rel-grid">'+rels.map(function(f){
+      var rk=reg(f.item,f.type);
+      return '<div class="play-rel-item" onclick="showDetail(R[\''+rk+'\'].item,R[\''+rk+'\'].type)">'+
+        '<div class="play-rel-thumb"><img src="'+IP+f.item.poster+'" loading="lazy" onerror="this.style.display=\'none\'"></div>'+
+        '<div class="play-rel-info">'+
+          '<div class="play-rel-title">'+X(f.item.title)+'</div>'+
+          '<div class="play-rel-sub">'+f.item.year+' · '+X(f.item.genre)+'</div>'+
+        '</div>'+
+      '</div>';
+    }).join('')+'</div>';
+  }
+}
+
+function buildMobEpList(item,type,s){
+  var eps=type==='tv'
+    ?(((item.seasons||[]).find(function(x){return x.s===s;})||{episodes:[]}).episodes)
+    :(item.episodes||[]);
+  return eps.map(function(ep){
+    var wkey=type==='tv'?'tv-'+item.id+'-s'+s+'e'+ep.e:'an-'+item.id+'-e'+ep.e;
+    var isA=CUR_EP&&CUR_EP.e===ep.e&&(type!=='tv'||CUR_EP.s===s);
+    var isW=WATCHED[wkey];
+    var k=reg(item,type);
+    var n=ep.n||ep.name||'';var d=ep.d||ep.dur||'';
+    return '<div class="play-ep-item'+(isA?' on':'')+(isW?' done':'')+'" onclick="mobPlayEp(\''+k+'\','+(type==='tv'?s:'null')+','+ep.e+')">'+
+      '<div class="play-ep-num">'+ep.e+'</div>'+
+      '<div class="play-ep-details">'+
+        '<div class="play-ep-name">'+X(n)+'</div>'+
+        '<div class="play-ep-meta">'+d+(type==='tv'?' · Season '+s:'')+(isW?' · Watched':'')+'</div>'+
+      '</div>'+
+      (isA?'<span class="play-ep-playing">Now Playing</span>'
+        :isW?'<div class="play-ep-check"><svg width="8" height="8" fill="none" stroke="#46d369" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg></div>':'')+ 
+    '</div>';
+  }).join('');
+}
+
+function mobSwitchSeason(s,btn){
+  CUR_S=s;
+  document.querySelectorAll('.play-stab').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  var list=document.getElementById('mobEpList');
+  if(list&&CUR_ITEM)list.innerHTML=buildMobEpList(CUR_ITEM,CUR_TYPE,s);
+  // also sync desktop
+  document.querySelectorAll('.pip-stab').forEach(function(b){b.classList.toggle('on',b.textContent==='S'+s);});
+  buildPipEps();
+}
+
+function mobPlayEp(k,s,ep){
+  var r=R[k];if(!r)return;
+  CUR_EP=s?{s:s,e:ep}:{e:ep};
+  document.getElementById('playFrame').innerHTML='<iframe src="'+buildSrc(r.type,r.item,s,ep)+'" frameborder="0" allowfullscreen allow="autoplay;encrypted-media;picture-in-picture;fullscreen"></iframe>';
+  document.getElementById('playTitle').textContent=r.item.title+(s?' · S'+s+'E'+ep:' · Ep'+ep);
+  document.getElementById('mobTitle').textContent=r.item.title;
+  if(document.getElementById('mobMeta'))
+    document.getElementById('mobMeta').querySelector('span:nth-child(3)') &&
+    (document.getElementById('mobMeta').innerHTML=
+      '<span class="gn">'+r.item.match+'% Match</span>'+
+      '<span class="gy">★ '+r.item.imdb+'</span>'+
+      (s?'<span>S'+s+' · E'+ep+'</span>':'<span>Ep '+ep+'</span>')+
+      '<span class="box">'+r.item.rating+'</span>'+
+      '<span>'+r.item.year+'</span>');
+  // Re-render ep list to update "Now Playing" state
+  var list=document.getElementById('mobEpList');
+  if(list)list.innerHTML=buildMobEpList(r.item,r.type,s||CUR_S);
+  buildPipEps();
+  resetProg();
+  // Scroll video into view on mobile
+  var vw=document.querySelector('.play-video-wrap');
+  if(vw)vw.scrollIntoView({behavior:'smooth'});
+}
+
+function updatePlayerListBtn(){
+  if(!CUR_ITEM)return;
+  var inList=mlHas(CUR_ITEM);
+  // top bar heart
+  var topBtn=document.getElementById('playListBtn');
+  if(topBtn){
+    topBtn.style.background=inList?'rgba(229,9,20,.6)':'';
+    topBtn.style.borderColor=inList?'#E50914':'';
+    topBtn.style.color=inList?'#fff':'';
+    topBtn.querySelector('svg').setAttribute('fill',inList?'currentColor':'none');
+  }
+}
+function playerToggleList(){
+  if(!CUR_ITEM)return;
+  var k=reg(CUR_ITEM,CUR_TYPE);
+  var added=mlToggle(CUR_ITEM,CUR_TYPE);
+  updatePlayerListBtn();
+  // update mob action button
+  var mobBtn=document.getElementById('mobListBtn');
+  if(mobBtn){
+    mobBtn.classList.toggle('active',added);
+    mobBtn.querySelector('svg').setAttribute('fill',added?'currentColor':'none');
+  }
+  showToast(added?'♥ Added to My List':'Removed from My List');
+}
+
 function buildSrc(type,item,s,ep){
   var p='?color=E50914&episodeSelector=true';
   if(type==='movie')return 'https://player.videasy.net/movie/'+item.id+p;
@@ -1728,15 +2134,32 @@ window.addEventListener('message',function(e){
     var d=JSON.parse(e.data);
     if(d.progress!==undefined){
       var pct=Math.round(d.progress);
-      var pe=document.getElementById('progPct'),fe=document.getElementById('progFill'),te=document.getElementById('progTime');
-      if(pe)pe.textContent=pct+'%';
+
+      // Mobile progress bar + strip
+      var fe=document.getElementById('progFill');
+      var strip=document.getElementById('progStrip');
+      var pe=document.getElementById('progPct');
+      var te=document.getElementById('progTime');
       if(fe)fe.style.width=pct+'%';
+      if(strip)strip.style.width=pct+'%';
+      if(pe)pe.textContent=pct+'%';
       if(te&&d.timestamp&&d.duration)te.textContent=fmtT(d.timestamp)+' / '+fmtT(d.duration);
+
+      // Desktop progress
+      var fed=document.getElementById('progFillDesktop');
+      var ped=document.getElementById('progPct');
+      if(fed)fed.style.width=pct+'%';
 
       // Mark episode as watched at 80%+
       if(pct>80&&CUR_ITEM&&CUR_EP){
         var key=CUR_TYPE==='tv'?'tv-'+CUR_ITEM.id+'-s'+CUR_EP.s+'e'+CUR_EP.e:'an-'+CUR_ITEM.id+'-e'+CUR_EP.e;
-        if(!WATCHED[key]){WATCHED[key]=true;buildPipEps();}
+        if(!WATCHED[key]){
+          WATCHED[key]=true;
+          buildPipEps();
+          // refresh mob ep list too
+          var mobList=document.getElementById('mobEpList');
+          if(mobList&&CUR_ITEM)mobList.innerHTML=buildMobEpList(CUR_ITEM,CUR_TYPE,CUR_S);
+        }
       }
 
       // Save to CW_HISTORY — throttle to once every 5 seconds
@@ -1749,8 +2172,10 @@ window.addEventListener('message',function(e){
   }catch(err){}
 });
 function resetProg(){
-  var p=document.getElementById('progPct'),f=document.getElementById('progFill'),t=document.getElementById('progTime');
-  if(p)p.textContent='0%';if(f)f.style.width='0%';if(t)t.textContent='—';
+  ['progFill','progFillDesktop'].forEach(function(id){var e=document.getElementById(id);if(e)e.style.width='0%';});
+  var strip=document.getElementById('progStrip');if(strip)strip.style.width='0%';
+  var p=document.getElementById('progPct');if(p)p.textContent='0%';
+  var t=document.getElementById('progTime');if(t)t.textContent='';
 }
 function fmtT(s){if(!s)return '0:00';var h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=Math.floor(s%60);return h?h+':'+P(m)+':'+P(sc):m+':'+P(sc);}
 function P(n){return n<10?'0'+n:''+n;}
