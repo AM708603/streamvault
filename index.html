@@ -1170,10 +1170,35 @@ var SLIDE_IDX=0,SLIDE_TMR=null,HERO_ITEMS=[];
 var DRAWER_OPEN=false,CUR_SEC='home';
 
 // ══════════════════════
-//  MY LIST — persisted in sessionStorage (survives reload within tab)
+//  URL ROUTER  ← NEW
+// ══════════════════════
+var ROUTES={
+  '/':function(){_goHome();},
+  '/movies':function(){_goSection('movies',null);},
+  '/tvshows':function(){_goSection('tvshows',null);},
+  '/anime':function(){_goSection('anime',null);},
+  '/mylist':function(){_goMyList();}
+};
+function pushRoute(path){
+  if(window.location.pathname!==path)
+    window.history.pushState({path:path},'',path);
+}
+function handleRoute(path){
+  // /title/123
+  var dm=path.match(/^\/title\/(\d+)$/);
+  if(dm){var f=findById(parseInt(dm[1]));if(f){showDetail(f.item,f.type);return;}}
+  // /play/123  or  /play/123/1/2
+  var pm=path.match(/^\/play\/(\d+)(?:\/(\d+)\/(\d+))?$/);
+  if(pm){var f=findById(parseInt(pm[1]));if(f){startPlayer(f.item,f.type,pm[2]?parseInt(pm[2]):null,pm[3]?parseInt(pm[3]):null);return;}}
+  (ROUTES[path]||ROUTES['/'])();
+}
+window.addEventListener('popstate',function(){handleRoute(window.location.pathname);});
+
+// ══════════════════════
+//  MY LIST — persisted in sessionStorage
 // ══════════════════════
 var MY_LIST=[];
-function mlKey(item){return item.id+''}
+function mlKey(item){return item.id+'';}
 function mlLoad(){try{var s=sessionStorage.getItem('sv_mylist');if(s)MY_LIST=JSON.parse(s);}catch(e){MY_LIST=[];}}
 function mlSave(){try{sessionStorage.setItem('sv_mylist',JSON.stringify(MY_LIST));}catch(e){}}
 function mlHas(item){return MY_LIST.some(function(e){return e.id===item.id;});}
@@ -1206,7 +1231,7 @@ function updateHeartNav(){
 async function init(){
   mlLoad();
   updateHeartNav();
-  showPage('pg-home');
+  // Don't call showPage here — handleRoute will do it after data loads
   try{
     var res=await fetch(CF+'/api/content');
     if(res.ok){
@@ -1217,14 +1242,16 @@ async function init(){
     }
   }catch(e){}
 
-  // ── FIX 3: Reverse arrays so latest (last added) appear first ──
-  MOVIES = MOVIES.slice().reverse();
-  TV     = TV.slice().reverse();
-  ANIME  = ANIME.slice().reverse();
+  MOVIES=MOVIES.slice().reverse();
+  TV=TV.slice().reverse();
+  ANIME=ANIME.slice().reverse();
 
   buildSlides();
   buildRows();
-  startSlider();
+
+  // Read URL and go to the right page
+  handleRoute(window.location.pathname);
+
   document.getElementById('rowsWrap').addEventListener('click',function(e){
     var c=e.target.closest('[data-k]');
     if(c)openDetail(c.dataset.k);
@@ -1271,33 +1298,77 @@ function showPage(id){
     nav.className=id==='pg-home'?'transparent':'solid';
   }
 }
-function goHome(){
+
+// Internal versions (no pushRoute) used by handleRoute to avoid loops
+function _goHome(){
   CUR_SEC='home';
   showPage('pg-home');
   setNavActive(null);
   buildSlides();buildRows();startSlider();
 }
+function _goSection(sec,btn){
+  CUR_SEC=sec;
+  setNavActive(btn);
+  showPage('pg-home');
+  clearInterval(SLIDE_TMR);
+  var rw=document.getElementById('rowsWrap');
+  if(sec==='home'){buildSlides();buildRows();startSlider();return;}
+  var cfgMap={
+    movies:{hero:MOVIES[0],htype:'movie',label:'All <b>Movies</b>',items:MOVIES,type:'movie'},
+    tvshows:{hero:TV[0],htype:'tv',label:'All <b>TV Shows</b>',items:TV,type:'tv'},
+    anime:{hero:ANIME[0],htype:'anime',label:'All <b>Anime</b>',items:ANIME,type:'anime'},
+  };
+  var cfg=cfgMap[sec];
+  buildSingleHero(cfg.hero,cfg.htype);
+  rw.innerHTML=
+    '<div style="padding:16px 4% 8px;display:flex;align-items:center;justify-content:space-between">'+
+      '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.4rem;letter-spacing:.08em;color:#bbb">'+cfg.label+'</div>'+
+      '<button onclick="goHome()" style="font-size:.65rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#888;padding:5px 12px;border-radius:4px;border:1px solid rgba(255,255,255,.1);transition:color .15s,border-color .15s" onmouseover="this.style.color=\'#fff\';this.style.borderColor=\'rgba(255,255,255,.25)\'" onmouseout="this.style.color=\'#888\';this.style.borderColor=\'rgba(255,255,255,.1)\'">← Home</button>'+
+    '</div>'+
+    '<div class="row"><div class="track-outer">'+
+      '<div class="track" style="flex-wrap:wrap;gap:10px;overflow:visible;padding:4px 0">'+
+        cfg.items.map(function(item){return cardHTML(item,cfg.type);}).join('')+
+      '</div>'+
+    '</div></div>';
+}
+function _goMyList(){
+  PREV_PG=document.querySelector('.page.active').id;
+  clearInterval(SLIDE_TMR);
+  showPage('pg-mylist');
+  renderMyList();
+}
+
+// Public versions (with pushRoute) — called by buttons/nav
+function goHome(){
+  pushRoute('/');
+  _goHome();
+}
+function goSection(sec,btn){
+  var pm={movies:'/movies',tvshows:'/tvshows',anime:'/anime',home:'/'};
+  pushRoute(pm[sec]||'/');
+  _goSection(sec,btn);
+}
+function goMyList(){
+  pushRoute('/mylist');
+  _goMyList();
+}
 
 // ══════════════════════
-//  SLIDER — FIX 4: 5 from each category = 15 total
+//  SLIDER
 // ══════════════════════
 function buildSlides(){
-  // Take first 5 from each (already reversed = latest first)
-  var heroMovies = MOVIES.slice(0,5).map(function(item){return{item:item,type:'movie'};});
-  var heroTV     = TV.slice(0,5).map(function(item){return{item:item,type:'tv'};});
-  var heroAnime  = ANIME.slice(0,5).map(function(item){return{item:item,type:'anime'};});
-
-  // Interleave: movie, tv, anime, movie, tv, anime … so all categories show up early
+  var heroMovies=MOVIES.slice(0,5).map(function(item){return{item:item,type:'movie'};});
+  var heroTV=TV.slice(0,5).map(function(item){return{item:item,type:'tv'};});
+  var heroAnime=ANIME.slice(0,5).map(function(item){return{item:item,type:'anime'};});
   HERO_ITEMS=[];
   for(var i=0;i<5;i++){
     if(heroMovies[i])HERO_ITEMS.push(heroMovies[i]);
     if(heroTV[i])HERO_ITEMS.push(heroTV[i]);
     if(heroAnime[i])HERO_ITEMS.push(heroAnime[i]);
   }
-
   var wrap=document.getElementById('slidesWrap');
   var dots=document.getElementById('dotsWrap');
-  wrap.innerHTML=''; dots.innerHTML=''; SLIDE_IDX=0;
+  wrap.innerHTML='';dots.innerHTML='';SLIDE_IDX=0;
   HERO_ITEMS.forEach(function(h,i){
     var item=h.item,type=h.type;
     var k=reg(item,type);
@@ -1350,19 +1421,16 @@ function slideBy(d){goSlide(SLIDE_IDX+d);clearInterval(SLIDE_TMR);startSlider();
 function startSlider(){clearInterval(SLIDE_TMR);SLIDE_TMR=setInterval(function(){goSlide(SLIDE_IDX+1);},7000);}
 
 // ══════════════════════
-//  ROWS — FIX 2: See All working
+//  ROWS
 // ══════════════════════
 function buildRows(){
   var rows=[
-    {title:'Trending <b>Now</b>',   items:MOVIES.slice(0,5).concat(TV.slice(0,2)),  types:A('movie',5).concat(A('tv',2)),         sec:'home'},
-    {title:'Top <b>Movies</b>',     items:MOVIES,                                    types:A('movie',MOVIES.length),               sec:'movies'},
-    {title:'Binge-Worthy <b>Series</b>', items:TV,                                   types:A('tv',TV.length),                      sec:'tvshows'},
-    {title:'Anime <b>Picks</b>',    items:ANIME,                                     types:A('anime',ANIME.length),                sec:'anime'},
+    {title:'Trending <b>Now</b>',   items:MOVIES.slice(0,5).concat(TV.slice(0,2)),types:A('movie',5).concat(A('tv',2)),sec:'home'},
+    {title:'Top <b>Movies</b>',     items:MOVIES,types:A('movie',MOVIES.length),sec:'movies'},
+    {title:'Binge-Worthy <b>Series</b>',items:TV,types:A('tv',TV.length),sec:'tvshows'},
+    {title:'Anime <b>Picks</b>',    items:ANIME,types:A('anime',ANIME.length),sec:'anime'},
   ];
-
   var html='';
-
-  // ── My List row ──
   var mlItems=mlGetItems();
   if(mlItems.length){
     html+='<div class="row">'+
@@ -1371,8 +1439,6 @@ function buildRows(){
         mlItems.map(function(f){return cardHTML(f.item,f.type);}).join('')+
       '</div></div></div>';
   }
-
-  // ── Standard rows ──
   html+=rows.map(function(row,ri){
     var seeAllBtn=row.sec!=='home'
       ?'<button class="row-more" onclick="goSection(\''+row.sec+'\',null)">See all ›</button>'
@@ -1386,13 +1452,12 @@ function buildRows(){
       '</div>'+
     '</div>';
   }).join('');
-
   document.getElementById('rowsWrap').innerHTML=html;
 }
 function A(v,n){var a=[];for(var i=0;i<n;i++)a.push(v);return a;}
 
 // ══════════════════════
-//  CARD — FIX 1: vertical poster
+//  CARD
 // ══════════════════════
 function cardHTML(item,type){
   var k=reg(item,type);
@@ -1400,10 +1465,10 @@ function cardHTML(item,type){
   return '<div class="card" data-k="'+k+'">'+
     '<div class="card-inner">'+
       '<div class="card-img" style="position:relative">'+
-        '<img src="'+(item.poster ? IP+item.poster : IB+item.backdrop)+'" alt="'+X(item.title)+'" loading="lazy" onerror="imgFail(this)">'+
+        '<img src="'+(item.poster?IP+item.poster:IB+item.backdrop)+'" alt="'+X(item.title)+'" loading="lazy" onerror="imgFail(this)">'+
         '<div class="card-fb" style="display:none">'+X(item.title.slice(0,3).toUpperCase())+'</div>'+
         '<button class="card-remove" title="'+(inList?'Remove from':'Add to')+' My List" onclick="event.stopPropagation();cardToggleList(\''+k+'\',this)">'+
-          (inList ? '♥' : '♡')+
+          (inList?'♥':'♡')+
         '</button>'+
       '</div>'+
       '<div class="card-label">'+
@@ -1419,8 +1484,8 @@ function cardHTML(item,type){
           '<button class="c-btn" onclick="event.stopPropagation();openDetail(\''+k+'\')"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></button>'+
           '<button class="c-btn c-list-btn" id="clb-'+k+'" onclick="event.stopPropagation();cardToggleList(\''+k+'\',this)" title="My List" style="'+(inList?'border-color:#E50914;color:#E50914':'')+'">'+
             (inList
-              ? '<svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>'
-              : '<svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
+              ?'<svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>'
+              :'<svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
             )+
           '</button>'+
           '<span class="c-pct">'+item.match+'%</span>'+
@@ -1438,7 +1503,6 @@ function cardHTML(item,type){
 function cardToggleList(k,btn){
   var r=R[k];if(!r)return;
   var added=mlToggle(r.item,r.type);
-  // Update the card-remove heart icon
   var cardEl=btn.closest('.card');
   if(cardEl){
     var removeBtn=cardEl.querySelector('.card-remove');
@@ -1452,10 +1516,8 @@ function cardToggleList(k,btn){
         :'<svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
     }
   }
-  showToast(added ? '♥ Added to My List' : 'Removed from My List');
-  // Refresh home rows if we're on home (to update My List row)
+  showToast(added?'♥ Added to My List':'Removed from My List');
   if(document.getElementById('pg-home').classList.contains('active')){buildRows();}
-  // Refresh my list page if open
   if(document.getElementById('pg-mylist').classList.contains('active')){renderMyList();}
 }
 function imgFail(img){
@@ -1470,8 +1532,8 @@ function imgFail(img){
 function dpListBtnHTML(item){
   var inList=mlHas(item);
   return inList
-    ? '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg> In My List'
-    : '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> My List';
+    ?'<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg> In My List'
+    :'<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> My List';
 }
 function dpToggleList(k){
   var r=R[k];if(!r)return;
@@ -1483,13 +1545,7 @@ function dpToggleList(k){
     btn.style.borderColor=added?'rgba(229,9,20,.4)':'';
     btn.style.color=added?'#ff6b6b':'';
   }
-  showToast(added ? '♥ Added to My List' : 'Removed from My List');
-}
-function goMyList(){
-  PREV_PG=document.querySelector('.page.active').id;
-  clearInterval(SLIDE_TMR);
-  showPage('pg-mylist');
-  renderMyList();
+  showToast(added?'♥ Added to My List':'Removed from My List');
 }
 function renderMyList(){
   var items=mlGetItems();
@@ -1503,12 +1559,11 @@ function renderMyList(){
         '<svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'+
         '<h3>Your list is empty</h3>'+
         '<p>Add movies, shows and anime by clicking the ♡ icon on any card or the My List button on the detail page.</p>'+
-        '<button class="btn-info" onclick="showPage(\'pg-home\');startSlider()" style="margin-top:8px">Browse Content</button>'+
+        '<button class="btn-info" onclick="goHome()" style="margin-top:8px">Browse Content</button>'+
       '</div>';
     return;
   }
   body.innerHTML='<div class="mylist-grid">'+items.map(function(f){return cardHTML(f.item,f.type);}).join('')+'</div>';
-  // Wire up card clicks on the grid
   body.querySelectorAll('[data-k]').forEach(function(c){
     c.addEventListener('click',function(){openDetail(c.dataset.k);});
   });
@@ -1526,6 +1581,7 @@ function clearMyList(){
 // ══════════════════════
 function openDetail(k){var r=R[k];if(!r)return;showDetail(r.item,r.type);}
 function showDetail(item,type){
+  pushRoute('/title/'+item.id);
   PREV_PG=document.querySelector('.page.active').id;
   clearInterval(SLIDE_TMR);
   CUR_ITEM=item;CUR_TYPE=type;
@@ -1535,8 +1591,7 @@ function showDetail(item,type){
     ?'<img src="'+IP+item.poster+'" alt="'+X(item.title)+'">'
     :'<div style="width:100%;aspect-ratio:2/3;display:flex;align-items:center;justify-content:center;background:#1a1a1a;font-family:\'Bebas Neue\',sans-serif;font-size:2rem;color:rgba(255,255,255,.08)">'+X(item.title.slice(0,2))+'</div>';
   document.getElementById('dpBackBtn').onclick=function(){
-    showPage(PREV_PG);
-    if(PREV_PG==='pg-home')startSlider();
+    window.history.back();
   };
   var k=reg(item,type);
   var label=(type==='movie'||item.isM)?'Feature Film':type==='tv'?'TV Series':'Anime';
@@ -1642,12 +1697,13 @@ function switchSeason(s,btn){
 // ══════════════════════
 //  PLAYER
 // ══════════════════════
-var MOB_TAB='info'; // current mobile tab
+var MOB_TAB='info';
 
 function playItem(k){var r=R[k];if(!r)return;startPlayer(r.item,r.type,null,null);}
 function playEp(k,s,ep){var r=R[k];if(!r)return;startPlayer(r.item,r.type,s,ep);}
 
 function startPlayer(item,type,s,ep){
+  pushRoute('/play/'+item.id+(s&&ep?'/'+s+'/'+ep:''));
   PREV_PG=document.querySelector('.page.active').id;
   clearInterval(SLIDE_TMR);
   CUR_ITEM=item;CUR_TYPE=type;
@@ -1658,28 +1714,15 @@ function startPlayer(item,type,s,ep){
   }
   CUR_EP=s?{s:s,e:ep}:ep?{e:ep}:null;
   showPage('pg-player');
-
-  // Nav title
   document.getElementById('playTitle').textContent=item.title+(s&&ep?' · S'+s+'E'+ep:'');
-
-  // Back button
   document.getElementById('playBackBtn').onclick=function(){
     document.getElementById('playFrame').innerHTML='';
-    showPage(PREV_PG);
-    if(PREV_PG==='pg-home')startSlider();
+    window.history.back();
   };
-
-  // Iframe
   document.getElementById('playFrame').innerHTML=
     '<iframe src="'+buildSrc(type,item,s,ep)+'" frameborder="0" allowfullscreen allow="autoplay;encrypted-media;picture-in-picture;fullscreen"></iframe>';
-
-  // Update My List heart in top bar
   updatePlayerListBtn();
-
-  // ── MOBILE PANEL ──
   buildMobilePanel(item,type,s,ep);
-
-  // ── DESKTOP PANEL ──
   var pL=document.getElementById('pipL');
   pL.innerHTML=
     '<div class="pip-title">'+X(item.title)+'</div>'+
@@ -1697,13 +1740,10 @@ function startPlayer(item,type,s,ep){
   resetProg();
 }
 
-// ── Build the full mobile panel ──
 function buildMobilePanel(item,type,s,ep){
   var k=reg(item,type);
   var hasEps=type==='tv'||(type==='anime'&&!item.isM);
   var inList=mlHas(item);
-
-  // Title + meta
   document.getElementById('mobTitle').textContent=item.title;
   document.getElementById('mobMeta').innerHTML=
     '<span class="gn">'+item.match+'% Match</span>'+
@@ -1711,8 +1751,6 @@ function buildMobilePanel(item,type,s,ep){
     (s&&ep?'<span>S'+s+' · E'+ep+'</span>':'')+
     '<span class="box">'+item.rating+'</span>'+
     '<span>'+item.year+'</span>';
-
-  // Action buttons
   document.getElementById('mobActions').innerHTML=
     '<button class="play-act-btn" onclick="playItem(\''+k+'\')">'+
       '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>Play'+
@@ -1726,22 +1764,18 @@ function buildMobilePanel(item,type,s,ep){
     '<button class="play-act-btn" onclick="showToast(\'Link copied!\')">'+
       '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Share'+
     '</button>';
-
-  // Tabs
   var tabs=[{id:'info',label:'Info'}];
   if(hasEps)tabs.push({id:'episodes',label:'Episodes'});
   if(item.related&&item.related.length)tabs.push({id:'related',label:'More Like This'});
   document.getElementById('mobTabs').innerHTML=tabs.map(function(t){
     return '<button class="play-tab'+(t.id===MOB_TAB?' on':'')+'" onclick="switchMobTab(\''+t.id+'\')">'+t.label+'</button>';
   }).join('');
-
   renderMobTab(item,type,s);
 }
 
 function switchMobTab(tab){
   MOB_TAB=tab;
   document.querySelectorAll('.play-tab').forEach(function(b){b.classList.toggle('on',b.textContent.toLowerCase().replace(/\s+/g,'')===tab||b.onclick.toString().includes("'"+tab+"'"));});
-  // Re-render just the tab body
   if(CUR_ITEM)renderMobTab(CUR_ITEM,CUR_TYPE,CUR_S);
 }
 
@@ -1749,7 +1783,6 @@ function renderMobTab(item,type,s){
   var body=document.getElementById('mobTabBody');
   if(!body)return;
   var k=reg(item,type);
-
   if(MOB_TAB==='info'){
     body.innerHTML=
       '<p class="play-desc">'+X(item.desc)+'</p>'+
@@ -1761,7 +1794,6 @@ function renderMobTab(item,type,s){
         '<div class="play-detail-row"><div class="play-detail-lbl">Rating</div><div class="play-detail-val">'+item.rating+'</div></div>'+
         '<div class="play-detail-row"><div class="play-detail-lbl">Genre</div><div class="play-detail-val">'+X(item.genre)+'</div></div>'+
       '</div>';
-
   }else if(MOB_TAB==='episodes'){
     var stabs='';
     if(type==='tv'&&item.seasons){
@@ -1771,7 +1803,6 @@ function renderMobTab(item,type,s){
         }).join('')+'</div>';
     }
     body.innerHTML=stabs+'<div class="play-ep-list" id="mobEpList">'+buildMobEpList(item,type,CUR_S)+'</div>';
-
   }else if(MOB_TAB==='related'){
     var rels=(item.related||[]).map(function(rid){return findById(rid);}).filter(Boolean);
     if(!rels.length){body.innerHTML='<p style="color:#444;font-size:.8rem;padding:20px 0">No related titles found.</p>';return;}
@@ -1805,7 +1836,7 @@ function buildMobEpList(item,type,s){
         '<div class="play-ep-meta">'+d+(type==='tv'?' · Season '+s:'')+(isW?' · Watched':'')+'</div>'+
       '</div>'+
       (isA?'<span class="play-ep-playing">Now Playing</span>'
-        :isW?'<div class="play-ep-check"><svg width="8" height="8" fill="none" stroke="#46d369" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg></div>':'')+ 
+        :isW?'<div class="play-ep-check"><svg width="8" height="8" fill="none" stroke="#46d369" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg></div>':'')+
     '</div>';
   }).join('');
 }
@@ -1816,7 +1847,6 @@ function mobSwitchSeason(s,btn){
   btn.classList.add('on');
   var list=document.getElementById('mobEpList');
   if(list&&CUR_ITEM)list.innerHTML=buildMobEpList(CUR_ITEM,CUR_TYPE,s);
-  // also sync desktop
   document.querySelectorAll('.pip-stab').forEach(function(b){b.classList.toggle('on',b.textContent==='S'+s);});
   buildPipEps();
 }
@@ -1824,23 +1854,22 @@ function mobSwitchSeason(s,btn){
 function mobPlayEp(k,s,ep){
   var r=R[k];if(!r)return;
   CUR_EP=s?{s:s,e:ep}:{e:ep};
+  pushRoute('/play/'+r.item.id+(s?'/'+s+'/'+ep:''));
   document.getElementById('playFrame').innerHTML='<iframe src="'+buildSrc(r.type,r.item,s,ep)+'" frameborder="0" allowfullscreen allow="autoplay;encrypted-media;picture-in-picture;fullscreen"></iframe>';
   document.getElementById('playTitle').textContent=r.item.title+(s?' · S'+s+'E'+ep:' · Ep'+ep);
   document.getElementById('mobTitle').textContent=r.item.title;
   if(document.getElementById('mobMeta'))
-    document.getElementById('mobMeta').querySelector('span:nth-child(3)') &&
+    document.getElementById('mobMeta').querySelector('span:nth-child(3)')&&
     (document.getElementById('mobMeta').innerHTML=
       '<span class="gn">'+r.item.match+'% Match</span>'+
       '<span class="gy">★ '+r.item.imdb+'</span>'+
       (s?'<span>S'+s+' · E'+ep+'</span>':'<span>Ep '+ep+'</span>')+
       '<span class="box">'+r.item.rating+'</span>'+
       '<span>'+r.item.year+'</span>');
-  // Re-render ep list to update "Now Playing" state
   var list=document.getElementById('mobEpList');
   if(list)list.innerHTML=buildMobEpList(r.item,r.type,s||CUR_S);
   buildPipEps();
   resetProg();
-  // Scroll video into view on mobile
   var vw=document.querySelector('.play-video-wrap');
   if(vw)vw.scrollIntoView({behavior:'smooth'});
 }
@@ -1848,7 +1877,6 @@ function mobPlayEp(k,s,ep){
 function updatePlayerListBtn(){
   if(!CUR_ITEM)return;
   var inList=mlHas(CUR_ITEM);
-  // top bar heart
   var topBtn=document.getElementById('playListBtn');
   if(topBtn){
     topBtn.style.background=inList?'rgba(229,9,20,.6)':'';
@@ -1862,7 +1890,6 @@ function playerToggleList(){
   var k=reg(CUR_ITEM,CUR_TYPE);
   var added=mlToggle(CUR_ITEM,CUR_TYPE);
   updatePlayerListBtn();
-  // update mob action button
   var mobBtn=document.getElementById('mobListBtn');
   if(mobBtn){
     mobBtn.classList.toggle('active',added);
@@ -1904,21 +1931,20 @@ function pipS(s,btn){
 function pipPlay(k,s,ep){
   var r=R[k];if(!r)return;
   CUR_EP=s?{s:s,e:ep}:{e:ep};
+  pushRoute('/play/'+r.item.id+(s?'/'+s+'/'+ep:''));
   document.getElementById('playFrame').innerHTML='<iframe src="'+buildSrc(r.type,r.item,s,ep)+'" frameborder="0" allowfullscreen allow="autoplay;encrypted-media;picture-in-picture;fullscreen"></iframe>';
   document.getElementById('playTitle').textContent=r.item.title+(s?' · S'+s+'E'+ep:' · Ep'+ep);
   buildPipEps();resetProg();
 }
 
 // ══════════════════════
-//  PROGRESS — receives messages from the player iframe
+//  PROGRESS
 // ══════════════════════
 window.addEventListener('message',function(e){
   try{
     var d=JSON.parse(e.data);
     if(d.progress!==undefined){
       var pct=Math.round(d.progress);
-
-      // Mobile progress bar + strip
       var fe=document.getElementById('progFill');
       var strip=document.getElementById('progStrip');
       var pe=document.getElementById('progPct');
@@ -1927,12 +1953,8 @@ window.addEventListener('message',function(e){
       if(strip)strip.style.width=pct+'%';
       if(pe)pe.textContent=pct+'%';
       if(te&&d.timestamp&&d.duration)te.textContent=fmtT(d.timestamp)+' / '+fmtT(d.duration);
-
-      // Desktop progress
       var fed=document.getElementById('progFillDesktop');
       if(fed)fed.style.width=pct+'%';
-
-      // Mark episode as watched at 80%+
       if(pct>80&&CUR_ITEM&&CUR_EP){
         var key=CUR_TYPE==='tv'?'tv-'+CUR_ITEM.id+'-s'+CUR_EP.s+'e'+CUR_EP.e:'an-'+CUR_ITEM.id+'-e'+CUR_EP.e;
         if(!WATCHED[key]){
@@ -1955,34 +1977,8 @@ function fmtT(s){if(!s)return '0:00';var h=Math.floor(s/3600),m=Math.floor((s%36
 function P(n){return n<10?'0'+n:''+n;}
 
 // ══════════════════════
-//  SECTIONS (nav tabs)
+//  SECTIONS (nav tabs) — now delegates to goSection with pushRoute
 // ══════════════════════
-function goSection(sec,btn){
-  CUR_SEC=sec;
-  setNavActive(btn);
-  showPage('pg-home');
-  clearInterval(SLIDE_TMR);
-  var rw=document.getElementById('rowsWrap');
-  if(sec==='home'){buildSlides();buildRows();startSlider();return;}
-  var cfgMap={
-    movies:{hero:MOVIES[0],htype:'movie',label:'All <b>Movies</b>',items:MOVIES,type:'movie'},
-    tvshows:{hero:TV[0],htype:'tv',label:'All <b>TV Shows</b>',items:TV,type:'tv'},
-    anime:{hero:ANIME[0],htype:'anime',label:'All <b>Anime</b>',items:ANIME,type:'anime'},
-  };
-  var cfg=cfgMap[sec];
-  buildSingleHero(cfg.hero,cfg.htype);
-  // FIX 2: See All page shows full list with a Back to Home button
-  rw.innerHTML=
-    '<div style="padding:16px 4% 8px;display:flex;align-items:center;justify-content:space-between">'+
-      '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.4rem;letter-spacing:.08em;color:#bbb">'+cfg.label+'</div>'+
-      '<button onclick="goHome()" style="font-size:.65rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#888;padding:5px 12px;border-radius:4px;border:1px solid rgba(255,255,255,.1);transition:color .15s,border-color .15s" onmouseover="this.style.color=\'#fff\';this.style.borderColor=\'rgba(255,255,255,.25)\'" onmouseout="this.style.color=\'#888\';this.style.borderColor=\'rgba(255,255,255,.1)\'">← Home</button>'+
-    '</div>'+
-    '<div class="row"><div class="track-outer">'+
-      '<div class="track" style="flex-wrap:wrap;gap:10px;overflow:visible;padding:4px 0">'+
-        cfg.items.map(function(item){return cardHTML(item,cfg.type);}).join('')+
-      '</div>'+
-    '</div></div>';
-}
 function buildSingleHero(item,type){
   if(!item)return;
   HERO_ITEMS=[{item:item,type:type}];SLIDE_IDX=0;
