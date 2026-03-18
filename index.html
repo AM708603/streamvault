@@ -3,7 +3,52 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<title>StreamVault</title>
+<!-- ═══ PRIMARY SEO ═══ -->
+<title>StreamVault — Watch Movies, TV Shows &amp; Anime Online Free</title>
+<meta name="description" content="StreamVault is your free online streaming destination. Watch the latest movies, binge-worthy TV shows and top anime — all in one place, no sign-up needed.">
+<meta name="keywords" content="watch movies online free, free streaming site, watch tv shows online, watch anime online free, stream movies free, free anime streaming, watch series online, StreamVault">
+<meta name="author" content="StreamVault">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+<link rel="canonical" href="https://streamzvault.netlify.app/">
+
+<!-- ═══ OPEN GRAPH (WhatsApp, Discord, Facebook) ═══ -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="StreamVault">
+<meta property="og:title" content="StreamVault — Watch Movies, TV Shows &amp; Anime Online Free">
+<meta property="og:description" content="Your free streaming destination. Watch movies, TV shows and anime online — all in one place, no sign-up needed.">
+<meta property="og:url" content="https://streamzvault.netlify.app/">
+<meta property="og:image" content="https://streamzvault.netlify.app/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="StreamVault — Free Online Streaming Platform">
+<meta property="og:locale" content="en_US">
+
+<!-- ═══ TWITTER / X CARD ═══ -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="StreamVault — Watch Movies, TV Shows &amp; Anime Online Free">
+<meta name="twitter:description" content="Your free streaming destination. Watch movies, TV shows and anime online — all in one place.">
+<meta name="twitter:image" content="https://streamzvault.netlify.app/og-image.jpg">
+<meta name="twitter:image:alt" content="StreamVault — Free Online Streaming Platform">
+
+<!-- ═══ PWA / THEME ═══ -->
+<meta name="theme-color" content="#E50914">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="StreamVault">
+<link rel="manifest" href="/manifest.json">
+
+<!-- ═══ STRUCTURED DATA ═══ -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebSite","name":"StreamVault","alternateName":"StreamZVault","url":"https://streamzvault.netlify.app/","description":"Free online streaming platform for movies, TV shows and anime.","potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://streamzvault.netlify.app/?q={search_term_string}"},"query-input":"required name=search_term_string"}}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Organization","name":"StreamVault","url":"https://streamzvault.netlify.app/","logo":{"@type":"ImageObject","url":"https://streamzvault.netlify.app/og-image.jpg","width":1200,"height":630}}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is StreamVault free to use?","acceptedAnswer":{"@type":"Answer","text":"Yes, StreamVault is completely free. No sign-up or subscription is required to watch movies, TV shows or anime."}},{"@type":"Question","name":"What can I watch on StreamVault?","acceptedAnswer":{"@type":"Answer","text":"StreamVault offers movies, TV shows and anime — all streamable for free in your browser."}},{"@type":"Question","name":"Do I need an account to watch on StreamVault?","acceptedAnswer":{"@type":"Answer","text":"No account needed. Simply visit StreamVault, browse the library and start watching instantly."}}]}
+</script>
+
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -2116,10 +2161,9 @@ function X(s){return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').
 
 init();
 </script>
-
 <!-- ── REQUEST MODAL ── -->
 <div id="req-ov">
-  <div class="req-box" id="reqBox">
+  <div class="req-box">
     <div id="reqForm">
       <div class="req-hdr">
         <div class="req-hdr-txt">
@@ -2131,7 +2175,7 @@ init();
       <div class="req-body">
         <div class="req-fg">
           <label>Type</label>
-          <div class="req-type-row" id="reqTypeBtns">
+          <div class="req-type-row">
             <div class="req-type-btn on" onclick="setReqType('movie',this)">&#127916; Movie</div>
             <div class="req-type-btn"    onclick="setReqType('tv',this)">&#128250; TV Show</div>
             <div class="req-type-btn"    onclick="setReqType('anime',this)">&#127756; Anime</div>
@@ -2210,7 +2254,7 @@ async function submitContentRequest() {
   }
   var btn = document.getElementById('reqSubmitBtn');
   btn.disabled = true;
-  btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="animation:spin .7s linear infinite"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> Sending…';
+  btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="animation:spin .7s linear infinite"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> Sending\u2026';
   try {
     var res = await fetch(CF + '/api/requests', {
       method: 'POST',
@@ -2229,18 +2273,23 @@ async function submitContentRequest() {
     } else {
       btn.disabled = false;
       btn.innerHTML = 'Send Request';
-      showToast('⚠ ' + (data.error || 'Something went wrong'));
+      showToast('\u26a0 ' + (data.error || 'Something went wrong'));
     }
   } catch(e) {
     btn.disabled = false;
     btn.innerHTML = 'Send Request';
-    showToast('Network error — please try again');
+    showToast('Network error \u2014 please try again');
   }
 }
 
 document.getElementById('req-ov').addEventListener('click', function(e){
   if (e.target === this) closeRequest();
 });
+
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') closeRequest();
+});
 </script>
+
 </body>
 </html>
