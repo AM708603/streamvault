@@ -453,6 +453,40 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 .empty-state h3{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.06em;color:var(--text3)}
 .empty-state p{font-size:.8rem;max-width:280px;line-height:1.7}
 
+/* ── REQUESTS VIEW ── */
+.req-stats{display:flex;gap:.8rem;flex-wrap:wrap;margin-bottom:1.5rem}
+.req-stat-pill{display:flex;align-items:center;gap:.5rem;padding:.45rem .9rem;border-radius:20px;font-size:.72rem;font-weight:700;background:var(--bg2);border:1px solid var(--border);}
+.req-stat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.req-stat-dot.all{background:var(--text3)}
+.req-stat-dot.pending{background:var(--gold)}
+.req-stat-dot.approved{background:var(--green)}
+.req-stat-dot.declined{background:#ff4444}
+.req-pill-filter{padding:.28rem .75rem;border-radius:20px;font-size:.68rem;font-weight:600;background:var(--bg3);border:1px solid var(--border);color:var(--text3);cursor:pointer;transition:all .15s;}
+.req-pill-filter.active{background:var(--red-dim);border-color:var(--red);color:var(--red)}
+.req-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:1rem 1.2rem;display:flex;align-items:flex-start;gap:1rem;transition:border-color .2s;margin-bottom:.7rem;}
+.req-card:hover{border-color:rgba(255,255,255,.12)}
+.req-card.status-approved{border-left:3px solid var(--green)}
+.req-card.status-declined{border-left:3px solid #ff4444;opacity:.65}
+.req-card.status-pending{border-left:3px solid var(--gold)}
+.req-card-icon{width:38px;height:38px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem;background:var(--bg3);border:1px solid var(--border);}
+.req-card-body{flex:1;min-width:0}
+.req-card-title{font-size:.88rem;font-weight:600;color:var(--text);margin-bottom:.2rem}
+.req-card-meta{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-bottom:.35rem}
+.req-card-note{font-size:.74rem;color:var(--text2);line-height:1.6;margin-bottom:.4rem;background:var(--bg3);padding:.4rem .65rem;border-radius:6px;border-left:2px solid rgba(255,255,255,.08)}
+.req-badge{font-size:.58rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:.15rem .5rem;border-radius:4px;}
+.req-badge.movie{background:rgba(229,9,20,.15);color:var(--red)}
+.req-badge.tv{background:rgba(59,130,246,.15);color:var(--blue)}
+.req-badge.anime{background:rgba(245,197,24,.12);color:var(--gold)}
+.req-badge.pending{background:rgba(245,197,24,.12);color:var(--gold)}
+.req-badge.approved{background:rgba(70,211,105,.12);color:var(--green)}
+.req-badge.declined{background:rgba(255,68,68,.12);color:#ff6b6b}
+.req-card-time{font-size:.62rem;color:var(--text3)}
+.req-card-requester{font-size:.67rem;color:var(--text3)}
+.req-card-actions{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.6rem;align-items:center}
+.req-admin-note-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.76rem;padding:.45rem .75rem;resize:none;transition:border-color .2s;margin-top:.5rem;}
+.req-admin-note-input:focus{outline:none;border-color:rgba(255,255,255,.2)}
+.req-admin-note-input::placeholder{color:var(--text3)}
+
 /* Pill tabs for content filter */
 .pill-tabs{display:flex;gap:.4rem;flex-wrap:wrap}
 .pill-tab{
@@ -519,6 +553,11 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
       <div class="sb-link" onclick="switchView('anime',this)">
         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8 17.72m2.54-15.38c-3.72 4.35-8.94 5.66-16.88 5.85m19.5 1.9c-3.5-.93-6.63-.82-8.94 0-2.58.92-5.01 2.86-7.44 6.32"/></svg>
         Anime <span class="sb-count" style="background:rgba(245,197,24,.1);color:var(--gold)" id="sbA">0</span>
+      </div>
+      <div class="sb-sec">Requests</div>
+      <div class="sb-link" onclick="switchView('requests',this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        Requests <span class="sb-count" style="background:rgba(245,197,24,.12);color:var(--gold)" id="sbReqCount">0</span>
       </div>
       <div class="sb-sec">Tools</div>
       <div class="sb-link" onclick="switchView('bulk',this)">
@@ -729,6 +768,27 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
           </button>
         </div>
       </div>
+    </div>
+
+
+    <!-- REQUESTS -->
+    <div class="view" id="view-requests">
+      <div class="req-stats" id="reqStats"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.8rem;margin-bottom:1rem">
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap" id="reqFilterBar">
+          <div class="req-pill-filter active" onclick="filterRequests('all',this)">All</div>
+          <div class="req-pill-filter" onclick="filterRequests('pending',this)">Pending</div>
+          <div class="req-pill-filter" onclick="filterRequests('approved',this)">Approved</div>
+          <div class="req-pill-filter" onclick="filterRequests('declined',this)">Declined</div>
+        </div>
+        <div style="display:flex;gap:.5rem">
+          <button class="btn btn-sec btn-sm" onclick="loadRequests()">
+            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="23,4 23,10 17,10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg> Refresh
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="clearAllRequests()">Clear All</button>
+        </div>
+      </div>
+      <div id="reqList"></div>
     </div>
 
     <!-- SETTINGS -->
@@ -1028,7 +1088,7 @@ function loadData() {
   api('GET', '/api/content').then(function(data) {
     DB.movies = data.movies||[]; DB.tvshows = data.tvshows||[]; DB.anime = data.anime||[];
     updateCounts(); renderRecent(); renderGrid('movie'); renderGrid('tv'); renderGrid('anime');
-    renderStats(); populateGenreFilters();
+    renderStats(); populateGenreFilters(); loadRequests();
     setSynced(); toast('Content loaded ✓', 'ok');
   }).catch(function(){ setSyncErr(); toast('Failed to load content', 'err'); });
 }
@@ -1100,7 +1160,7 @@ function renderStats() {
 // ═══════════════════════════════
 //  VIEWS
 // ═══════════════════════════════
-var viewTitles = {dashboard:'Dashboard',stats:'Analytics',movies:'Movies',tvshows:'TV Shows',anime:'Anime',bulk:'Bulk Import',settings:'Settings'};
+var viewTitles = {dashboard:'Dashboard',stats:'Analytics',movies:'Movies',tvshows:'TV Shows',anime:'Anime',bulk:'Bulk Import',settings:'Settings',requests:'Content Requests'};
 function switchView(id, el) {
   document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
   document.getElementById('view-'+id).classList.add('active');
@@ -1635,6 +1695,153 @@ function toast(msg, type) {
   var savedKey = localStorage.getItem('sv_tmdb');
   if (savedKey) TMDB_KEY = savedKey;
 })();
+
+// ══ REQUEST MANAGEMENT (admin) ═══════════════════════════
+
+var ALL_REQUESTS = [];
+var REQ_FILTER   = 'all';
+
+function loadRequests() {
+  api('GET', '/api/requests').then(function(data) {
+    ALL_REQUESTS = Array.isArray(data) ? data : [];
+    renderRequestStats();
+    renderRequests();
+    var pending = ALL_REQUESTS.filter(function(r){ return r.status === 'pending'; }).length;
+    var badge = document.getElementById('sbReqCount');
+    if (badge) badge.textContent = pending;
+  }).catch(function(){});
+}
+
+function renderRequestStats() {
+  var total    = ALL_REQUESTS.length;
+  var pending  = ALL_REQUESTS.filter(function(r){ return r.status === 'pending';  }).length;
+  var approved = ALL_REQUESTS.filter(function(r){ return r.status === 'approved'; }).length;
+  var declined = ALL_REQUESTS.filter(function(r){ return r.status === 'declined'; }).length;
+  var el = document.getElementById('reqStats');
+  if (!el) return;
+  el.innerHTML =
+    rPill('all',total,'All Requests') + rPill('pending',pending,'Pending') +
+    rPill('approved',approved,'Approved') + rPill('declined',declined,'Declined');
+}
+function rPill(s, count, label) {
+  return '<div class="req-stat-pill"><div class="req-stat-dot '+s+'"></div><span style="color:var(--text2)">'+label+'</span><span style="color:var(--text3);font-weight:400">'+count+'</span></div>';
+}
+
+function filterRequests(status, el) {
+  REQ_FILTER = status;
+  document.querySelectorAll('.req-pill-filter').forEach(function(b){ b.classList.remove('active'); });
+  el.classList.add('active');
+  renderRequests();
+}
+
+function renderRequests() {
+  var list = REQ_FILTER === 'all' ? ALL_REQUESTS : ALL_REQUESTS.filter(function(r){ return r.status === REQ_FILTER; });
+  var container = document.getElementById('reqList');
+  if (!container) return;
+  if (!list.length) {
+    container.innerHTML = '<div class="empty-state"><svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg><h3>No Requests</h3><p>'+(REQ_FILTER==='all'?'No content requests yet.':'No '+REQ_FILTER+' requests.')+'</p></div>';
+    return;
+  }
+  container.innerHTML = list.map(function(req) {
+    var icon = req.type==='movie'?'🎬':req.type==='tv'?'📺':'🎌';
+    var hasNote = req.note && req.note.trim();
+    return '<div class="req-card status-'+req.status+'">'+
+      '<div class="req-card-icon">'+icon+'</div>'+
+      '<div class="req-card-body">'+
+        '<div class="req-card-title">'+esc(req.title)+'</div>'+
+        '<div class="req-card-meta">'+
+          '<span class="req-badge '+req.type+'">'+req.type+'</span>'+
+          '<span class="req-badge '+req.status+'">'+req.status+'</span>'+
+          '<span class="req-card-time">'+relTime(req.createdAt)+'</span>'+
+          (req.name?'<span class="req-card-requester">by '+esc(req.name)+'</span>':'')+
+        '</div>'+
+        (hasNote?'<div class="req-card-note">'+esc(req.note)+'</div>':'')+
+        '<div class="req-card-actions">'+
+          (req.status!=='approved'?'<button class="btn btn-green btn-xs" onclick="setReqStatus(''+req.id+'','approved')">&#10003; Approve</button>':'<button class="btn btn-sec btn-xs" style="opacity:.4" disabled>&#10003; Approved</button>')+
+          (req.status!=='declined'?'<button class="btn btn-danger btn-xs" onclick="setReqStatus(''+req.id+'','declined')">&#10005; Decline</button>':'<button class="btn btn-sec btn-xs" style="opacity:.4" disabled>&#10005; Declined</button>')+
+          (req.status!=='pending'?'<button class="btn btn-sec btn-xs" onclick="setReqStatus(''+req.id+'','pending')">&#8617; Reset</button>':'')+
+          '<button class="btn btn-sec btn-xs" onclick="deleteOneRequest(''+req.id+'')">&#128465;</button>'+
+          '<button class="btn btn-sec btn-xs" style="margin-left:auto" onclick="addRequestedTitle('+JSON.stringify(req).replace(/</g,'\u003c').replace(/>/g,'\u003e')+')">+ Add to Library</button>'+
+        '</div>'+
+        '<textarea class="req-admin-note-input" rows="1" placeholder="Admin note (optional)..." onblur="saveAdminNote(''+req.id+'',this.value)">'+esc(req.adminNote||'')+'</textarea>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function setReqStatus(id, status) {
+  api('PUT', '/api/requests/'+id, {status:status}).then(function(res){
+    if (res.success) {
+      var r = ALL_REQUESTS.find(function(x){ return x.id===id; });
+      if (r) r.status = status;
+      renderRequestStats(); renderRequests();
+      var pending = ALL_REQUESTS.filter(function(r){ return r.status==='pending'; }).length;
+      var badge = document.getElementById('sbReqCount');
+      if (badge) badge.textContent = pending;
+      toast('Marked as '+status,'ok');
+    }
+  });
+}
+
+function saveAdminNote(id, note) {
+  api('PUT', '/api/requests/'+id, {adminNote:note}).then(function(){}).catch(function(){});
+}
+
+function deleteOneRequest(id) {
+  api('DELETE', '/api/requests/'+id).then(function(res){
+    if (res.success) {
+      ALL_REQUESTS = ALL_REQUESTS.filter(function(r){ return r.id!==id; });
+      renderRequestStats(); renderRequests();
+      var pending = ALL_REQUESTS.filter(function(r){ return r.status==='pending'; }).length;
+      var badge = document.getElementById('sbReqCount');
+      if (badge) badge.textContent = pending;
+      toast('Request deleted','ok');
+    }
+  });
+}
+
+function clearAllRequests() {
+  document.getElementById('confirmTitle').textContent = 'Clear All Requests?';
+  document.getElementById('confirmIcon').textContent  = '🗑️';
+  document.getElementById('confirmMsg').textContent   = 'All '+ALL_REQUESTS.length+' requests will be permanently deleted.';
+  document.getElementById('confirmOkBtn').textContent = 'Clear All';
+  document.getElementById('confirmOkBtn').onclick = function() {
+    closeConfirm();
+    api('DELETE', '/api/requests').then(function(res){
+      if (res.success) {
+        ALL_REQUESTS = [];
+        renderRequestStats(); renderRequests();
+        var badge = document.getElementById('sbReqCount');
+        if (badge) badge.textContent = '0';
+        toast('All requests cleared','ok');
+      }
+    });
+  };
+  document.getElementById('confirmOverlay').classList.add('open');
+}
+
+function addRequestedTitle(req) {
+  var typeMap = {movie:'movie',tv:'tv',anime:'anime'};
+  openAdd(typeMap[req.type]||'movie');
+  setTimeout(function(){
+    var el = document.getElementById('f_title');
+    if (el) { el.value = req.title; el.classList.add('autofilled'); }
+  }, 50);
+  toast('Title pre-filled — use Fetch to auto-populate the rest ✨','info');
+}
+
+function relTime(iso) {
+  if (!iso) return '—';
+  var diff  = Date.now() - new Date(iso).getTime();
+  var mins  = Math.floor(diff/60000);
+  var hours = Math.floor(diff/3600000);
+  var days  = Math.floor(diff/86400000);
+  if (mins  < 1)  return 'just now';
+  if (mins  < 60) return mins+'m ago';
+  if (hours < 24) return hours+'h ago';
+  if (days  < 30) return days+'d ago';
+  return new Date(iso).toLocaleDateString();
+}
 </script>
 </body>
 </html>
