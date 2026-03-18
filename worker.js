@@ -48,6 +48,28 @@ export default {
 
     // ── ADMIN ROUTES (password required) ────────────────
 
+    // ── PUBLIC: Submit a content request ────────────────
+    if (request.method === "POST" && path === "/api/requests") {
+      return await submitRequest(env, request);
+    }
+
+    // ── ADMIN: Manage content requests ──────────────────
+    if (request.method === "GET" && path === "/api/requests") {
+      return await getRequests(env);
+    }
+    if (request.method === "PUT" && path.startsWith("/api/requests/")) {
+      const id = path.split("/")[3];
+      return await updateRequest(env, id, request);
+    }
+    if (request.method === "DELETE" && path.match(/^\/api\/requests\/[^/]+$/)) {
+      const id = path.split("/")[3];
+      return await deleteRequest(env, id);
+    }
+    if (request.method === "DELETE" && path === "/api/requests") {
+      return await clearRequests(env);
+    }
+
+
     const adminPass = request.headers.get("X-Admin-Password");
     if (adminPass !== ADMIN_PASSWORD) {
       return json({ error: "Unauthorized" }, 401);
@@ -162,4 +184,87 @@ async function bulkSave(env, request) {
   };
   await saveDB(env, db);
   return json({ success: true, counts: { movies: db.movies.length, tvshows: db.tvshows.length, anime: db.anime.length } });
+}
+
+// ── REQUEST KV HELPERS ───────────────────────────────────
+
+async function getRequestsDB(env) {
+  try {
+    const raw = await env.SV_KV.get("requests");
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return [];
+}
+
+async function saveRequestsDB(env, requests) {
+  await env.SV_KV.put("requests", JSON.stringify(requests));
+}
+
+// ── REQUEST HANDLERS ─────────────────────────────────────
+
+async function submitRequest(env, request) {
+  const body  = await request.json();
+  const title = (body.title || "").trim();
+  const type  = (body.type  || "movie").trim();
+  const note  = (body.note  || "").trim().slice(0, 500);
+  const name  = (body.name  || "").trim().slice(0, 80);
+
+  if (!title) return json({ error: "Title is required" }, 400);
+
+  const requests = await getRequestsDB(env);
+
+  // Rate-limit: max 3 pending per IP
+  const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+  const pendingFromIp = requests.filter(r => r.ip === ip && r.status === "pending").length;
+  if (pendingFromIp >= 3) {
+    return json({ error: "You have too many pending requests. Please wait for them to be reviewed." }, 429);
+  }
+
+  const req = {
+    id:        Date.now().toString(),
+    title,
+    type,
+    note,
+    name,
+    ip,
+    status:    "pending",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    adminNote: "",
+  };
+
+  requests.unshift(req);
+  if (requests.length > 500) requests.length = 500;
+  await saveRequestsDB(env, requests);
+  return json({ success: true, id: req.id });
+}
+
+async function getRequests(env) {
+  return json(await getRequestsDB(env));
+}
+
+async function updateRequest(env, id, request) {
+  const requests = await getRequestsDB(env);
+  const idx = requests.findIndex(r => r.id === id);
+  if (idx === -1) return json({ error: "Not found" }, 404);
+  const updates = await request.json();
+  requests[idx] = {
+    ...requests[idx],
+    status:    updates.status    !== undefined ? updates.status    : requests[idx].status,
+    adminNote: updates.adminNote !== undefined ? updates.adminNote : requests[idx].adminNote,
+    updatedAt: new Date().toISOString(),
+  };
+  await saveRequestsDB(env, requests);
+  return json({ success: true });
+}
+
+async function deleteRequest(env, id) {
+  const requests = await getRequestsDB(env);
+  await saveRequestsDB(env, requests.filter(r => r.id !== id));
+  return json({ success: true });
+}
+
+async function clearRequests(env) {
+  await saveRequestsDB(env, []);
+  return json({ success: true });
 }
