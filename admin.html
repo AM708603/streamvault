@@ -1250,7 +1250,15 @@ async function fetchTMDB() {
   btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> Fetching...';
   setSyncing('Fetching TMDB...');
   try {
-    var endpoint = (editType === 'tv' || parsed.type === 'tv') ? '/tv/' : '/movie/';
+    // Determine if we should use /tv/ endpoint:
+    // - TV shows always use /tv/
+    // - Anime uses /tv/ UNLESS user has selected "Movie" in the isMovie dropdown
+    var isAnimeMovie = editType === 'anime' && document.getElementById('f_isMovie') && document.getElementById('f_isMovie').value === 'true';
+    var useTvEndpoint = (editType === 'tv' || editType === 'anime') && !isAnimeMovie;
+    if (parsed.type === 'movie') useTvEndpoint = false;
+    if (parsed.type === 'tv')    useTvEndpoint = true;
+    var endpoint = useTvEndpoint ? '/tv/' : '/movie/';
+
     var [details, credits] = await Promise.all([
       fetch(TMDB_BASE + endpoint + parsed.id + '?api_key=' + TMDB_KEY + '&language=en-US').then(r=>r.json()),
       fetch(TMDB_BASE + endpoint + parsed.id + '/credits?api_key=' + TMDB_KEY).then(r=>r.json())
@@ -1267,11 +1275,12 @@ async function fetchTMDB() {
     var rating = details.vote_average ? details.vote_average.toFixed(1) : '';
     var poster = details.poster_path || '';
     var backdrop = details.backdrop_path || '';
-    var studio = editType==='tv' ? ((details.networks||[])[0]||{}).name||'' : ((details.production_companies||[])[0]||{}).name||'';
+    var studio = useTvEndpoint ? ((details.networks||[])[0]||{}).name||'' : ((details.production_companies||[])[0]||{}).name||'';
     var crew = credits.crew||[];
     var dirObj = crew.find(function(c){ return c.job==='Director'; }) || crew.find(function(c){ return c.department==='Directing'; }) || {};
-    var director = dirObj.name || (editType==='tv' ? ((details.created_by||[])[0]||{}).name||'' : '');
+    var director = dirObj.name || (useTvEndpoint ? ((details.created_by||[])[0]||{}).name||'' : '');
     var castArr = (credits.cast||[]).slice(0,6).map(function(c){ return {name:c.name,role:c.character,img:c.profile_path||''}; });
+
     setVal('f_title',title); setVal('f_id',parsed.id); setVal('f_year',year);
     setVal('f_genre',(details.genres||[])[0]?(details.genres[0].name):'');
     setVal('f_imdb',rating); setVal('f_rating',details.adult?'R':'PG-13');
@@ -1280,9 +1289,18 @@ async function fetchTMDB() {
     setVal('f_poster',poster); setVal('f_backdrop',backdrop);
     setVal('f_cast',castArr.map(function(c){ return c.name+'|'+c.role+'|'+c.img; }).join('\n'));
     setVal('f_related','');
-    // Episodes for TV
+
+    // Auto-detect and set isMovie for anime based on TMDB data
+    if (editType === 'anime') {
+      var hasSeasons = details.seasons && details.seasons.length > 0;
+      setVal('f_isMovie', (!useTvEndpoint || !hasSeasons) ? 'true' : 'false');
+    }
+
+    // Fetch episodes for TV shows AND anime series (not anime movies)
     var autoEps = document.getElementById('toggleAutoEps') ? document.getElementById('toggleAutoEps').checked : true;
-    if (autoEps && editType==='tv' && details.seasons && details.seasons.length) {
+    var shouldFetchEps = useTvEndpoint && details.seasons && details.seasons.length > 0;
+
+    if (autoEps && shouldFetchEps) {
       btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> Loading episodes...';
       var realSeasons = details.seasons.filter(function(s){ return s.season_number > 0; });
       if (!realSeasons.length) realSeasons = details.seasons;
@@ -1297,14 +1315,25 @@ async function fetchTMDB() {
         seasonDataArr.forEach(function(sd, idx) {
           var sNum = realSeasons[idx].season_number;
           editEps['s'+sNum] = (sd.episodes||[]).map(function(ep){
-            return {e:ep.episode_number,name:ep.name||('Ep '+ep.episode_number),dur:(ep.runtime?ep.runtime+'m':'45m'),desc:ep.overview||''};
+            return {
+              e:   ep.episode_number,
+              name:ep.name||('Ep '+ep.episode_number),
+              dur: ep.runtime ? ep.runtime+'m' : (editType==='anime' ? '24m' : '45m'),
+              desc:ep.overview||''
+            };
           });
         });
         renderEpBuilder();
         var totalEps = Object.keys(editEps).reduce(function(sum,sk){ return sum+editEps[sk].length; },0);
         toast('✓ '+realSeasons.slice(0,8).length+' seasons, '+totalEps+' episodes fetched', 'ok');
       } catch(e) { toast('Show filled! Episode fetch failed — add manually', 'info'); }
-    } else { toast('✓ All fields auto-filled from TMDB!', 'ok'); }
+    } else {
+      // Anime movie or regular movie — no episodes needed
+      editEps = {};
+      if (editType === 'tv' || editType === 'anime') renderEpBuilder();
+      toast('✓ All fields auto-filled from TMDB!', 'ok');
+    }
+
     // Mark autofilled
     ['f_title','f_year','f_genre','f_imdb','f_runtime','f_director','f_studio','f_desc','f_tags','f_poster','f_backdrop','f_cast'].forEach(function(id){
       var el = document.getElementById(id); if (el) el.classList.add('autofilled');
@@ -1313,7 +1342,12 @@ async function fetchTMDB() {
     document.getElementById('resultPreview').classList.add('show');
     document.getElementById('rpPoster').src = IMG_BASE+'w185'+poster;
     document.getElementById('rpTitle').textContent = title+(year?' ('+year+')':'');
-    document.getElementById('rpMeta').innerHTML = '<span class="rp-tag green">★ '+rating+'</span><span class="rp-tag">'+year+'</span>'+(runtime?'<span class="rp-tag">'+runtime+'</span>':'')+(director?'<span class="rp-tag">'+esc(director)+'</span>':'');
+    document.getElementById('rpMeta').innerHTML =
+      '<span class="rp-tag green">★ '+rating+'</span>'+
+      '<span class="rp-tag">'+year+'</span>'+
+      (runtime  ? '<span class="rp-tag">'+runtime+'</span>' : '')+
+      (director ? '<span class="rp-tag">'+esc(director)+'</span>' : '')+
+      (editType==='anime' ? '<span class="rp-tag" style="color:var(--gold)">'+(document.getElementById('f_isMovie').value==='true' ? 'Anime Movie' : 'Anime Series')+'</span>' : '');
     document.getElementById('rpDesc').textContent = details.overview||'';
     document.getElementById('afCast').textContent = '✓ '+castArr.length+' actors';
     setSynced();
@@ -1322,7 +1356,6 @@ async function fetchTMDB() {
   btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Fetch';
 }
 function setVal(id, val) { var el = document.getElementById(id); if (el) el.value = val||''; }
-
 // ═══════════════════════════════
 //  MODAL
 // ═══════════════════════════════
