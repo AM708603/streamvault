@@ -1,0 +1,11 @@
+{
+  "name": "StreamVault",
+  "short_name": "StreamVault",
+  "description": "Watch movies, TV shows and anime online free — no sign-up needed.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#E50914",
+  "categories": ["entertainment", "video"],
+  "lang": "en-US"
+}
