@@ -1745,6 +1745,8 @@ function renderRequests() {
   container.innerHTML = list.map(function(req) {
     var icon = req.type==='movie'?'🎬':req.type==='tv'?'📺':'🎌';
     var hasNote = req.note && req.note.trim();
+    var id = req.id;
+    var safeReq = JSON.stringify(req).replace(/</g,'\u003c').replace(/>/g,'\u003e').replace(/'/g,'\u0027');
     return '<div class="req-card status-'+req.status+'">'+
       '<div class="req-card-icon">'+icon+'</div>'+
       '<div class="req-card-body">'+
@@ -1753,17 +1755,17 @@ function renderRequests() {
           '<span class="req-badge '+req.type+'">'+req.type+'</span>'+
           '<span class="req-badge '+req.status+'">'+req.status+'</span>'+
           '<span class="req-card-time">'+relTime(req.createdAt)+'</span>'+
-          (req.name?'<span class="req-card-requester">by '+esc(req.name)+'</span>':'')+
+          (req.name ? '<span class="req-card-requester">by '+esc(req.name)+'</span>' : '')+
         '</div>'+
-        (hasNote?'<div class="req-card-note">'+esc(req.note)+'</div>':'')+
+        (hasNote ? '<div class="req-card-note">'+esc(req.note)+'</div>' : '')+
         '<div class="req-card-actions">'+
-          (req.status!=='approved'?'<button class="btn btn-green btn-xs" onclick="setReqStatus(''+req.id+'','approved')">&#10003; Approve</button>':'<button class="btn btn-sec btn-xs" style="opacity:.4" disabled>&#10003; Approved</button>')+
-          (req.status!=='declined'?'<button class="btn btn-danger btn-xs" onclick="setReqStatus(''+req.id+'','declined')">&#10005; Decline</button>':'<button class="btn btn-sec btn-xs" style="opacity:.4" disabled>&#10005; Declined</button>')+
-          (req.status!=='pending'?'<button class="btn btn-sec btn-xs" onclick="setReqStatus(''+req.id+'','pending')">&#8617; Reset</button>':'')+
-          '<button class="btn btn-sec btn-xs" onclick="deleteOneRequest(''+req.id+'')">&#128465;</button>'+
-          '<button class="btn btn-sec btn-xs" style="margin-left:auto" onclick="addRequestedTitle('+JSON.stringify(req).replace(/</g,'\u003c').replace(/>/g,'\u003e')+')">+ Add to Library</button>'+
+          (req.status !== 'approved' ? '<button class="btn btn-green btn-xs" onclick="setReqStatus(\''+id+'\',\'approved\')">&#10003; Approve</button>' : '<button class="btn btn-sec btn-xs" style="opacity:.4" disabled>&#10003; Approved</button>')+
+          (req.status !== 'declined' ? '<button class="btn btn-danger btn-xs" onclick="setReqStatus(\''+id+'\',\'declined\')">&#10005; Decline</button>' : '<button class="btn btn-sec btn-xs" style="opacity:.4" disabled>&#10005; Declined</button>')+
+          (req.status !== 'pending'  ? '<button class="btn btn-sec btn-xs" onclick="setReqStatus(\''+id+'\',\'pending\')">&#8617; Reset</button>' : '')+
+          '<button class="btn btn-sec btn-xs" onclick="deleteOneRequest(\''+id+'\')">&#128465;</button>'+
+          '<button class="btn btn-sec btn-xs" style="margin-left:auto" onclick="addRequestedTitle('+safeReq+')">+ Add to Library</button>'+
         '</div>'+
-        '<textarea class="req-admin-note-input" rows="1" placeholder="Admin note (optional)..." onblur="saveAdminNote(''+req.id+'',this.value)">'+esc(req.adminNote||'')+'</textarea>'+
+        '<textarea class="req-admin-note-input" rows="1" placeholder="Admin note (optional)..." onblur="saveAdminNote(\''+id+'\',this.value)">'+esc(req.adminNote||'')+'</textarea>'+
       '</div>'+
     '</div>';
   }).join('');
