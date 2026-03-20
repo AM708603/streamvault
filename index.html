@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script>(function(s){s.dataset.zone='10757072',s.src='https://izcle.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
   <meta name="google-site-verification" content="_2DCBu3I053BmGWhJ1O3sBPKrxtyCRX5he1laHrtBz0" />
 <!-- ═══ PRIMARY SEO ═══ -->
@@ -912,45 +913,6 @@ textarea.req-input{resize:none;line-height:1.6}
 .req-char{font-size:.6rem;color:#444;text-align:right;margin-top:-8px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* ── INFO MODALS (About, Contact, Privacy, Terms) ── */
-#info-ov{
-  position:fixed;inset:0;z-index:10000;
-  background:rgba(0,0,0,.92);backdrop-filter:blur(14px);
-  display:flex;align-items:center;justify-content:center;padding:16px;
-  visibility:hidden;opacity:0;
-  transition:opacity .22s ease,visibility 0s .22s;
-}
-#info-ov.show{visibility:visible;opacity:1;transition:opacity .22s ease,visibility 0s;}
-.info-modal{
-  background:#141414;border:1px solid rgba(255,255,255,.1);
-  border-radius:14px;width:100%;max-width:600px;max-height:85vh;
-  display:flex;flex-direction:column;
-  box-shadow:0 32px 80px rgba(0,0,0,.8);
-  animation:reqIn .25s cubic-bezier(.16,1,.3,1);
-}
-.info-modal-hdr{
-  padding:20px 24px 16px;display:flex;align-items:center;justify-content:space-between;
-  border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;
-}
-.info-modal-hdr h2{
-  font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.05em;color:#fff;
-}
-.info-modal-body{padding:24px;overflow-y:auto;flex:1;}
-.info-modal-body h3{
-  font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.1em;
-  color:#E50914;margin:20px 0 8px;
-}
-.info-modal-body h3:first-child{margin-top:0;}
-.info-modal-body p{font-size:.82rem;color:#aaa;line-height:1.8;margin-bottom:10px;}
-.info-modal-body a{color:#E50914;text-decoration:none;}
-.info-modal-body a:hover{text-decoration:underline;}
-.info-modal-body ul{padding-left:18px;margin-bottom:10px;}
-.info-modal-body ul li{font-size:.82rem;color:#aaa;line-height:1.8;}
-.info-modal-footer{
-  padding:14px 24px;border-top:1px solid rgba(255,255,255,.07);
-  display:flex;justify-content:flex-end;flex-shrink:0;
-}
-
 /* ── FOOTER ── */
 footer{
   background:#141414;border-top:1px solid rgba(255,255,255,.06);
@@ -1188,7 +1150,7 @@ footer{
     </div>
     <div class="ft-bottom">
       <div class="ft-copy">© 2025 StreamVault. All rights reserved.</div>
-      <div class="ft-links"><a onclick="openInfoModal('privacy')">Privacy</a><a onclick="openInfoModal('terms')">Terms</a><a onclick="openInfoModal('cookies')">Cookies</a></div>
+      <div class="ft-links"><a>Privacy</a><a>Terms</a><a>Cookies</a></div>
       <div class="ft-badge">Powered by VIDEASY</div>
     </div>
   </footer>
@@ -2212,7 +2174,7 @@ function copyShareLink(){
   var url=window.location.href;
   if(navigator.share){
     var title=CUR_ITEM?CUR_ITEM.title+' — StreamVault':'StreamVault';
-    var text=CUR_ITEM?'Watch '+CUR_ITEM.title+' free on StreamVault!':'Free movies, TV shows & anime on StreamVault!';
+    var text=CUR_ITEM?'Watch '+CUR_ITEM.title+' free on StreamVault!':'Free streaming on StreamVault!';
     navigator.share({title:title,text:text,url:url})
       .then(function(){showToast('Shared!');})
       .catch(function(){copyToClipboard(url);});
@@ -2220,17 +2182,14 @@ function copyShareLink(){
 }
 function copyToClipboard(text){
   if(navigator.clipboard){
-    navigator.clipboard.writeText(text)
-      .then(function(){showToast('✓ Link copied!');})
-      .catch(function(){fallbackCopy(text);});
+    navigator.clipboard.writeText(text).then(function(){showToast('✓ Link copied!');}).catch(function(){fallbackCopy(text);});
   }else{fallbackCopy(text);}
 }
 function fallbackCopy(text){
   var el=document.createElement('textarea');
   el.value=text;el.style.position='fixed';el.style.opacity='0';
   document.body.appendChild(el);el.select();
-  try{document.execCommand('copy');showToast('✓ Link copied!');}
-  catch(e){showToast('Copy failed');}
+  try{document.execCommand('copy');showToast('✓ Link copied!');}catch(e){showToast('Copy failed');}
   document.body.removeChild(el);
 }
 
@@ -2381,109 +2340,26 @@ document.addEventListener('keydown', function(e){
 </div>
 
 <script>
-// ══ INFO MODALS ══════════════════════════════════════════
-
 var INFO_CONTENT = {
   about: {
     title: 'About StreamVault',
-    html: \`
-      <h3>What is StreamVault?</h3>
-      <p>StreamVault is a free online streaming platform where you can watch movies, TV shows and anime — all in one place, with no sign-up or subscription required.</p>
-      <h3>Our Mission</h3>
-      <p>We believe great entertainment should be accessible to everyone. StreamVault is built to give you a premium streaming experience without the premium price tag.</p>
-      <h3>Content Library</h3>
-      <p>Our library includes thousands of titles across movies, TV series and anime. New content is added regularly. Can't find something? Use the <strong style="color:#fff">Request Content</strong> feature and we'll do our best to add it.</p>
-      <h3>Powered by VIDEASY</h3>
-      <p>StreamVault uses VIDEASY's streaming technology to deliver fast, reliable video playback directly in your browser — no app downloads needed.</p>
-      <h3>Contact Us</h3>
-      <p>Have questions, suggestions or found a bug? We'd love to hear from you. Reach out via the <a onclick="openInfoModal('contact');return false;" href="#">Contact page</a>.</p>
-    \`
+    html: '<h3>What is StreamVault?</h3><p>StreamVault is a free online streaming platform where you can watch movies, TV shows and anime — all in one place, with no sign-up or subscription required.</p><h3>Our Mission</h3><p>We believe great entertainment should be accessible to everyone. StreamVault is built to give you a premium streaming experience without the premium price tag.</p><h3>Content Library</h3><p>Our library includes thousands of titles across movies, TV series and anime. New content is added regularly. Use the <strong style="color:#fff">Request Content</strong> feature and we will do our best to add it.</p><h3>Powered by VIDEASY</h3><p>StreamVault uses VIDEASY streaming technology to deliver fast, reliable video playback directly in your browser — no app downloads needed.</p>'
   },
   contact: {
     title: 'Contact Us',
-    html: \`
-      <h3>Get in Touch</h3>
-      <p>We'd love to hear from you! Whether you have a question, suggestion, bug report or just want to say hello — reach out anytime.</p>
-      <h3>Request Content</h3>
-      <p>Can't find a movie, show or anime? Use the <strong style="color:#fff">Request Content</strong> button in the navigation bar and we'll review your request.</p>
-      <h3>Report an Issue</h3>
-      <p>If a video isn't playing or you've found a bug, please describe the issue (title, browser, device) and send us a message.</p>
-      <h3>Email</h3>
-      <p><a href="mailto:support@streamzvault.netlify.app">support@streamzvault.netlify.app</a></p>
-      <h3>Response Time</h3>
-      <p>We typically respond within 24–48 hours. Thank you for your patience!</p>
-    \`
+    html: '<h3>Get in Touch</h3><p>We would love to hear from you! Whether you have a question, suggestion, bug report or just want to say hello — reach out anytime.</p><h3>Request Content</h3><p>Cannot find a movie, show or anime? Use the <strong style="color:#fff">Request Content</strong> button in the navigation bar and we will review your request.</p><h3>Report an Issue</h3><p>If a video is not playing or you have found a bug, please describe the issue (title, browser, device) and send us a message.</p><h3>Email</h3><p><a href="mailto:amworkmanage@gmail.com">amworkmanage@gmail.com</a></p><h3>Response Time</h3><p>We typically respond within 24-48 hours. Thank you for your patience!</p>'
   },
   privacy: {
     title: 'Privacy Policy',
-    html: \`
-      <p><em style="color:#555;font-size:.75rem">Last updated: January 2025</em></p>
-      <h3>Information We Collect</h3>
-      <p>StreamVault is designed with your privacy in mind. We do not require you to create an account or provide personal information to use our service.</p>
-      <ul>
-        <li><strong style="color:#ccc">My List</strong> — saved locally in your browser's session storage. It is never sent to our servers.</li>
-        <li><strong style="color:#ccc">Content Requests</strong> — if you submit a request, we store the title, type and optional name you provide.</li>
-        <li><strong style="color:#ccc">Usage Data</strong> — we may collect anonymous analytics data (pages visited, general location) to improve the service.</li>
-      </ul>
-      <h3>Cookies</h3>
-      <p>StreamVault uses minimal cookies necessary for the site to function. We do not use tracking or advertising cookies.</p>
-      <h3>Third-Party Services</h3>
-      <p>Our video player is provided by VIDEASY. Movie data and images are sourced from The Movie Database (TMDB). These services have their own privacy policies.</p>
-      <h3>Data Sharing</h3>
-      <p>We do not sell, trade or share your personal information with third parties for marketing purposes.</p>
-      <h3>Children's Privacy</h3>
-      <p>StreamVault is not directed at children under 13. We do not knowingly collect data from children.</p>
-      <h3>Changes to This Policy</h3>
-      <p>We may update this policy occasionally. Changes will be posted on this page with an updated date.</p>
-      <h3>Contact</h3>
-      <p>Questions about privacy? <a onclick="openInfoModal('contact');return false;" href="#">Contact us</a>.</p>
-    \`
+    html: '<p><em style="color:#555;font-size:.75rem">Last updated: January 2025</em></p><h3>Information We Collect</h3><p>StreamVault does not require you to create an account or provide personal information to use our service.</p><ul><li><strong style="color:#ccc">My List</strong> — saved locally in your browser session storage. Never sent to our servers.</li><li><strong style="color:#ccc">Content Requests</strong> — if you submit a request, we store the title, type and optional name you provide.</li><li><strong style="color:#ccc">Usage Data</strong> — we may collect anonymous analytics data to improve the service.</li></ul><h3>Cookies</h3><p>StreamVault uses minimal cookies necessary for the site to function. We do not use tracking or advertising cookies.</p><h3>Third-Party Services</h3><p>Our video player is provided by VIDEASY. Movie data and images are sourced from TMDB. These services have their own privacy policies.</p><h3>Data Sharing</h3><p>We do not sell, trade or share your personal information with third parties for marketing purposes.</p><h3>Changes</h3><p>We may update this policy occasionally. Changes will be posted on this page with an updated date.</p>'
   },
   terms: {
     title: 'Terms of Service',
-    html: \`
-      <p><em style="color:#555;font-size:.75rem">Last updated: January 2025</em></p>
-      <h3>Acceptance of Terms</h3>
-      <p>By using StreamVault, you agree to these Terms of Service. If you do not agree, please do not use the service.</p>
-      <h3>Use of Service</h3>
-      <p>StreamVault is provided for personal, non-commercial use only. You agree not to:</p>
-      <ul>
-        <li>Use the service for any unlawful purpose</li>
-        <li>Attempt to bypass or circumvent any security measures</li>
-        <li>Scrape, crawl or automate access to the platform</li>
-        <li>Redistribute or resell any content from StreamVault</li>
-      </ul>
-      <h3>Content</h3>
-      <p>StreamVault provides access to streaming content via third-party providers. We do not host any video files directly. We are not responsible for the availability or quality of third-party content.</p>
-      <h3>Intellectual Property</h3>
-      <p>All movie titles, images and descriptions are the property of their respective owners. StreamVault uses data from TMDB under their terms of use.</p>
-      <h3>Disclaimer of Warranties</h3>
-      <p>StreamVault is provided "as is" without warranties of any kind. We do not guarantee uninterrupted or error-free service.</p>
-      <h3>Limitation of Liability</h3>
-      <p>StreamVault and its operators shall not be liable for any indirect, incidental or consequential damages arising from your use of the service.</p>
-      <h3>Changes to Terms</h3>
-      <p>We reserve the right to modify these terms at any time. Continued use of the service after changes constitutes acceptance.</p>
-      <h3>Contact</h3>
-      <p>Questions about these terms? <a onclick="openInfoModal('contact');return false;" href="#">Contact us</a>.</p>
-    \`
+    html: '<p><em style="color:#555;font-size:.75rem">Last updated: January 2025</em></p><h3>Acceptance of Terms</h3><p>By using StreamVault, you agree to these Terms of Service. If you do not agree, please do not use the service.</p><h3>Use of Service</h3><p>StreamVault is provided for personal, non-commercial use only. You agree not to:</p><ul><li>Use the service for any unlawful purpose</li><li>Attempt to bypass or circumvent any security measures</li><li>Scrape, crawl or automate access to the platform</li><li>Redistribute or resell any content from StreamVault</li></ul><h3>Content</h3><p>StreamVault provides access to streaming content via third-party providers. We do not host any video files directly and are not responsible for third-party content availability.</p><h3>Disclaimer</h3><p>StreamVault is provided "as is" without warranties of any kind. We do not guarantee uninterrupted or error-free service.</p><h3>Changes</h3><p>We reserve the right to modify these terms at any time. Continued use constitutes acceptance.</p>'
   },
   cookies: {
     title: 'Cookie Policy',
-    html: \`
-      <p><em style="color:#555;font-size:.75rem">Last updated: January 2025</em></p>
-      <h3>What Are Cookies?</h3>
-      <p>Cookies are small text files stored in your browser when you visit a website. They help the site remember your preferences and improve your experience.</p>
-      <h3>How StreamVault Uses Cookies</h3>
-      <p>We use only essential cookies necessary for the site to function correctly. We do not use advertising or tracking cookies.</p>
-      <h3>Session Storage</h3>
-      <p>Your "My List" is stored in your browser's session storage — this is local to your device and cleared when you close the browser. It is never sent to our servers.</p>
-      <h3>Third-Party Cookies</h3>
-      <p>The VIDEASY video player and TMDB image service may set their own cookies. Please refer to their respective privacy policies for details.</p>
-      <h3>Managing Cookies</h3>
-      <p>You can control or delete cookies through your browser settings at any time. Note that disabling cookies may affect some functionality of the site.</p>
-      <h3>Contact</h3>
-      <p>Questions about cookies? <a onclick="openInfoModal('contact');return false;" href="#">Contact us</a>.</p>
-    \`
+    html: '<p><em style="color:#555;font-size:.75rem">Last updated: January 2025</em></p><h3>What Are Cookies?</h3><p>Cookies are small text files stored in your browser when you visit a website. They help the site remember your preferences and improve your experience.</p><h3>How We Use Cookies</h3><p>We use only essential cookies necessary for the site to function. We do not use advertising or tracking cookies.</p><h3>Session Storage</h3><p>Your My List is stored in your browser session storage — local to your device and cleared when you close the browser. Never sent to our servers.</p><h3>Third-Party Cookies</h3><p>The VIDEASY video player and TMDB image service may set their own cookies. Please refer to their privacy policies for details.</p><h3>Managing Cookies</h3><p>You can control cookies through your browser settings at any time.</p>'
   }
 };
 
@@ -2495,15 +2371,12 @@ function openInfoModal(page) {
   document.getElementById('info-ov').classList.add('show');
   document.getElementById('infoModalBody').scrollTop = 0;
 }
-
 function closeInfoModal() {
   document.getElementById('info-ov').classList.remove('show');
 }
-
 document.getElementById('info-ov').addEventListener('click', function(e) {
   if (e.target === this) closeInfoModal();
 });
-
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') closeInfoModal();
 }, true);
