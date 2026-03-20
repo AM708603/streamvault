@@ -1,0 +1,7 @@
+[[edge_functions]]
+  function = "og"
+  path = "/title/*"
+
+[[edge_functions]]
+  function = "og"
+  path = "/play/*"
