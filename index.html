@@ -1289,15 +1289,6 @@ function handleRoute(path){
   if(pm){var f=findById(parseInt(pm[1]));if(f){startPlayer(f.item,f.type,pm[2]?parseInt(pm[2]):null,pm[3]?parseInt(pm[3]):null);return;}}
   (ROUTES[path]||ROUTES['/'])();
 }
-function handleRoute(path){
-  // /title/123
-  var dm=path.match(/^\/title\/(\d+)$/);
-  if(dm){var f=findById(parseInt(dm[1]));if(f){showDetail(f.item,f.type);return;}}
-  // /play/123  or  /play/123/1/2
-  var pm=path.match(/^\/play\/(\d+)(?:\/(\d+)\/(\d+))?$/);
-  if(pm){var f=findById(parseInt(pm[1]));if(f){startPlayer(f.item,f.type,pm[2]?parseInt(pm[2]):null,pm[3]?parseInt(pm[3]):null);return;}}
-  (ROUTES[path]||ROUTES['/'])();
-}
 window.addEventListener('popstate',function(){handleRoute(window.location.pathname);});
 
 // ══════════════════════
