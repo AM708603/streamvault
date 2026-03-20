@@ -14,7 +14,7 @@ export default async function handler(request, context) {
   const tmdbId = titleMatch[1];
   const TMDB_KEY = '3001c6b89778ec27b78f6294a1e2538d';
   const IMG_BASE = 'https://image.tmdb.org/t/p/w1280';
-  const IMG_POSTER = 'https://image.tmdb.org/t/p/w500';
+  const IMG_POSTER = 'https://image.tmdb.org/t/p/w780';
   const SITE_URL = 'https://streamzvault.netlify.app';
 
   let title = 'StreamVault';
@@ -49,10 +49,10 @@ export default async function handler(request, context) {
         [year, rating, genre].filter(Boolean).join(' · ')
       ].filter(Boolean).join(' — ');
 
-      if (data.backdrop_path) {
-        image = IMG_BASE + data.backdrop_path;
-      } else if (data.poster_path) {
+      if (data.poster_path) {
         image = IMG_POSTER + data.poster_path;
+      } else if (data.backdrop_path) {
+        image = IMG_BASE + data.backdrop_path;
       }
     }
   } catch (e) {
@@ -73,10 +73,10 @@ export default async function handler(request, context) {
     <meta property="og:description" content="${escHtml(description.slice(0, 200))}">
     <meta property="og:url" content="${SITE_URL}/title/${tmdbId}">
     <meta property="og:image" content="${image}">
-    <meta property="og:image:width" content="1280">
-    <meta property="og:image:height" content="720">
+    <meta property="og:image:width" content="780">
+    <meta property="og:image:height" content="1170">
     <meta property="og:image:alt" content="${escHtml(title)}">
-    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="${escHtml(title)} — StreamVault">
     <meta name="twitter:description" content="${escHtml(description.slice(0, 200))}">
     <meta name="twitter:image" content="${image}">`;
