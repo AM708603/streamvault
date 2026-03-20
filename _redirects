@@ -1,1 +1,7 @@
-/*    /index.html    200
+/title/*  /index.html  200
+/play/*   /index.html  200
+/mylist   /index.html  200
+/movies   /index.html  200
+/tvshows  /index.html  200
+/anime    /index.html  200
+/*        /index.html  200
