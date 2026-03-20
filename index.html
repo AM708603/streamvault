@@ -1271,9 +1271,23 @@ var ROUTES={
   '/anime':function(){_goSection('anime',null);},
   '/mylist':function(){_goMyList();}
 };
+function slugify(title){
+  return String(title||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+}
+function titlePath(item){return '/title/'+item.id+'-'+slugify(item.title);}
+function playPath(item,s,ep){var base='/play/'+item.id+'-'+slugify(item.title);return (s&&ep)?base+'/'+s+'/'+ep:base;}
 function pushRoute(path){
   if(window.location.pathname!==path)
     window.history.pushState({path:path},'',path);
+}
+function handleRoute(path){
+  // /title/123 or /title/123-movie-name
+  var dm=path.match(/^\/title\/(\d+)/);
+  if(dm){var f=findById(parseInt(dm[1]));if(f){showDetail(f.item,f.type);return;}}
+  // /play/123 or /play/123-name or /play/123-name/1/2
+  var pm=path.match(/^\/play\/(\d+)[^/]*(?:\/(\d+)\/(\d+))?$/);
+  if(pm){var f=findById(parseInt(pm[1]));if(f){startPlayer(f.item,f.type,pm[2]?parseInt(pm[2]):null,pm[3]?parseInt(pm[3]):null);return;}}
+  (ROUTES[path]||ROUTES['/'])();
 }
 function handleRoute(path){
   // /title/123
@@ -1673,7 +1687,7 @@ function clearMyList(){
 // ══════════════════════
 function openDetail(k){var r=R[k];if(!r)return;showDetail(r.item,r.type);}
 function showDetail(item,type){
-  pushRoute('/title/'+item.id);
+  pushRoute(titlePath(item));
   PREV_PG=document.querySelector('.page.active').id;
   clearInterval(SLIDE_TMR);
   CUR_ITEM=item;CUR_TYPE=type;
@@ -1704,7 +1718,7 @@ function showDetail(item,type){
     '<div class="dp-acts">'+
       '<button class="dp-btn play" onclick="playItem(\''+k+'\')"><svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>Play</button>'+
       '<button class="dp-btn ghost" id="dpListBtn" onclick="dpToggleList(\''+k+'\')" style="'+(mlHas(item)?'background:rgba(229,9,20,.15);border-color:rgba(229,9,20,.4);color:#ff6b6b':'')+'">'+dpListBtnHTML(item)+'</button>'+
-      '<button class="dp-btn share" onclick="showToast(\'Link copied!\')"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Share</button>'+
+      '<button class="dp-btn share" onclick="copyShareLink()"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Share</button>'+
     '</div>';
   var L='';
   L+='<div class="sec-title">Overview</div><div class="dp-desc">'+X(item.desc)+'</div>';
@@ -1795,7 +1809,7 @@ function playItem(k){var r=R[k];if(!r)return;startPlayer(r.item,r.type,null,null
 function playEp(k,s,ep){var r=R[k];if(!r)return;startPlayer(r.item,r.type,s,ep);}
 
 function startPlayer(item,type,s,ep){
-  pushRoute('/play/'+item.id+(s&&ep?'/'+s+'/'+ep:''));
+  pushRoute(playPath(item,s,ep));
   PREV_PG=document.querySelector('.page.active').id;
   clearInterval(SLIDE_TMR);
   CUR_ITEM=item;CUR_TYPE=type;
@@ -1853,7 +1867,7 @@ function buildMobilePanel(item,type,s,ep){
     '<button class="play-act-btn" onclick="openDetail(\''+k+'\')">'+
       '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Details'+
     '</button>'+
-    '<button class="play-act-btn" onclick="showToast(\'Link copied!\')">'+
+    '<button class="play-act-btn" onclick="copyShareLink()">'+
       '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Share'+
     '</button>';
   var tabs=[{id:'info',label:'Info'}];
@@ -1946,7 +1960,7 @@ function mobSwitchSeason(s,btn){
 function mobPlayEp(k,s,ep){
   var r=R[k];if(!r)return;
   CUR_EP=s?{s:s,e:ep}:{e:ep};
-  pushRoute('/play/'+r.item.id+(s?'/'+s+'/'+ep:''));
+  pushRoute(playPath(r.item,s,ep));
   document.getElementById('playFrame').innerHTML='<iframe src="'+buildSrc(r.type,r.item,s,ep)+'" frameborder="0" allowfullscreen allow="autoplay;encrypted-media;picture-in-picture;fullscreen"></iframe>';
   document.getElementById('playTitle').textContent=r.item.title+(s?' · S'+s+'E'+ep:' · Ep'+ep);
   document.getElementById('mobTitle').textContent=r.item.title;
@@ -2023,7 +2037,7 @@ function pipS(s,btn){
 function pipPlay(k,s,ep){
   var r=R[k];if(!r)return;
   CUR_EP=s?{s:s,e:ep}:{e:ep};
-  pushRoute('/play/'+r.item.id+(s?'/'+s+'/'+ep:''));
+  pushRoute(playPath(r.item,s,ep));
   document.getElementById('playFrame').innerHTML='<iframe src="'+buildSrc(r.type,r.item,s,ep)+'" frameborder="0" allowfullscreen allow="autoplay;encrypted-media;picture-in-picture;fullscreen"></iframe>';
   document.getElementById('playTitle').textContent=r.item.title+(s?' · S'+s+'E'+ep:' · Ep'+ep);
   buildPipEps();resetProg();
@@ -2159,6 +2173,36 @@ function showToast(msg){
 //  UTILS
 // ══════════════════════
 function X(s){return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+
+// ══════════════════════
+//  SHARE
+// ══════════════════════
+function copyShareLink(){
+  var url=window.location.href;
+  if(navigator.share){
+    var title=CUR_ITEM?CUR_ITEM.title+' — StreamVault':'StreamVault';
+    var text=CUR_ITEM?'Watch '+CUR_ITEM.title+' free on StreamVault!':'Free movies, TV shows & anime on StreamVault!';
+    navigator.share({title:title,text:text,url:url})
+      .then(function(){showToast('Shared!');})
+      .catch(function(){copyToClipboard(url);});
+  }else{copyToClipboard(url);}
+}
+function copyToClipboard(text){
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(text)
+      .then(function(){showToast('✓ Link copied!');})
+      .catch(function(){fallbackCopy(text);});
+  }else{fallbackCopy(text);}
+}
+function fallbackCopy(text){
+  var el=document.createElement('textarea');
+  el.value=text;el.style.position='fixed';el.style.opacity='0';
+  document.body.appendChild(el);el.select();
+  try{document.execCommand('copy');showToast('✓ Link copied!');}
+  catch(e){showToast('Copy failed');}
+  document.body.removeChild(el);
+}
 
 init();
 </script>
