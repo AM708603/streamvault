@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title id="pageTitle">Watch — StreamVault</title>
+  <meta name="description" id="metaDesc" content="Watch free HD movies on StreamVault.">
+  <!-- Player pages are intentionally noindex to avoid thin-content penalties -->
+  <meta name="robots" content="noindex, follow">
+
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { background: #050508; }
+    .player-layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 28px;
+      padding: calc(var(--nav-h) + 20px) clamp(12px,3vw,40px) 0;
+      min-height: 100vh;
+    }
+
+    /* ── Player Column ──────────────────────────────── */
+    .player-col {}
+
+    /* Breadcrumb */
+    .breadcrumb {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.8rem; color: var(--text-muted);
+      margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .breadcrumb a { color: var(--text-dim); transition: color var(--transition); }
+    .breadcrumb a:hover { color: var(--accent); }
+    .breadcrumb-sep { color: var(--text-muted); }
+
+    /* Player wrap */
+    .player-wrap {
+      position: relative;
+      width: 100%; aspect-ratio: 16/9;
+      background: #000; border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: 0 8px 48px rgba(0,0,0,0.8);
+      border: 1px solid var(--border);
+    }
+    .player-wrap iframe {
+      width: 100%; height: 100%;
+      border: none; display: block;
+    }
+    /* Loader overlay */
+    .player-loading {
+      position: absolute; inset: 0;
+      background: #000;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 16px; z-index: 10;
+      transition: opacity 0.4s;
+    }
+    .player-loading.hidden { opacity: 0; pointer-events: none; }
+    .player-loading-text {
+      font-size: 0.875rem; color: var(--text-dim); letter-spacing: 0.5px;
+    }
+
+    /* Player controls bar */
+    .player-controls {
+      display: flex; align-items: center; gap: 10px;
+      margin-top: 14px; flex-wrap: wrap;
+    }
+    .player-ctrl-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 8px 18px; border-radius: var(--radius);
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text-dim); font-size: 0.82rem; font-weight: 600;
+      cursor: pointer; transition: all var(--transition);
+      font-family: inherit;
+    }
+    .player-ctrl-btn:hover { background: var(--bg3); color: var(--text); border-color: rgba(255,255,255,0.15); }
+    .player-ctrl-btn.primary { background: var(--accent); color: #000; border-color: var(--accent); }
+    .player-ctrl-btn.primary:hover { background: #ffbe4d; }
+    .player-ctrl-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+    /* Movie Info below player */
+    .player-movie-info {
+      margin-top: 20px; padding: 20px;
+      background: var(--bg2); border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+    }
+    .player-movie-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem; letter-spacing: 2px; margin-bottom: 8px;
+    }
+    .player-movie-meta {
+      display: flex; gap: 16px; flex-wrap: wrap;
+      font-size: 0.85rem; color: var(--text-dim);
+      margin-bottom: 12px;
+    }
+    .player-movie-desc {
+      font-size: 0.875rem; color: var(--text-dim); line-height: 1.65;
+    }
+
+    /* Ad label inside player info */
+    .player-ad-wrap { margin-top: 20px; }
+
+    /* ── Sidebar Column ─────────────────────────────── */
+    .sidebar-col {
+      display: flex; flex-direction: column; gap: 20px;
+    }
+    .sidebar-sticky { position: sticky; top: calc(var(--nav-h) + 20px); }
+
+    /* Recommended list */
+    .recommended-list {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); overflow: hidden;
+    }
+    .recommended-header {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.05rem; letter-spacing: 2px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .recommended-header::before {
+      content: ''; width: 3px; height: 1em;
+      background: var(--accent); border-radius: 2px;
+    }
+    .rec-item {
+      display: flex; gap: 12px; align-items: center;
+      padding: 10px 14px; border-bottom: 1px solid var(--border);
+      cursor: pointer; transition: background var(--transition);
+      text-decoration: none; color: inherit;
+    }
+    .rec-item:last-child { border-bottom: none; }
+    .rec-item:hover { background: var(--surface); }
+    .rec-item.active { background: rgba(245,166,35,0.08); border-left: 3px solid var(--accent); }
+    .rec-thumb {
+      width: 72px; height: 48px; border-radius: 6px;
+      object-fit: cover; flex-shrink: 0;
+    }
+    .rec-info { flex: 1; min-width: 0; }
+    .rec-title {
+      font-size: 0.85rem; font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-bottom: 3px;
+    }
+    .rec-meta { font-size: 0.75rem; color: var(--text-dim); }
+    .rec-play-icon {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--accent); display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; opacity: 0; transition: opacity var(--transition);
+    }
+    .rec-item:hover .rec-play-icon { opacity: 1; }
+    .rec-play-icon svg { width: 12px; height: 12px; color: #000; margin-left: 2px; }
+
+    /* ── Below player — related grid ────────────────── */
+    .related-below { margin-top: 48px; padding: 0 clamp(12px,3vw,40px) 0; }
+
+    /* ── Responsive ─────────────────────────────────── */
+    @media (max-width: 900px) {
+      .player-layout { grid-template-columns: 1fr; }
+      .sidebar-col { order: -1; }
+      .sidebar-sticky { position: static; }
+      .recommended-list { max-height: 280px; overflow-y: auto; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════ NAV ════════ -->
+<nav class="nav" id="mainNav" style="background:rgba(5,5,8,0.98);">
+  <a href="index.html" class="nav-logo">Stream<span>Vault</span></a>
+  <div class="nav-center" style="position:relative;">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input type="text" id="searchInput" placeholder="Search movies…" autocomplete="off">
+    </div>
+    <div class="search-results-dropdown" id="searchDropdown"></div>
+  </div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="index.html#trending">Trending</a>
+    <a href="#" class="nav-cta">Watch Free</a>
+  </div>
+  <button class="nav-mobile-btn" id="mobileMenuBtn" aria-label="Menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+  </button>
+</nav>
+
+<!-- Mobile Nav -->
+<div class="overlay" id="navOverlay"></div>
+<div class="mobile-nav" id="mobileNav">
+  <a href="index.html">🏠 Home</a>
+  <a href="index.html#trending">🔥 Trending</a>
+  <a href="index.html#genres">🎬 Genres</a>
+</div>
+
+<!-- ════════ PLAYER LAYOUT ════════ -->
+<div class="player-layout">
+
+  <!-- ── Main Player Column ──────────────────────── -->
+  <div class="player-col">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <a href="index.html">Home</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="index.html#genres" id="breadGenre">Movies</a>
+      <span class="breadcrumb-sep">›</span>
+      <span id="breadTitle" style="color:var(--text);">Loading…</span>
+    </div>
+
+    <!-- ── Ad above player ─────────────────────────── -->
+    <div class="ad-zone-label">Advertisement</div>
+    <div class="ad-zone ad-zone-banner" id="adAbovePlayer" style="margin-bottom:16px;">
+      <!-- Monetag Banner — paste script here -->
+    </div>
+
+    <!-- Player -->
+    <div class="player-wrap" id="playerWrap">
+      <div class="player-loading" id="playerLoading">
+        <div class="spinner"></div>
+        <div class="player-loading-text">Loading player…</div>
+      </div>
+      <iframe
+        id="playerFrame"
+        src=""
+        allowfullscreen
+        allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+        scrolling="no"
+        referrerpolicy="no-referrer"
+        title="Movie Player"
+      ></iframe>
+    </div>
+
+    <!-- Player Controls -->
+    <div class="player-controls">
+      <button class="player-ctrl-btn" id="prevBtn" onclick="navigateMovie('prev')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+        Previous
+      </button>
+
+      <button class="player-ctrl-btn primary" onclick="reloadPlayer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/>
+        </svg>
+        Reload Player
+      </button>
+
+      <button class="player-ctrl-btn" id="nextBtn" onclick="navigateMovie('next')">
+        Next
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+
+      <button class="player-ctrl-btn" onclick="goToMoviePage()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+        </svg>
+        Movie Info
+      </button>
+
+      <button class="player-ctrl-btn" onclick="addToWatchlist()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+        </svg>
+        Save
+      </button>
+    </div>
+
+    <!-- Movie Info block -->
+    <div class="player-movie-info">
+      <div class="player-movie-title" id="playerTitle">Loading…</div>
+      <div class="player-movie-meta" id="playerMeta"></div>
+      <p class="player-movie-desc" id="playerDesc"></p>
+
+      <!-- Ad inside movie info block -->
+      <div class="player-ad-wrap">
+        <div class="ad-zone-label">Advertisement</div>
+        <div class="ad-zone ad-zone-banner" id="adPlayerInfo">
+          <!-- Monetag In-Page Push -->
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Sidebar ──────────────────────────────────── -->
+  <div class="sidebar-col">
+    <div class="sidebar-sticky">
+
+      <!-- Sidebar Ad (rectangle) -->
+      <div class="ad-zone-label">Advertisement</div>
+      <div class="ad-zone ad-zone-rectangle" id="adSidebarTop" style="margin-bottom:20px;">
+        <!-- Monetag 300×250 -->
+      </div>
+
+      <!-- Recommended / Up Next list -->
+      <div class="recommended-list">
+        <div class="recommended-header">Up Next</div>
+        <div id="recommendedList">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ════════ RELATED GRID BELOW ════════ -->
+<div class="related-below">
+  <div class="section-header">
+    <h2 class="section-title">More Like This</h2>
+    <a href="index.html" class="section-see-all">See All →</a>
+  </div>
+  <div class="movies-grid" id="relatedGrid"></div>
+
+  <!-- Bottom ad -->
+  <div class="ad-zone-label" style="margin-top:40px;">Advertisement</div>
+  <div class="ad-zone ad-zone-banner" id="adBottom" style="margin-bottom:48px;">
+    <!-- Monetag Banner -->
+  </div>
+</div>
+
+<!-- ════════ FOOTER ════════ -->
+<footer class="footer">
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand-name">Stream<span style="color:var(--text)">Vault</span></div>
+      <p class="footer-tagline">Free HD movie streaming. No signup required.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Browse</h4>
+      <a href="index.html">All Movies</a>
+      <a href="index.html#trending">Trending</a>
+    </div>
+    <div class="footer-col">
+      <h4>Info</h4>
+      <a href="#">DMCA</a>
+      <a href="#">Privacy</a>
+    </div>
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <a href="#">Terms</a>
+      <a href="#">Contact</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p class="footer-copy">© 2025 StreamVault. All rights reserved.</p>
+    <p class="footer-disclaimer">StreamVault does not host any files. All content is embedded from third-party providers.</p>
+  </div>
+</footer>
+
+<div class="toast" id="toast">
+  <span class="toast-icon">✅</span>
+  <span id="toastMsg"></span>
+</div>
+
+<!-- ════════ SCRIPTS ════════ -->
+<script src="movies-data.js"></script>
+<script>
+let currentMovie = null;
+let relatedMovies = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+  initNav();
+  initSearch();
+  loadPlayer();
+  initPopunder();
+  initPushSubscription();
+});
+
+function initNav() {
+  const nav = document.getElementById('mainNav');
+  window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 20));
+  const btn = document.getElementById('mobileMenuBtn');
+  const drawer = document.getElementById('mobileNav');
+  const overlay = document.getElementById('navOverlay');
+  btn.addEventListener('click', () => {
+    drawer.classList.toggle('open');
+    overlay.classList.toggle('open');
+  });
+  overlay.addEventListener('click', () => {
+    drawer.classList.remove('open');
+    overlay.classList.remove('open');
+  });
+}
+
+function loadPlayer() {
+  const params = new URLSearchParams(location.search);
+  const id = params.get('id');
+  const movie = id ? getMovieById(id) : MOVIES[0];
+
+  if (!movie) {
+    document.getElementById('playerTitle').textContent = 'Movie not found';
+    return;
+  }
+
+  currentMovie = movie;
+  relatedMovies = getRelatedMovies(movie, 10);
+
+  // Set page title
+  document.title = `Watch ${movie.title} (${movie.year}) — StreamVault`;
+  document.getElementById('metaDesc').setAttribute('content',
+    `Watch ${movie.title} free in HD on StreamVault.`);
+
+  // Breadcrumb
+  document.getElementById('breadGenre').textContent = movie.genre[0];
+  document.getElementById('breadTitle').textContent = movie.title;
+
+  // Set iframe src
+  const frame = document.getElementById('playerFrame');
+  frame.src = movie.embedUrl;
+  frame.addEventListener('load', () => {
+    document.getElementById('playerLoading').classList.add('hidden');
+  });
+
+  // Info
+  document.getElementById('playerTitle').textContent = `${movie.title} (${movie.year})`;
+  document.getElementById('playerMeta').innerHTML = `
+    <span>⭐ ${movie.rating} / 10</span>
+    <span>${movie.duration}</span>
+    <span>${movie.genre.join(' · ')}</span>
+    <span>Directed by ${movie.director}</span>
+  `;
+  document.getElementById('playerDesc').textContent = movie.description;
+
+  // Prev/Next buttons
+  updateNavButtons();
+
+  // Recommended
+  renderRecommended();
+
+  // Related grid
+  document.getElementById('relatedGrid').innerHTML =
+    relatedMovies.slice(0, 6).map(m => renderMovieCard(m)).join('');
+}
+
+function updateNavButtons() {
+  const idx = MOVIES.findIndex(m => m.id === currentMovie.id);
+  document.getElementById('prevBtn').disabled = idx <= 0;
+  document.getElementById('nextBtn').disabled = idx >= MOVIES.length - 1;
+}
+
+function renderRecommended() {
+  const list = document.getElementById('recommendedList');
+  list.innerHTML = relatedMovies.map(m => `
+    <a href="player.html?id=${m.id}" class="rec-item ${m.id === currentMovie.id ? 'active' : ''}">
+      <img class="rec-thumb" src="${m.poster}" alt="${m.title}"
+           onerror="this.src='https://via.placeholder.com/72x48/0a0a0a/666?text=+'">
+      <div class="rec-info">
+        <div class="rec-title">${m.title}</div>
+        <div class="rec-meta">⭐ ${m.rating} · ${m.year}</div>
+      </div>
+      <div class="rec-play-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      </div>
+    </a>
+  `).join('');
+}
+
+function navigateMovie(direction) {
+  const idx = MOVIES.findIndex(m => m.id === currentMovie.id);
+  const newIdx = direction === 'next' ? idx + 1 : idx - 1;
+  if (newIdx >= 0 && newIdx < MOVIES.length) {
+    location.href = `player.html?id=${MOVIES[newIdx].id}`;
+  }
+}
+
+function reloadPlayer() {
+  const frame = document.getElementById('playerFrame');
+  const loading = document.getElementById('playerLoading');
+  loading.classList.remove('hidden');
+  const src = frame.src;
+  frame.src = '';
+  setTimeout(() => {
+    frame.src = src;
+    frame.addEventListener('load', () => loading.classList.add('hidden'), { once: true });
+  }, 400);
+  showToast('Player reloading…');
+}
+
+function goToMoviePage() {
+  if (currentMovie) location.href = `movie.html?id=${currentMovie.id}`;
+}
+
+function addToWatchlist() {
+  if (!currentMovie) return;
+  let list = JSON.parse(localStorage.getItem('sv_watchlist') || '[]');
+  if (!list.includes(currentMovie.id)) {
+    list.push(currentMovie.id);
+    localStorage.setItem('sv_watchlist', JSON.stringify(list));
+    showToast(`"${currentMovie.title}" saved!`);
+  } else {
+    showToast('Already in your list');
+  }
+}
+
+function initSearch() {
+  const input = document.getElementById('searchInput');
+  const dropdown = document.getElementById('searchDropdown');
+  let timer;
+  input.addEventListener('input', e => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      const q = e.target.value.trim();
+      if (!q) { dropdown.classList.remove('open'); return; }
+      const results = searchMovies(q).slice(0, 5);
+      dropdown.innerHTML = results.length
+        ? results.map(m => `
+          <a href="movie.html?id=${m.id}" class="search-result-item">
+            <img src="${m.poster}" alt="${m.title}" onerror="this.src='https://via.placeholder.com/40x56'">
+            <div>
+              <div class="search-result-title">${m.title}</div>
+              <div class="search-result-meta">${m.year} · ${m.genre[0]} · ⭐ ${m.rating}</div>
+            </div>
+          </a>`).join('')
+        : `<div style="padding:16px;color:var(--text-dim);font-size:0.875rem;">No results</div>`;
+      dropdown.classList.add('open');
+    }, 200);
+  });
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.nav-center')) dropdown.classList.remove('open');
+  });
+}
+
+function showToast(msg, duration = 3000) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+</script>
+
+<style>
+.mobile-nav { position:fixed;top:0;right:0;bottom:0;width:280px;background:var(--bg2);
+  border-left:1px solid var(--border);z-index:1100;padding:80px 24px 40px;
+  transform:translateX(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  display:flex;flex-direction:column;gap:12px; }
+.mobile-nav.open { transform:translateX(0); }
+.mobile-nav a { padding:12px 0;font-size:1.1rem;font-weight:500;
+  border-bottom:1px solid var(--border);color:var(--text-dim);
+  display:flex;align-items:center;gap:10px; }
+.mobile-nav a:hover { color:var(--accent); }
+.overlay { position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1099;
+  opacity:0;pointer-events:none;transition:opacity 0.3s; }
+.overlay.open { opacity:1;pointer-events:all; }
+</style>
+</body>
+</html>
