@@ -19,109 +19,52 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:4px}
 ::-webkit-scrollbar-thumb:hover{background:#333}
-
-/* ═══ LOGIN ═══ */
-#loginScreen{
-  position:fixed;inset:0;background:var(--bg);
-  display:flex;align-items:center;justify-content:center;z-index:9999;
-  background-image:radial-gradient(ellipse at 60% 40%,rgba(229,9,20,.06) 0%,transparent 60%);
-}
-.login-box{
-  background:var(--bg2);border:1px solid var(--border);
-  border-radius:16px;padding:2.8rem 2.5rem;width:100%;max-width:420px;
-  box-shadow:0 24px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.04);
-}
+#loginScreen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;background-image:radial-gradient(ellipse at 60% 40%,rgba(229,9,20,.06) 0%,transparent 60%);}
+.login-box{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:2.8rem 2.5rem;width:100%;max-width:420px;box-shadow:0 24px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.04);}
 .login-logo{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.06em;color:var(--red);margin-bottom:.15rem}
 .login-logo span{color:var(--text)}
 .login-sub{font-size:.65rem;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:2rem;display:flex;align-items:center;gap:.5rem}
 .login-sub::before{content:'';display:block;width:18px;height:1px;background:var(--border)}
 .login-label{font-size:.63rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);display:block;text-align:left;margin-bottom:.35rem;margin-top:1rem}
-.login-input{
-  width:100%;background:var(--bg3);border:1.5px solid var(--border);
-  border-radius:var(--r);color:var(--text);font-family:'DM Sans',sans-serif;
-  font-size:.88rem;padding:.75rem 1rem;transition:border-color .2s,box-shadow .2s;
-}
+.login-input{width:100%;background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--r);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.88rem;padding:.75rem 1rem;transition:border-color .2s,box-shadow .2s;}
 .login-input:focus{outline:none;border-color:rgba(229,9,20,.5);box-shadow:0 0 0 3px rgba(229,9,20,.08)}
 .login-input::placeholder{color:var(--text3)}
-.login-btn{
-  width:100%;background:var(--red);color:#fff;border:none;border-radius:var(--r);
-  padding:.9rem;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;
-  cursor:pointer;margin-top:1.5rem;transition:all .2s;letter-spacing:.02em;
-}
+.login-btn{width:100%;background:var(--red);color:#fff;border:none;border-radius:var(--r);padding:.9rem;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;margin-top:1.5rem;transition:all .2s;letter-spacing:.02em;}
 .login-btn:hover{background:#c8070f;box-shadow:0 4px 20px rgba(229,9,20,.3)}
 .login-err{color:#ff6b6b;font-size:.75rem;margin-top:.7rem;display:none;padding:.5rem .8rem;background:rgba(255,68,68,.08);border-radius:5px;border:1px solid rgba(255,68,68,.2)}
-
-/* ═══ APP LAYOUT ═══ */
 #app{display:none;min-height:100vh}
 #app.visible{display:flex}
-.sidebar{
-  width:248px;flex-shrink:0;background:var(--bg2);
-  border-right:1px solid var(--border);
-  display:flex;flex-direction:column;
-  position:fixed;top:0;left:0;bottom:0;z-index:100;
-}
+.sidebar{width:248px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;}
 .sb-logo{padding:1.4rem 1.4rem 1.2rem;border-bottom:1px solid var(--border)}
 .sb-logo h1{font-family:'Bebas Neue',sans-serif;font-size:1.45rem;letter-spacing:.06em;color:var(--red)}
 .sb-logo h1 span{color:var(--text)}
 .sb-logo p{font-size:.6rem;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-top:.2rem}
 .sb-nav{padding:.8rem 0;flex:1;overflow-y:auto}
 .sb-sec{padding:.4rem 1.2rem .2rem;font-size:.57rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--text3);margin-top:.6rem}
-.sb-link{
-  display:flex;align-items:center;gap:.7rem;padding:.6rem 1.4rem;
-  font-size:.79rem;font-weight:500;color:var(--text3);cursor:pointer;
-  transition:all .15s;border-left:2px solid transparent;
-}
+.sb-link{display:flex;align-items:center;gap:.7rem;padding:.6rem 1.4rem;font-size:.79rem;font-weight:500;color:var(--text3);cursor:pointer;transition:all .15s;border-left:2px solid transparent;}
 .sb-link:hover{color:var(--text2);background:var(--glass)}
 .sb-link.active{color:var(--text);background:var(--red-dim);border-left-color:var(--red)}
-.sb-count{
-  margin-left:auto;font-size:.58rem;font-weight:700;
-  padding:.12rem .45rem;border-radius:4px;
-}
+.sb-count{margin-left:auto;font-size:.58rem;font-weight:700;padding:.12rem .45rem;border-radius:4px;}
 .sb-bottom{padding:1rem 1.4rem;border-top:1px solid var(--border)}
 .sb-stat{display:flex;justify-content:space-between;padding:.22rem 0;font-size:.68rem}
 .sb-stat-l{color:var(--text3)}
 .sb-stat-v{color:var(--text2);font-weight:600}
-.sb-user{
-  display:flex;align-items:center;gap:.7rem;
-  padding:.6rem .8rem;background:var(--glass);
-  border-radius:var(--r);border:1px solid var(--border);
-  margin-bottom:.7rem;
-}
-.sb-avatar{
-  width:30px;height:30px;border-radius:50%;
-  background:var(--red-dim);border:1px solid var(--red-glow);
-  display:flex;align-items:center;justify-content:center;
-  font-size:.65rem;font-weight:700;color:var(--red);flex-shrink:0;
-}
+.sb-user{display:flex;align-items:center;gap:.7rem;padding:.6rem .8rem;background:var(--glass);border-radius:var(--r);border:1px solid var(--border);margin-bottom:.7rem;}
+.sb-avatar{width:30px;height:30px;border-radius:50%;background:var(--red-dim);border:1px solid var(--red-glow);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:var(--red);flex-shrink:0;}
 .sb-user-info{flex:1;min-width:0}
 .sb-user-email{font-size:.65rem;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sb-user-role{font-size:.58rem;color:var(--text3)}
-
 .main{margin-left:248px;flex:1;min-height:100vh;display:flex;flex-direction:column}
-.topbar{
-  background:var(--bg2);border-bottom:1px solid var(--border);
-  padding:.85rem 2rem;display:flex;align-items:center;justify-content:space-between;
-  position:sticky;top:0;z-index:50;gap:1rem;
-}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:.85rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;gap:1rem;}
 .topbar-l{display:flex;align-items:center;gap:1rem}
 .topbar-title{font-family:'Bebas Neue',sans-serif;font-size:1.35rem;letter-spacing:.08em;color:var(--text2)}
-.sync-wrap{
-  display:flex;align-items:center;gap:.4rem;font-size:.67rem;
-  color:var(--text3);padding:.28rem .7rem;border-radius:20px;border:1px solid var(--border);
-}
+.sync-wrap{display:flex;align-items:center;gap:.4rem;font-size:.67rem;color:var(--text3);padding:.28rem .7rem;border-radius:20px;border:1px solid var(--border);}
 .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0}
 .sync-dot.loading{background:var(--gold);animation:pulse .8s infinite}
 .sync-dot.err{background:#ff4444}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .topbar-r{display:flex;gap:.6rem;flex-shrink:0;align-items:center}
-
-/* Buttons */
-.btn{
-  display:inline-flex;align-items:center;gap:.45rem;
-  padding:.52rem 1.1rem;border-radius:var(--r);
-  font-family:'DM Sans',sans-serif;font-size:.77rem;font-weight:600;
-  cursor:pointer;border:none;transition:all .2s;white-space:nowrap;
-}
+.btn{display:inline-flex;align-items:center;gap:.45rem;padding:.52rem 1.1rem;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:.77rem;font-weight:600;cursor:pointer;border:none;transition:all .2s;white-space:nowrap;}
 .btn-red{background:var(--red);color:#fff}
 .btn-red:hover{background:#c8070f;box-shadow:0 4px 14px rgba(229,9,20,.3)}
 .btn-sec{background:var(--bg3);color:var(--text2);border:1px solid var(--border)}
@@ -133,99 +76,53 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 .btn-sm{padding:.32rem .75rem;font-size:.7rem}
 .btn-xs{padding:.2rem .55rem;font-size:.65rem}
 .btn:disabled{opacity:.45;cursor:not-allowed}
-
-/* Views */
 .view{display:none;padding:2rem;flex:1;animation:fadeIn .2s ease}
 .view.active{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-
-/* ═══ DASHBOARD ═══ */
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
-.stat-card{
-  background:var(--bg2);border:1px solid var(--border);
-  border-radius:var(--r2);padding:1.4rem 1.5rem;
-  position:relative;overflow:hidden;transition:border-color .2s;
-}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:1.4rem 1.5rem;position:relative;overflow:hidden;transition:border-color .2s;}
 .stat-card:hover{border-color:rgba(255,255,255,.12)}
 .stat-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--glass),transparent);pointer-events:none}
 .stat-v{font-family:'Bebas Neue',sans-serif;font-size:2.6rem;letter-spacing:.04em;margin-bottom:.15rem;line-height:1}
 .stat-l{font-size:.68rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em}
 .stat-trend{font-size:.62rem;color:var(--green);margin-top:.4rem;display:flex;align-items:center;gap:.3rem}
-
 .section-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;margin-bottom:1.5rem}
-.sc-hdr{
-  padding:1rem 1.5rem;border-bottom:1px solid var(--border);
-  display:flex;justify-content:space-between;align-items:center;gap:1rem;
-}
+.sc-hdr{padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:1rem;}
 .sc-title{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.1em;color:var(--text2)}
 .sc-actions{display:flex;gap:.5rem;align-items:center}
-
-/* Table */
 .tbl{width:100%;border-collapse:collapse}
-.tbl th{
-  padding:.6rem 1rem;font-size:.62rem;font-weight:700;
-  letter-spacing:.1em;text-transform:uppercase;color:var(--text3);
-  text-align:left;border-bottom:1px solid var(--border);background:rgba(255,255,255,.01);
-}
-.tbl td{
-  padding:.7rem 1rem;font-size:.78rem;
-  border-bottom:1px solid rgba(255,255,255,.03);color:var(--text2);
-  vertical-align:middle;
-}
+.tbl th{padding:.6rem 1rem;font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);text-align:left;border-bottom:1px solid var(--border);background:rgba(255,255,255,.01);}
+.tbl td{padding:.7rem 1rem;font-size:.78rem;border-bottom:1px solid rgba(255,255,255,.03);color:var(--text2);vertical-align:middle;}
 .tbl tr:last-child td{border-bottom:none}
 .tbl tr:hover td{background:var(--glass)}
 .tbl-thumb{width:52px;height:32px;border-radius:5px;overflow:hidden;background:var(--bg3);flex-shrink:0}
 .tbl-thumb img{width:100%;height:100%;object-fit:cover}
-.badge{
-  display:inline-block;padding:.13rem .5rem;border-radius:4px;
-  font-size:.6rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
-}
+.badge{display:inline-block;padding:.13rem .5rem;border-radius:4px;font-size:.6rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;}
 .b-movie{background:rgba(229,9,20,.15);color:var(--red)}
 .b-tv{background:rgba(59,130,246,.15);color:var(--blue)}
 .b-anime{background:rgba(245,197,24,.12);color:var(--gold)}
-
-/* Search/Filter */
 .filter-bar{display:flex;align-items:center;gap:.8rem;margin-bottom:1.5rem;flex-wrap:wrap}
 .filter-wrap{position:relative;flex:1;min-width:220px;max-width:340px}
 .filter-wrap svg{position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none}
-.filter-input{
-  width:100%;background:var(--bg2);border:1px solid var(--border);
-  border-radius:var(--r);color:var(--text);font-family:'DM Sans',sans-serif;
-  font-size:.82rem;padding:.55rem .9rem .55rem 2.2rem;transition:border-color .2s;
-}
+.filter-input{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.82rem;padding:.55rem .9rem .55rem 2.2rem;transition:border-color .2s;}
 .filter-input:focus{outline:none;border-color:rgba(255,255,255,.2)}
 .filter-input::placeholder{color:var(--text3)}
-.filter-select{
-  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
-  color:var(--text2);font-family:'DM Sans',sans-serif;font-size:.78rem;
-  padding:.5rem .8rem;cursor:pointer;
-}
+.filter-select{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:.78rem;padding:.5rem .8rem;cursor:pointer;}
 .filter-select:focus{outline:none}
 .filter-select option{background:var(--bg3)}
-
-/* Content Grid */
 .content-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:.9rem}
-.cc{
-  background:var(--bg2);border:1px solid var(--border);
-  border-radius:var(--r2);overflow:hidden;transition:border-color .2s,transform .2s;
-  cursor:pointer;
-}
+.cc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;transition:border-color .2s,transform .2s;cursor:pointer;}
 .cc:hover{border-color:rgba(255,255,255,.15);transform:translateY(-2px)}
 .cc-img{aspect-ratio:16/9;overflow:hidden;background:var(--bg3);position:relative}
 .cc-img img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
 .cc:hover .cc-img img{transform:scale(1.04)}
-.cc-fb{
-  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:rgba(255,255,255,.06);
-}
+.cc-fb{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:rgba(255,255,255,.06);}
 .cc-typebadge{position:absolute;top:6px;left:6px}
 .cc-imdb{position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.7);padding:.15rem .4rem;border-radius:4px;font-size:.62rem;color:var(--gold);font-weight:700}
 .cc-body{padding:.85rem}
 .cc-title{font-size:.8rem;font-weight:600;margin-bottom:.2rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cc-meta{font-size:.67rem;color:var(--text3);margin-bottom:.65rem}
 .cc-actions{display:flex;gap:.4rem}
-
-/* ═══ STATS VIEW ═══ */
 .stats-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem}
 .genre-bar{display:flex;align-items:center;gap:.7rem;padding:.5rem 0;border-bottom:1px solid rgba(255,255,255,.04)}
 .genre-bar:last-child{border-bottom:none}
@@ -234,14 +131,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 .genre-fill{height:100%;background:var(--red);border-radius:3px;transition:width 1s ease}
 .genre-count{font-size:.68rem;color:var(--text3);min-width:24px;text-align:right}
 .year-grid{display:flex;flex-wrap:wrap;gap:.35rem}
-.year-tag{
-  padding:.2rem .55rem;border-radius:5px;font-size:.65rem;font-weight:600;
-  background:var(--bg3);border:1px solid var(--border);color:var(--text3);
-  transition:all .2s;cursor:default;
-}
+.year-tag{padding:.2rem .55rem;border-radius:5px;font-size:.65rem;font-weight:600;background:var(--bg3);border:1px solid var(--border);color:var(--text3);transition:all .2s;cursor:default;}
 .year-tag:hover{border-color:var(--red);color:var(--red);background:var(--red-dim)}
-
-/* ═══ SETTINGS ═══ */
 .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
 .setting-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:1.4rem}
 .setting-card.full{grid-column:1/-1}
@@ -250,92 +141,35 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 .setting-row:last-child{border-bottom:none}
 .setting-label{font-size:.78rem;color:var(--text2)}
 .setting-desc{font-size:.65rem;color:var(--text3);margin-top:.15rem}
-.toggle{
-  position:relative;width:38px;height:21px;cursor:pointer;flex-shrink:0;
-}
+.toggle{position:relative;width:38px;height:21px;cursor:pointer;flex-shrink:0;}
 .toggle input{opacity:0;width:0;height:0;position:absolute}
-.toggle-track{
-  position:absolute;inset:0;background:var(--bg4);border:1px solid var(--border);
-  border-radius:21px;transition:all .2s;
-}
+.toggle-track{position:absolute;inset:0;background:var(--bg4);border:1px solid var(--border);border-radius:21px;transition:all .2s;}
 .toggle input:checked+.toggle-track{background:var(--red);border-color:var(--red)}
-.toggle-thumb{
-  position:absolute;left:3px;top:2px;width:15px;height:15px;
-  background:#fff;border-radius:50%;transition:left .2s;
-}
+.toggle-thumb{position:absolute;left:3px;top:2px;width:15px;height:15px;background:#fff;border-radius:50%;transition:left .2s;}
 .toggle input:checked~.toggle-thumb{left:20px}
 .api-key-wrap{display:flex;gap:.5rem;align-items:center}
-.api-key-display{
-  flex:1;background:var(--bg3);border:1px solid var(--border);
-  border-radius:var(--r);padding:.55rem .9rem;font-size:.8rem;
-  color:var(--text2);font-family:monospace;overflow:hidden;text-overflow:ellipsis;
-  white-space:nowrap;
-}
-
-/* ═══ MODAL ═══ */
-.overlay{
-  display:none;position:fixed;inset:0;z-index:200;
-  background:rgba(0,0,0,.88);backdrop-filter:blur(8px);
-  align-items:center;justify-content:center;padding:1.5rem;
-}
+.api-key-display{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:.55rem .9rem;font-size:.8rem;color:var(--text2);font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.88);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:1.5rem;}
 .overlay.open{display:flex}
-.modal{
-  background:var(--bg2);border:1px solid var(--border);
-  border-radius:var(--r2);width:100%;max-width:700px;
-  max-height:92vh;overflow-y:auto;
-  animation:mIn .22s cubic-bezier(.16,1,.3,1);
-  box-shadow:0 32px 80px rgba(0,0,0,.7);
-}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);width:100%;max-width:700px;max-height:92vh;overflow-y:auto;animation:mIn .22s cubic-bezier(.16,1,.3,1);box-shadow:0 32px 80px rgba(0,0,0,.7);}
 @keyframes mIn{from{opacity:0;transform:scale(.94) translateY(14px)}to{opacity:1;transform:scale(1) translateY(0)}}
-.modal-hdr{
-  padding:1.3rem 1.5rem;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-  position:sticky;top:0;background:var(--bg2);z-index:1;
-}
+.modal-hdr{padding:1.3rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg2);z-index:1;}
 .modal-hdr-title{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:.08em}
-.modal-close{
-  background:var(--bg3);border:1px solid var(--border);cursor:pointer;
-  color:var(--text3);font-size:.9rem;padding:.35rem .65rem;border-radius:6px;
-  transition:all .15s;line-height:1;
-}
+.modal-close{background:var(--bg3);border:1px solid var(--border);cursor:pointer;color:var(--text3);font-size:.9rem;padding:.35rem .65rem;border-radius:6px;transition:all .15s;line-height:1;}
 .modal-close:hover{color:var(--text);background:var(--bg4)}
 .modal-body{padding:1.5rem}
-.modal-footer{
-  padding:1rem 1.5rem;border-top:1px solid var(--border);
-  display:flex;gap:.7rem;justify-content:flex-end;
-  position:sticky;bottom:0;background:var(--bg2);
-}
-
-/* TMDB Fetch */
-.fetch-section{
-  background:linear-gradient(135deg,rgba(229,9,20,.05),transparent);
-  border:1px solid rgba(229,9,20,.2);
-  border-radius:var(--r2);padding:1.2rem;margin-bottom:1.2rem;
-}
+.modal-footer{padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;gap:.7rem;justify-content:flex-end;position:sticky;bottom:0;background:var(--bg2);}
+.fetch-section{background:linear-gradient(135deg,rgba(229,9,20,.05),transparent);border:1px solid rgba(229,9,20,.2);border-radius:var(--r2);padding:1.2rem;margin-bottom:1.2rem;}
 .fetch-label{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem}
 .fetch-row{display:flex;gap:.6rem;align-items:stretch}
-.fetch-input{
-  flex:1;background:var(--bg4);border:1.5px solid var(--border);
-  border-radius:var(--r);color:var(--text);font-family:'DM Sans',sans-serif;
-  font-size:.95rem;padding:.7rem 1rem;transition:border-color .2s;
-}
+.fetch-input{flex:1;background:var(--bg4);border:1.5px solid var(--border);border-radius:var(--r);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.95rem;padding:.7rem 1rem;transition:border-color .2s;}
 .fetch-input:focus{outline:none;border-color:var(--red)}
 .fetch-input::placeholder{color:var(--text3)}
-.fetch-btn{
-  background:var(--red);color:#fff;border:none;border-radius:var(--r);
-  padding:.7rem 1.4rem;font-family:'DM Sans',sans-serif;font-size:.85rem;
-  font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s;
-  display:flex;align-items:center;gap:.5rem;
-}
+.fetch-btn{background:var(--red);color:#fff;border:none;border-radius:var(--r);padding:.7rem 1.4rem;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s;display:flex;align-items:center;gap:.5rem;}
 .fetch-btn:hover{background:#c8070f}
 .fetch-btn:disabled{opacity:.5;cursor:not-allowed}
 .fetch-hint{font-size:.67rem;color:var(--text3);margin-top:.45rem}
-
-/* Preview */
-.result-preview{
-  background:rgba(70,211,105,.04);border:1px solid rgba(70,211,105,.2);
-  border-radius:var(--r2);padding:1.2rem;margin-bottom:1.2rem;display:none;
-}
+.result-preview{background:rgba(70,211,105,.04);border:1px solid rgba(70,211,105,.2);border-radius:var(--r2);padding:1.2rem;margin-bottom:1.2rem;display:none;}
 .result-preview.show{display:flex;gap:1rem}
 .rp-poster{width:78px;height:116px;border-radius:var(--r);overflow:hidden;flex-shrink:0;background:var(--bg4)}
 .rp-poster img{width:100%;height:100%;object-fit:cover}
@@ -349,25 +183,14 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 .af-item{background:rgba(70,211,105,.05);border:1px solid rgba(70,211,105,.12);border-radius:5px;padding:.3rem .5rem;text-align:center}
 .af-label{font-size:.58rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em}
 .af-val{font-size:.68rem;color:var(--green);font-weight:600;margin-top:1px}
-
-/* Form */
 .type-tabs{display:flex;gap:.5rem;margin-bottom:1.2rem}
-.type-tab{
-  flex:1;padding:.52rem;border-radius:var(--r);font-size:.75rem;font-weight:600;
-  border:1.5px solid var(--border);color:var(--text3);cursor:pointer;
-  text-align:center;transition:all .2s;background:var(--bg3);
-}
+.type-tab{flex:1;padding:.52rem;border-radius:var(--r);font-size:.75rem;font-weight:600;border:1.5px solid var(--border);color:var(--text3);cursor:pointer;text-align:center;transition:all .2s;background:var(--bg3);}
 .type-tab.active{border-color:var(--red);color:var(--red);background:var(--red-dim)}
-
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.85rem}
 .form-grid .full{grid-column:1/-1}
 .fg{display:flex;flex-direction:column;gap:.3rem}
 .fg label{font-size:.63rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3)}
-.fg input,.fg select,.fg textarea{
-  background:var(--bg3);border:1px solid var(--border);
-  border-radius:var(--r);color:var(--text);font-family:'DM Sans',sans-serif;
-  font-size:.84rem;padding:.58rem .88rem;transition:border-color .2s;
-}
+.fg input,.fg select,.fg textarea{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.84rem;padding:.58rem .88rem;transition:border-color .2s;}
 .fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:rgba(255,255,255,.2)}
 .fg input::placeholder,.fg textarea::placeholder{color:var(--text3)}
 .fg textarea{resize:vertical;min-height:80px;line-height:1.6}
@@ -375,85 +198,35 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 .fg .hint{font-size:.61rem;color:var(--text3)}
 .fg input.autofilled{border-color:rgba(70,211,105,.35);background:rgba(70,211,105,.04)}
 .form-divider{grid-column:1/-1;height:1px;background:var(--border);margin:.2rem 0}
-.form-section{
-  grid-column:1/-1;font-family:'Bebas Neue',sans-serif;font-size:.88rem;
-  letter-spacing:.1em;color:var(--text3);padding-top:.2rem;
-  display:flex;align-items:center;gap:.7rem;
-}
+.form-section{grid-column:1/-1;font-family:'Bebas Neue',sans-serif;font-size:.88rem;letter-spacing:.1em;color:var(--text3);padding-top:.2rem;display:flex;align-items:center;gap:.7rem;}
 .form-section::after{content:'';flex:1;height:1px;background:var(--border)}
-
-/* Episodes */
-.ep-row{
-  display:flex;gap:.5rem;align-items:center;
-  background:var(--bg3);border:1px solid var(--border);
-  border-radius:var(--r);padding:.5rem .75rem;margin-bottom:.35rem;
-  transition:border-color .15s;
-}
+.ep-row{display:flex;gap:.5rem;align-items:center;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:.5rem .75rem;margin-bottom:.35rem;transition:border-color .15s;}
 .ep-row:hover{border-color:rgba(255,255,255,.12)}
-.ep-row input{
-  background:transparent;border:none;color:var(--text);
-  font-family:'DM Sans',sans-serif;font-size:.78rem;flex:1;outline:none;min-width:0;
-}
+.ep-row input{background:transparent;border:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.78rem;flex:1;outline:none;min-width:0;}
 .ep-row input::placeholder{color:var(--text3)}
-.ep-n{
-  font-family:'Bebas Neue',sans-serif;font-size:.9rem;
-  color:var(--text3);min-width:20px;flex-shrink:0;
-}
+.ep-n{font-family:'Bebas Neue',sans-serif;font-size:.9rem;color:var(--text3);min-width:20px;flex-shrink:0;}
 .ep-dur{width:52px;flex:none;text-align:center}
-.ep-rm{
-  background:none;border:none;cursor:pointer;color:var(--text3);
-  font-size:.85rem;flex-shrink:0;transition:color .15s;padding:.1rem;
-}
+.ep-rm{background:none;border:none;cursor:pointer;color:var(--text3);font-size:.85rem;flex-shrink:0;transition:color .15s;padding:.1rem;}
 .ep-rm:hover{color:#ff4444}
 .stabs{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.6rem}
-.stab{
-  padding:.26rem .7rem;border-radius:20px;font-size:.67rem;font-weight:600;
-  background:var(--bg3);border:1px solid var(--border);color:var(--text3);
-  cursor:pointer;transition:all .15s;
-}
+.stab{padding:.26rem .7rem;border-radius:20px;font-size:.67rem;font-weight:600;background:var(--bg3);border:1px solid var(--border);color:var(--text3);cursor:pointer;transition:all .15s;}
 .stab.active{background:var(--red-dim);border-color:var(--red);color:var(--red)}
-
-/* Confirm Dialog */
-.confirm-overlay{
-  display:none;position:fixed;inset:0;z-index:300;
-  background:rgba(0,0,0,.8);backdrop-filter:blur(6px);
-  align-items:center;justify-content:center;
-}
+.confirm-overlay{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.8);backdrop-filter:blur(6px);align-items:center;justify-content:center;}
 .confirm-overlay.open{display:flex}
-.confirm-box{
-  background:var(--bg2);border:1px solid var(--border);
-  border-radius:var(--r2);padding:2rem;max-width:360px;width:90%;
-  text-align:center;animation:mIn .18s ease;
-}
+.confirm-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:2rem;max-width:360px;width:90%;text-align:center;animation:mIn .18s ease;}
 .confirm-icon{font-size:2.5rem;margin-bottom:.8rem}
 .confirm-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.05em;margin-bottom:.5rem}
 .confirm-msg{font-size:.82rem;color:var(--text2);line-height:1.6;margin-bottom:1.5rem}
 .confirm-btns{display:flex;gap:.6rem;justify-content:center}
-
-/* TOAST */
-.toast{
-  position:fixed;bottom:1.4rem;right:1.4rem;
-  background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);
-  padding:.65rem 1.1rem;font-size:.78rem;color:var(--text2);
-  transform:translateX(120%);transition:transform .3s cubic-bezier(.16,1,.3,1);
-  z-index:9999;pointer-events:none;display:flex;align-items:center;gap:.55rem;
-  max-width:340px;box-shadow:0 8px 24px rgba(0,0,0,.4);
-}
+.toast{position:fixed;bottom:1.4rem;right:1.4rem;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:.65rem 1.1rem;font-size:.78rem;color:var(--text2);transform:translateX(120%);transition:transform .3s cubic-bezier(.16,1,.3,1);z-index:9999;pointer-events:none;display:flex;align-items:center;gap:.55rem;max-width:340px;box-shadow:0 8px 24px rgba(0,0,0,.4);}
 .toast.show{transform:translateX(0)}
 .toast.ok{border-color:rgba(70,211,105,.3);color:var(--green)}
 .toast.err{border-color:rgba(255,68,68,.3);color:#ff6b6b}
 .toast.info{border-color:rgba(245,197,24,.3);color:var(--gold)}
-
-/* Empty state */
-.empty-state{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:4rem 2rem;color:var(--text3);text-align:center;gap:.8rem;
-}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4rem 2rem;color:var(--text3);text-align:center;gap:.8rem;}
 .empty-state svg{opacity:.2}
 .empty-state h3{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.06em;color:var(--text3)}
 .empty-state p{font-size:.8rem;max-width:280px;line-height:1.7}
-
-/* ── REQUESTS VIEW ── */
 .req-stats{display:flex;gap:.8rem;flex-wrap:wrap;margin-bottom:1.5rem}
 .req-stat-pill{display:flex;align-items:center;gap:.5rem;padding:.45rem .9rem;border-radius:20px;font-size:.72rem;font-weight:700;background:var(--bg2);border:1px solid var(--border);}
 .req-stat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
@@ -486,32 +259,18 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 .req-admin-note-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.76rem;padding:.45rem .75rem;resize:none;transition:border-color .2s;margin-top:.5rem;}
 .req-admin-note-input:focus{outline:none;border-color:rgba(255,255,255,.2)}
 .req-admin-note-input::placeholder{color:var(--text3)}
-
-/* Pill tabs for content filter */
 .pill-tabs{display:flex;gap:.4rem;flex-wrap:wrap}
-.pill-tab{
-  padding:.3rem .8rem;border-radius:20px;font-size:.7rem;font-weight:600;
-  background:var(--bg3);border:1px solid var(--border);color:var(--text3);
-  cursor:pointer;transition:all .15s;
-}
+.pill-tab{padding:.3rem .8rem;border-radius:20px;font-size:.7rem;font-weight:600;background:var(--bg3);border:1px solid var(--border);color:var(--text3);cursor:pointer;transition:all .15s;}
 .pill-tab.active{background:var(--red-dim);border-color:var(--red);color:var(--red)}
-
-/* Bulk import */
-.bulk-area{
-  width:100%;background:var(--bg3);border:1.5px dashed var(--border);
-  border-radius:var(--r2);padding:1rem;font-family:monospace;font-size:.75rem;
-  color:var(--text2);resize:vertical;min-height:200px;transition:border-color .2s;
-}
+.bulk-area{width:100%;background:var(--bg3);border:1.5px dashed var(--border);border-radius:var(--r2);padding:1rem;font-family:monospace;font-size:.75rem;color:var(--text2);resize:vertical;min-height:200px;transition:border-color .2s;}
 .bulk-area:focus{outline:none;border-color:rgba(255,255,255,.2)}
 .bulk-area::placeholder{color:var(--text3)}
-
 @media(max-width:900px){.sidebar{display:none}.main{margin-left:0}.stats-grid{grid-template-columns:1fr 1fr}.settings-grid{grid-template-columns:1fr}}
 @media(max-width:600px){.stats-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.content-grid{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
 <div id="loginScreen">
   <div class="login-box">
     <div class="login-logo">Stream<span>Vault</span></div>
@@ -527,7 +286,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
   </div>
 </div>
 
-<!-- APP -->
 <div id="app">
   <aside class="sidebar">
     <div class="sb-logo"><h1>Stream<span>Vault</span></h1><p>Admin Portal</p></div>
@@ -610,87 +368,39 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
     <!-- DASHBOARD -->
     <div class="view active" id="view-dashboard">
       <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-v" id="dM" style="color:var(--red)">0</div>
-          <div class="stat-l">Movies</div>
-          <div class="stat-trend"><svg width="10" height="10" fill="currentColor" viewBox="0 0 24 24"><polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/></svg><span id="mTrend">—</span></div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-v" id="dT" style="color:var(--blue)">0</div>
-          <div class="stat-l">TV Shows</div>
-          <div class="stat-trend" style="color:var(--blue)"><svg width="10" height="10" fill="currentColor" viewBox="0 0 24 24"><polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/></svg><span id="tTrend">—</span></div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-v" id="dA" style="color:var(--gold)">0</div>
-          <div class="stat-l">Anime</div>
-          <div class="stat-trend" style="color:var(--gold)"><svg width="10" height="10" fill="currentColor" viewBox="0 0 24 24"><polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/></svg><span id="aTrend">—</span></div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-v" id="dTot" style="color:var(--green)">0</div>
-          <div class="stat-l">Total Titles</div>
-          <div class="stat-trend"><svg width="10" height="10" fill="currentColor" viewBox="0 0 24 24"><polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/></svg><span id="totTrend">Library size</span></div>
-        </div>
+        <div class="stat-card"><div class="stat-v" id="dM" style="color:var(--red)">0</div><div class="stat-l">Movies</div><div class="stat-trend"><svg width="10" height="10" fill="currentColor" viewBox="0 0 24 24"><polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/></svg><span id="mTrend">—</span></div></div>
+        <div class="stat-card"><div class="stat-v" id="dT" style="color:var(--blue)">0</div><div class="stat-l">TV Shows</div><div class="stat-trend" style="color:var(--blue)"><svg width="10" height="10" fill="currentColor" viewBox="0 0 24 24"><polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/></svg><span id="tTrend">—</span></div></div>
+        <div class="stat-card"><div class="stat-v" id="dA" style="color:var(--gold)">0</div><div class="stat-l">Anime</div><div class="stat-trend" style="color:var(--gold)"><svg width="10" height="10" fill="currentColor" viewBox="0 0 24 24"><polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/></svg><span id="aTrend">—</span></div></div>
+        <div class="stat-card"><div class="stat-v" id="dTot" style="color:var(--green)">0</div><div class="stat-l">Total Titles</div><div class="stat-trend"><svg width="10" height="10" fill="currentColor" viewBox="0 0 24 24"><polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/></svg><span id="totTrend">Library size</span></div></div>
       </div>
       <div class="section-card">
         <div class="sc-hdr">
           <div class="sc-title">All Titles</div>
           <div class="sc-actions">
-            <select class="filter-select" id="dashTypeFilter" onchange="renderRecent()">
-              <option value="">All Types</option>
-              <option value="movie">Movies</option>
-              <option value="tv">TV Shows</option>
-              <option value="anime">Anime</option>
-            </select>
-            <select class="filter-select" id="dashSortFilter" onchange="renderRecent()">
-              <option value="recent">Recently Added</option>
-              <option value="az">A → Z</option>
-              <option value="za">Z → A</option>
-              <option value="year">By Year</option>
-              <option value="imdb">By IMDb</option>
-            </select>
-            <button class="btn btn-sec btn-sm" onclick="exportContent()">
-              <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              Export
-            </button>
+            <select class="filter-select" id="dashTypeFilter" onchange="renderRecent()"><option value="">All Types</option><option value="movie">Movies</option><option value="tv">TV Shows</option><option value="anime">Anime</option></select>
+            <select class="filter-select" id="dashSortFilter" onchange="renderRecent()"><option value="recent">Recently Added</option><option value="az">A → Z</option><option value="za">Z → A</option><option value="year">By Year</option><option value="imdb">By IMDb</option></select>
+            <button class="btn btn-sec btn-sm" onclick="exportContent()"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export</button>
           </div>
         </div>
-        <table class="tbl"><thead><tr><th>Poster</th><th>Title</th><th>Type</th><th>Year</th><th>IMDb</th><th>Genre</th><th>Actions</th></tr></thead>
-        <tbody id="recentBody"></tbody></table>
+        <table class="tbl"><thead><tr><th>Poster</th><th>Title</th><th>Type</th><th>Year</th><th>IMDb</th><th>Genre</th><th>Actions</th></tr></thead><tbody id="recentBody"></tbody></table>
       </div>
     </div>
 
     <!-- ANALYTICS -->
     <div class="view" id="view-stats">
       <div class="stats-detail-grid">
-        <div class="section-card">
-          <div class="sc-hdr"><div class="sc-title">Genre Breakdown</div></div>
-          <div style="padding:1rem 1.5rem" id="genreBreakdown"></div>
-        </div>
-        <div class="section-card">
-          <div class="sc-hdr"><div class="sc-title">Content by Year</div></div>
-          <div style="padding:1rem 1.5rem" id="yearBreakdown"></div>
-        </div>
+        <div class="section-card"><div class="sc-hdr"><div class="sc-title">Genre Breakdown</div></div><div style="padding:1rem 1.5rem" id="genreBreakdown"></div></div>
+        <div class="section-card"><div class="sc-hdr"><div class="sc-title">Content by Year</div></div><div style="padding:1rem 1.5rem" id="yearBreakdown"></div></div>
       </div>
-      <div class="section-card">
-        <div class="sc-hdr"><div class="sc-title">Top Rated Titles</div></div>
-        <table class="tbl"><thead><tr><th>#</th><th>Poster</th><th>Title</th><th>Type</th><th>IMDb</th><th>Match %</th><th>Year</th></tr></thead>
-        <tbody id="topRatedBody"></tbody></table>
-      </div>
+      <div class="section-card"><div class="sc-hdr"><div class="sc-title">Top Rated Titles</div></div><table class="tbl"><thead><tr><th>#</th><th>Poster</th><th>Title</th><th>Type</th><th>IMDb</th><th>Match %</th><th>Year</th></tr></thead><tbody id="topRatedBody"></tbody></table></div>
     </div>
 
     <!-- MOVIES -->
     <div class="view" id="view-movies">
       <div class="filter-bar">
-        <div class="filter-wrap">
-          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input class="filter-input" placeholder="Search movies..." oninput="renderGrid('movie',this.value)" id="movieSearch">
-        </div>
-        <select class="filter-select" onchange="renderGrid('movie',document.getElementById('movieSearch').value,this.value)" id="movieGenreFilter">
-          <option value="">All Genres</option>
-        </select>
-        <select class="filter-select" onchange="renderGrid('movie',document.getElementById('movieSearch').value,'',this.value)" id="movieSortFilter">
-          <option value="recent">Recent</option><option value="az">A-Z</option><option value="imdb">IMDb</option><option value="year">Year</option>
-        </select>
+        <div class="filter-wrap"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input class="filter-input" placeholder="Search movies..." oninput="renderGrid('movie',this.value)" id="movieSearch"></div>
+        <select class="filter-select" onchange="renderGrid('movie',document.getElementById('movieSearch').value,this.value)" id="movieGenreFilter"><option value="">All Genres</option></select>
+        <select class="filter-select" onchange="renderGrid('movie',document.getElementById('movieSearch').value,'',this.value)" id="movieSortFilter"><option value="recent">Recent</option><option value="az">A-Z</option><option value="imdb">IMDb</option><option value="year">Year</option></select>
         <button class="btn btn-red" onclick="openAdd('movie')">+ Add Movie</button>
       </div>
       <div class="content-grid" id="grid-movies"></div>
@@ -699,13 +409,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
     <!-- TV -->
     <div class="view" id="view-tvshows">
       <div class="filter-bar">
-        <div class="filter-wrap">
-          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input class="filter-input" placeholder="Search TV shows..." oninput="renderGrid('tv',this.value)" id="tvSearch">
-        </div>
-        <select class="filter-select" onchange="renderGrid('tv',document.getElementById('tvSearch').value,this.value)" id="tvGenreFilter">
-          <option value="">All Genres</option>
-        </select>
+        <div class="filter-wrap"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input class="filter-input" placeholder="Search TV shows..." oninput="renderGrid('tv',this.value)" id="tvSearch"></div>
+        <select class="filter-select" onchange="renderGrid('tv',document.getElementById('tvSearch').value,this.value)" id="tvGenreFilter"><option value="">All Genres</option></select>
         <button class="btn btn-red" onclick="openAdd('tv')">+ Add TV Show</button>
       </div>
       <div class="content-grid" id="grid-tv"></div>
@@ -714,10 +419,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
     <!-- ANIME -->
     <div class="view" id="view-anime">
       <div class="filter-bar">
-        <div class="filter-wrap">
-          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input class="filter-input" placeholder="Search anime..." oninput="renderGrid('anime',this.value)" id="animeSearch">
-        </div>
+        <div class="filter-wrap"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input class="filter-input" placeholder="Search anime..." oninput="renderGrid('anime',this.value)" id="animeSearch"></div>
         <button class="btn btn-red" onclick="openAdd('anime')">+ Add Anime</button>
       </div>
       <div class="content-grid" id="grid-anime"></div>
@@ -726,30 +428,13 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
     <!-- BULK IMPORT -->
     <div class="view" id="view-bulk">
       <div class="section-card" style="margin-bottom:1rem">
-        <div class="sc-hdr">
-          <div class="sc-title">📥 Bulk Import / Export</div>
-          <div class="sc-actions">
-            <button class="btn btn-green btn-sm" onclick="exportContent()">
-              <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              Export Current
-            </button>
-          </div>
-        </div>
+        <div class="sc-hdr"><div class="sc-title">📥 Bulk Import / Export</div><div class="sc-actions"><button class="btn btn-green btn-sm" onclick="exportContent()"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export Current</button></div></div>
         <div style="padding:1.5rem">
-          <p style="font-size:.82rem;color:var(--text2);margin-bottom:1rem;line-height:1.7">
-            Paste a full JSON database below to bulk-replace all content, or export the current database.
-            Format: <code style="background:var(--bg3);padding:.1rem .4rem;border-radius:4px;font-size:.78rem;color:var(--green)">{"movies":[...],"tvshows":[...],"anime":[...]}</code>
-          </p>
+          <p style="font-size:.82rem;color:var(--text2);margin-bottom:1rem;line-height:1.7">Paste a full JSON database below to bulk-replace all content, or export the current database. Format: <code style="background:var(--bg3);padding:.1rem .4rem;border-radius:4px;font-size:.78rem;color:var(--green)">{"movies":[...],"tvshows":[...],"anime":[...]}</code></p>
           <textarea class="bulk-area" id="bulkInput" placeholder='{"movies":[...],"tvshows":[...],"anime":[]}'></textarea>
           <div style="display:flex;gap:.7rem;margin-top:1rem;align-items:center;flex-wrap:wrap">
-            <button class="btn btn-red" onclick="bulkImport()">
-              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              Import & Replace All
-            </button>
-            <button class="btn btn-sec" onclick="validateBulk()">
-              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>
-              Validate JSON
-            </button>
+            <button class="btn btn-red" onclick="bulkImport()"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Import & Replace All</button>
+            <button class="btn btn-sec" onclick="validateBulk()"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>Validate JSON</button>
             <button class="btn btn-sec" onclick="document.getElementById('bulkInput').value=''">Clear</button>
             <span id="bulkStatus" style="font-size:.75rem;color:var(--text3)"></span>
           </div>
@@ -758,18 +443,11 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
       <div class="section-card">
         <div class="sc-hdr"><div class="sc-title">🗑️ Danger Zone</div></div>
         <div style="padding:1.5rem;display:flex;gap:1rem;flex-wrap:wrap;align-items:center">
-          <div style="flex:1;min-width:200px">
-            <div style="font-size:.82rem;color:var(--text2);font-weight:600;margin-bottom:.3rem">Delete All Content</div>
-            <div style="font-size:.73rem;color:var(--text3)">Permanently removes all movies, TV shows, and anime from the database. This cannot be undone.</div>
-          </div>
-          <button class="btn btn-danger" onclick="confirmDeleteAll()">
-            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-            Delete All Content
-          </button>
+          <div style="flex:1;min-width:200px"><div style="font-size:.82rem;color:var(--text2);font-weight:600;margin-bottom:.3rem">Delete All Content</div><div style="font-size:.73rem;color:var(--text3)">Permanently removes all movies, TV shows, and anime from the database. This cannot be undone.</div></div>
+          <button class="btn btn-danger" onclick="confirmDeleteAll()"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>Delete All Content</button>
         </div>
       </div>
     </div>
-
 
     <!-- REQUESTS -->
     <div class="view" id="view-requests">
@@ -782,9 +460,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
           <div class="req-pill-filter" onclick="filterRequests('declined',this)">Declined</div>
         </div>
         <div style="display:flex;gap:.5rem">
-          <button class="btn btn-sec btn-sm" onclick="loadRequests()">
-            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="23,4 23,10 17,10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg> Refresh
-          </button>
+          <button class="btn btn-sec btn-sm" onclick="loadRequests()"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="23,4 23,10 17,10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg> Refresh</button>
           <button class="btn btn-danger btn-sm" onclick="clearAllRequests()">Clear All</button>
         </div>
       </div>
@@ -796,76 +472,20 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
       <div class="settings-grid">
         <div class="setting-card">
           <div class="setting-title">Account</div>
-          <div class="setting-row">
-            <div>
-              <div class="setting-label">Email Address</div>
-              <div class="setting-desc" id="settingEmail">—</div>
-            </div>
-          </div>
-          <div class="setting-row">
-            <div>
-              <div class="setting-label">Worker URL</div>
-              <div class="setting-desc" id="settingUrl" style="font-family:monospace;font-size:.65rem;word-break:break-all">—</div>
-            </div>
-            <button class="btn btn-sec btn-xs" onclick="reconnect()">Change</button>
-          </div>
-          <div class="setting-row">
-            <div>
-              <div class="setting-label">Session</div>
-              <div class="setting-desc">Credentials saved locally in browser</div>
-            </div>
-            <button class="btn btn-danger btn-xs" onclick="logout()">Sign Out</button>
-          </div>
+          <div class="setting-row"><div><div class="setting-label">Email Address</div><div class="setting-desc" id="settingEmail">—</div></div></div>
+          <div class="setting-row"><div><div class="setting-label">Worker URL</div><div class="setting-desc" id="settingUrl" style="font-family:monospace;font-size:.65rem;word-break:break-all">—</div></div><button class="btn btn-sec btn-xs" onclick="reconnect()">Change</button></div>
+          <div class="setting-row"><div><div class="setting-label">Session</div><div class="setting-desc">Credentials saved locally in browser</div></div><button class="btn btn-danger btn-xs" onclick="logout()">Sign Out</button></div>
         </div>
         <div class="setting-card">
           <div class="setting-title">TMDB API</div>
-          <div class="setting-row">
-            <div>
-              <div class="setting-label">API Key</div>
-              <div class="setting-desc">Used for auto-fetching metadata</div>
-            </div>
-          </div>
-          <div class="api-key-wrap" style="margin-top:.6rem">
-            <div class="api-key-display" id="tmdbKeyDisplay">••••••••••••••••••••••••••</div>
-            <button class="btn btn-sec btn-xs" onclick="toggleApiKey()">Show</button>
-            <button class="btn btn-sec btn-xs" onclick="editApiKey()">Edit</button>
-          </div>
+          <div class="setting-row"><div><div class="setting-label">API Key</div><div class="setting-desc">Used for auto-fetching metadata</div></div></div>
+          <div class="api-key-wrap" style="margin-top:.6rem"><div class="api-key-display" id="tmdbKeyDisplay">••••••••••••••••••••••••••</div><button class="btn btn-sec btn-xs" onclick="toggleApiKey()">Show</button><button class="btn btn-sec btn-xs" onclick="editApiKey()">Edit</button></div>
         </div>
         <div class="setting-card full">
           <div class="setting-title">Preferences</div>
-          <div class="setting-row">
-            <div>
-              <div class="setting-label">Auto-save credentials</div>
-              <div class="setting-desc">Remember URL and password between sessions</div>
-            </div>
-            <label class="toggle">
-              <input type="checkbox" id="toggleAutoSave" checked onchange="savePrefs()">
-              <div class="toggle-track"></div>
-              <div class="toggle-thumb"></div>
-            </label>
-          </div>
-          <div class="setting-row">
-            <div>
-              <div class="setting-label">Confirm before delete</div>
-              <div class="setting-desc">Show a confirmation dialog when deleting titles</div>
-            </div>
-            <label class="toggle">
-              <input type="checkbox" id="toggleConfirmDel" checked onchange="savePrefs()">
-              <div class="toggle-track"></div>
-              <div class="toggle-thumb"></div>
-            </label>
-          </div>
-          <div class="setting-row">
-            <div>
-              <div class="setting-label">Fetch episodes automatically</div>
-              <div class="setting-desc">Pull all seasons/episodes when fetching TV shows from TMDB</div>
-            </div>
-            <label class="toggle">
-              <input type="checkbox" id="toggleAutoEps" checked onchange="savePrefs()">
-              <div class="toggle-track"></div>
-              <div class="toggle-thumb"></div>
-            </label>
-          </div>
+          <div class="setting-row"><div><div class="setting-label">Auto-save credentials</div><div class="setting-desc">Remember URL and password between sessions</div></div><label class="toggle"><input type="checkbox" id="toggleAutoSave" checked onchange="savePrefs()"><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+          <div class="setting-row"><div><div class="setting-label">Confirm before delete</div><div class="setting-desc">Show a confirmation dialog when deleting titles</div></div><label class="toggle"><input type="checkbox" id="toggleConfirmDel" checked onchange="savePrefs()"><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+          <div class="setting-row"><div><div class="setting-label">Fetch episodes automatically</div><div class="setting-desc">Pull all seasons/episodes when fetching TV shows from TMDB</div></div><label class="toggle"><input type="checkbox" id="toggleAutoEps" checked onchange="savePrefs()"><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
         </div>
       </div>
     </div>
@@ -875,10 +495,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 <!-- ADD/EDIT MODAL -->
 <div class="overlay" id="addOverlay" onclick="overlayClick(event)">
   <div class="modal">
-    <div class="modal-hdr">
-      <div class="modal-hdr-title" id="modalTitle">Add Title</div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
-    </div>
+    <div class="modal-hdr"><div class="modal-hdr-title" id="modalTitle">Add Title</div><button class="modal-close" onclick="closeModal()">✕</button></div>
     <div class="modal-body">
       <div class="type-tabs" id="typeTabs">
         <div class="type-tab active" onclick="setType('movie',this)">🎬 Movie</div>
@@ -886,34 +503,16 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
         <div class="type-tab" onclick="setType('anime',this)">🎌 Anime</div>
       </div>
       <div class="fetch-section">
-        <span class="fetch-label">
-          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          Auto-fetch from TMDB
-        </span>
+        <span class="fetch-label"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Auto-fetch from TMDB</span>
         <div class="fetch-row">
           <input type="text" class="fetch-input" id="tmdbInput" placeholder="Paste TMDB ID or full URL (e.g. themoviedb.org/movie/27205)" onkeydown="if(event.key==='Enter')fetchTMDB()">
-          <button class="fetch-btn" id="fetchBtn" onclick="fetchTMDB()">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            Fetch
-          </button>
+          <button class="fetch-btn" id="fetchBtn" onclick="fetchTMDB()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Fetch</button>
         </div>
         <div class="fetch-hint">Paste a TMDB ID or URL → all fields fill automatically ✨</div>
       </div>
       <div class="result-preview" id="resultPreview">
         <div class="rp-poster"><img id="rpPoster" src="" alt=""></div>
-        <div class="rp-info">
-          <div class="rp-title" id="rpTitle"></div>
-          <div class="rp-meta" id="rpMeta"></div>
-          <div class="rp-desc" id="rpDesc"></div>
-          <div class="auto-filled">
-            <div class="af-item"><div class="af-label">Poster</div><div class="af-val">✓</div></div>
-            <div class="af-item"><div class="af-label">Backdrop</div><div class="af-val">✓</div></div>
-            <div class="af-item"><div class="af-label">Cast</div><div class="af-val" id="afCast">✓</div></div>
-            <div class="af-item"><div class="af-label">Director</div><div class="af-val">✓</div></div>
-            <div class="af-item"><div class="af-label">Genres</div><div class="af-val">✓</div></div>
-            <div class="af-item"><div class="af-label">Runtime</div><div class="af-val">✓</div></div>
-          </div>
-        </div>
+        <div class="rp-info"><div class="rp-title" id="rpTitle"></div><div class="rp-meta" id="rpMeta"></div><div class="rp-desc" id="rpDesc"></div><div class="auto-filled"><div class="af-item"><div class="af-label">Poster</div><div class="af-val">✓</div></div><div class="af-item"><div class="af-label">Backdrop</div><div class="af-val">✓</div></div><div class="af-item"><div class="af-label">Cast</div><div class="af-val" id="afCast">✓</div></div><div class="af-item"><div class="af-label">Director</div><div class="af-val">✓</div></div><div class="af-item"><div class="af-label">Genres</div><div class="af-val">✓</div></div><div class="af-item"><div class="af-label">Runtime</div><div class="af-val">✓</div></div></div></div>
       </div>
       <div class="form-grid" id="formGrid">
         <div class="fg full"><label>Title *</label><input type="text" id="f_title" placeholder="Title"></div>
@@ -933,7 +532,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
         <div class="fg"><label>Poster Path</label><input type="text" id="f_poster" placeholder="/xxxxxx.jpg"></div>
         <div class="fg"><label>Backdrop Path</label><input type="text" id="f_backdrop" placeholder="/xxxxxx.jpg"></div>
         <div class="form-divider"></div>
-        <div class="form-section">Cast & Relations</div>
+        <div class="form-section">Cast &amp; Relations</div>
         <div class="fg full"><label>Cast — one per line: Name | Role | ImgPath</label><textarea id="f_cast" rows="4" placeholder="Leonardo DiCaprio|Cobb|/wo2hJ...jpg&#10;Joseph Gordon-Levitt|Arthur|/msug...jpg"></textarea></div>
         <div class="fg full"><label>Related TMDB IDs (comma separated)</label><input type="text" id="f_related" placeholder="157336, 603, 155"></div>
         <div id="epSection" style="display:none;grid-column:1/-1">
@@ -943,19 +542,13 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
         </div>
         <div class="fg full" id="isMovieSection" style="display:none">
           <label>Anime type</label>
-          <select id="f_isMovie">
-            <option value="false">Series (has episodes)</option>
-            <option value="true">Movie (single watch)</option>
-          </select>
+          <select id="f_isMovie"><option value="false">Series (has episodes)</option><option value="true">Movie (single watch)</option></select>
         </div>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-sec" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-red" id="saveBtn" onclick="saveItem()">
-        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/></svg>
-        Save to Cloudflare
-      </button>
+      <button class="btn btn-red" id="saveBtn" onclick="saveItem()"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/></svg>Save to Cloudflare</button>
     </div>
   </div>
 </div>
@@ -988,12 +581,11 @@ var ADMIN_EMAIL = '';
 var DB = { movies:[], tvshows:[], anime:[] };
 var editId = null, editType = 'movie', editEps = {};
 
-// Credentials
 var ADMIN_EMAIL_REQUIRED = 'amworkmanage@gmail.com';
 var ADMIN_PASS_REQUIRED = 'streamvault2025';
 
 // ═══════════════════════════════
-//  LOGIN — email + password
+//  LOGIN
 // ═══════════════════════════════
 function doLogin() {
   var url = (document.getElementById('cfgUrl').value||'').trim().replace(/\/$/,'');
@@ -1009,14 +601,13 @@ function doLogin() {
     headers: {'Content-Type':'application/json', 'X-Admin-Password': pass}
   }).then(function(r) {
     if (r.ok) {
-      if (document.getElementById('toggleAutoSave') && document.getElementById('toggleAutoSave').checked) {
+      if (document.getElementById('toggleAutoSave').checked) {
         localStorage.setItem('sv_url', url);
         localStorage.setItem('sv_pass', pass);
         localStorage.setItem('sv_email', email);
       }
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('app').classList.add('visible');
-      // Update sidebar user info
       document.getElementById('sbEmail').textContent = email;
       document.getElementById('sbAvatar').textContent = email[0].toUpperCase();
       document.getElementById('settingEmail').textContent = email;
@@ -1025,25 +616,15 @@ function doLogin() {
     } else { showLoginErr('Worker rejected the request — check URL and Worker password'); setSynced(); }
   }).catch(function() { showLoginErr('Cannot reach Worker — verify the URL is correct'); setSynced(); });
 }
-
 function showLoginErr(m) {
   var e = document.getElementById('loginErr');
   e.textContent = '⚠ ' + m; e.style.display = 'block';
   setTimeout(function(){ e.style.display = 'none'; }, 5000);
 }
-function logout() {
-  localStorage.removeItem('sv_url'); localStorage.removeItem('sv_pass'); localStorage.removeItem('sv_email');
-  location.reload();
-}
-function reconnect() {
-  localStorage.removeItem('sv_url'); localStorage.removeItem('sv_pass'); localStorage.removeItem('sv_email');
-  document.getElementById('app').classList.remove('visible');
-  document.getElementById('loginScreen').style.display = 'flex';
-}
+function logout() { localStorage.removeItem('sv_url'); localStorage.removeItem('sv_pass'); localStorage.removeItem('sv_email'); location.reload(); }
+function reconnect() { localStorage.removeItem('sv_url'); localStorage.removeItem('sv_pass'); localStorage.removeItem('sv_email'); document.getElementById('app').classList.remove('visible'); document.getElementById('loginScreen').style.display = 'flex'; }
 function tryAutoLogin() {
-  var u = localStorage.getItem('sv_url');
-  var p = localStorage.getItem('sv_pass');
-  var em = localStorage.getItem('sv_email');
+  var u = localStorage.getItem('sv_url'), p = localStorage.getItem('sv_pass'), em = localStorage.getItem('sv_email');
   if (u) document.getElementById('cfgUrl').value = u;
   if (em) document.getElementById('cfgEmail').value = em;
   if (p) document.getElementById('cfgPass').value = p;
@@ -1080,9 +661,10 @@ function setSyncErr() { document.getElementById('syncDot').className = 'sync-dot
 // ═══════════════════════════════
 function api(method, path, body) {
   var opts = { method:method, headers:{'Content-Type':'application/json','X-Admin-Password':ADMIN_PASS} };
-  if (body) opts.body = JSON.stringify(body);
+  if (body !== undefined) opts.body = JSON.stringify(body);
   return fetch(WORKER_URL + path, opts).then(function(r){ return r.json(); });
 }
+
 function loadData() {
   setSyncing('Loading...');
   api('GET', '/api/content').then(function(data) {
@@ -1092,16 +674,13 @@ function loadData() {
     setSynced(); toast('Content loaded ✓', 'ok');
   }).catch(function(){ setSyncErr(); toast('Failed to load content', 'err'); });
 }
+
 function updateCounts() {
   var m = DB.movies.length, t = DB.tvshows.length, a = DB.anime.length, tot = m+t+a;
-  document.getElementById('dM').textContent = m;
-  document.getElementById('dT').textContent = t;
-  document.getElementById('dA').textContent = a;
-  document.getElementById('dTot').textContent = tot;
-  document.getElementById('sbM').textContent = m;
-  document.getElementById('sbT').textContent = t;
-  document.getElementById('sbA').textContent = a;
-  document.getElementById('sbTot').textContent = tot;
+  document.getElementById('dM').textContent = m; document.getElementById('dT').textContent = t;
+  document.getElementById('dA').textContent = a; document.getElementById('dTot').textContent = tot;
+  document.getElementById('sbM').textContent = m; document.getElementById('sbT').textContent = t;
+  document.getElementById('sbA').textContent = a; document.getElementById('sbTot').textContent = tot;
   document.getElementById('mTrend').textContent = m + ' titles';
   document.getElementById('tTrend').textContent = t + ' series';
   document.getElementById('aTrend').textContent = a + ' titles';
@@ -1113,8 +692,6 @@ function updateCounts() {
 // ═══════════════════════════════
 function renderStats() {
   var all = DB.movies.concat(DB.tvshows).concat(DB.anime);
-
-  // Genre breakdown
   var genres = {};
   all.forEach(function(it) { var g = it.genre||'Unknown'; genres[g] = (genres[g]||0)+1; });
   var sortedGenres = Object.keys(genres).sort(function(a,b){ return genres[b]-genres[a]; }).slice(0,12);
@@ -1122,38 +699,17 @@ function renderStats() {
   document.getElementById('genreBreakdown').innerHTML = sortedGenres.length ? sortedGenres.map(function(g){
     return '<div class="genre-bar"><div class="genre-name">'+esc(g)+'</div><div class="genre-track"><div class="genre-fill" style="width:'+Math.round((genres[g]/maxG)*100)+'%"></div></div><div class="genre-count">'+genres[g]+'</div></div>';
   }).join('') : '<div style="color:var(--text3);padding:1rem 0;font-size:.82rem">No data yet</div>';
-
-  // Year breakdown
   var years = {};
   all.forEach(function(it){ var y = it.year; if(y) years[y] = (years[y]||0)+1; });
   var sortedYears = Object.keys(years).sort(function(a,b){ return b-a; });
   document.getElementById('yearBreakdown').innerHTML = sortedYears.length ?
-    '<div class="year-grid">' + sortedYears.map(function(y){
-      return '<div class="year-tag">'+y+' <span style="color:var(--red)">·</span> '+years[y]+'</div>';
-    }).join('') + '</div>' :
+    '<div class="year-grid">' + sortedYears.map(function(y){ return '<div class="year-tag">'+y+' <span style="color:var(--red)">·</span> '+years[y]+'</div>'; }).join('') + '</div>' :
     '<div style="color:var(--text3);padding:1rem 0;font-size:.82rem">No data yet</div>';
-
-  // Top rated
-  var rated = all.filter(function(it){ return parseFloat(it.imdb) > 0; })
-    .sort(function(a,b){ return parseFloat(b.imdb||0) - parseFloat(a.imdb||0); }).slice(0,15);
-  var typeOf = function(it) {
-    if(DB.movies.indexOf(it)!==-1) return 'movie';
-    if(DB.tvshows.indexOf(it)!==-1) return 'tv';
-    return 'anime';
-  };
+  var rated = all.filter(function(it){ return parseFloat(it.imdb) > 0; }).sort(function(a,b){ return parseFloat(b.imdb||0) - parseFloat(a.imdb||0); }).slice(0,15);
+  var typeOf = function(it) { if(DB.movies.indexOf(it)!==-1) return 'movie'; if(DB.tvshows.indexOf(it)!==-1) return 'tv'; return 'anime'; };
   document.getElementById('topRatedBody').innerHTML = rated.map(function(it,i){
-    var tp = typeOf(it);
-    var bc = tp==='movie'?'b-movie':tp==='tv'?'b-tv':'b-anime';
-    var bl = tp==='movie'?'Movie':tp==='tv'?'TV':'Anime';
-    return '<tr>'+
-      '<td style="color:var(--text3);font-weight:700">'+(i+1)+'</td>'+
-      '<td><div class="tbl-thumb"><img src="'+IMG_BASE+'w200'+(it.poster||'')+'" onerror="this.style.display=\'none\'" alt=""></div></td>'+
-      '<td><strong>'+esc(it.title||'')+'</strong></td>'+
-      '<td><span class="badge '+bc+'">'+bl+'</span></td>'+
-      '<td><span style="color:var(--gold);font-weight:600">★ '+(it.imdb||'?')+'</span></td>'+
-      '<td><span style="color:var(--green)">'+(it.match||'?')+'%</span></td>'+
-      '<td>'+(it.year||'—')+'</td>'+
-    '</tr>';
+    var tp = typeOf(it), bc = tp==='movie'?'b-movie':tp==='tv'?'b-tv':'b-anime', bl = tp==='movie'?'Movie':tp==='tv'?'TV':'Anime';
+    return '<tr><td style="color:var(--text3);font-weight:700">'+(i+1)+'</td><td><div class="tbl-thumb"><img src="'+IMG_BASE+'w200'+(it.poster||'')+'" onerror="this.style.display=\'none\'" alt=""></div></td><td><strong>'+esc(it.title||'')+'</strong></td><td><span class="badge '+bc+'">'+bl+'</span></td><td><span style="color:var(--gold);font-weight:600">★ '+(it.imdb||'?')+'</span></td><td><span style="color:var(--green)">'+(it.match||'?')+'%</span></td><td>'+(it.year||'—')+'</td></tr>';
   }).join('');
 }
 
@@ -1179,12 +735,10 @@ function globalSearchFn(q) {
   DB.movies.forEach(function(m){ all.push({item:m,type:'movie'}); });
   DB.tvshows.forEach(function(t){ all.push({item:t,type:'tv'}); });
   DB.anime.forEach(function(a){ all.push({item:a,type:'anime'}); });
-  var found = all.filter(function(r){ return r.item.title.toLowerCase().indexOf(q) !== -1 || (r.item.genre||'').toLowerCase().indexOf(q) !== -1; });
-  // Switch to dashboard and show results
+  var found = all.filter(function(r){ return (r.item.title||'').toLowerCase().indexOf(q) !== -1 || (r.item.genre||'').toLowerCase().indexOf(q) !== -1; });
   switchView('dashboard', document.querySelector('.sb-link'));
-  var tbody = document.getElementById('recentBody');
   if (!found.length) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:2rem">No results for "'+esc(q)+'"</td></tr>';
+    document.getElementById('recentBody').innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:2rem">No results for "'+esc(q)+'"</td></tr>';
     return;
   }
   renderRecentFromList(found);
@@ -1196,23 +750,20 @@ function globalSearchFn(q) {
 function populateGenreFilters() {
   var movieGenres = [...new Set(DB.movies.map(function(m){return m.genre;}).filter(Boolean))].sort();
   var tvGenres = [...new Set(DB.tvshows.map(function(t){return t.genre;}).filter(Boolean))].sort();
-  var mgf = document.getElementById('movieGenreFilter');
-  var tgf = document.getElementById('tvGenreFilter');
-  mgf.innerHTML = '<option value="">All Genres</option>' + movieGenres.map(function(g){ return '<option value="'+esc(g)+'">'+esc(g)+'</option>'; }).join('');
-  tgf.innerHTML = '<option value="">All Genres</option>' + tvGenres.map(function(g){ return '<option value="'+esc(g)+'">'+esc(g)+'</option>'; }).join('');
+  document.getElementById('movieGenreFilter').innerHTML = '<option value="">All Genres</option>' + movieGenres.map(function(g){ return '<option value="'+esc(g)+'">'+esc(g)+'</option>'; }).join('');
+  document.getElementById('tvGenreFilter').innerHTML = '<option value="">All Genres</option>' + tvGenres.map(function(g){ return '<option value="'+esc(g)+'">'+esc(g)+'</option>'; }).join('');
 }
 
 // ═══════════════════════════════
 //  RECENT TABLE
 // ═══════════════════════════════
 function renderRecent() {
-  var typeF = document.getElementById('dashTypeFilter') ? document.getElementById('dashTypeFilter').value : '';
-  var sortF = document.getElementById('dashSortFilter') ? document.getElementById('dashSortFilter').value : 'recent';
+  var typeF = (document.getElementById('dashTypeFilter')||{}).value || '';
+  var sortF = (document.getElementById('dashSortFilter')||{}).value || 'recent';
   var all = [];
   if (!typeF || typeF === 'movie') DB.movies.forEach(function(m){ all.push({item:m,type:'movie'}); });
   if (!typeF || typeF === 'tv') DB.tvshows.forEach(function(t){ all.push({item:t,type:'tv'}); });
   if (!typeF || typeF === 'anime') DB.anime.forEach(function(a){ all.push({item:a,type:'anime'}); });
-  // Sort
   if (sortF === 'az') all.sort(function(a,b){ return (a.item.title||'').localeCompare(b.item.title||''); });
   else if (sortF === 'za') all.sort(function(a,b){ return (b.item.title||'').localeCompare(a.item.title||''); });
   else if (sortF === 'year') all.sort(function(a,b){ return parseInt(b.item.year||0) - parseInt(a.item.year||0); });
@@ -1220,6 +771,7 @@ function renderRecent() {
   else all.reverse();
   renderRecentFromList(all);
 }
+
 function renderRecentFromList(list) {
   if (!list.length) {
     document.getElementById('recentBody').innerHTML = '<tr><td colspan="7"><div class="empty-state"><svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2"/></svg><h3>No Titles Yet</h3><p>Add your first movie, show or anime to get started</p></div></td></tr>';
@@ -1229,6 +781,7 @@ function renderRecentFromList(list) {
     var it = r.item, tp = r.type;
     var bc = tp==='movie'?'b-movie':tp==='tv'?'b-tv':'b-anime';
     var bl = tp==='movie'?'Movie':tp==='tv'?'TV Show':'Anime';
+    // ✅ FIX: pass it.id (stable identifier) and type — used by both edit and delete
     return '<tr>'+
       '<td><div class="tbl-thumb"><img src="'+IMG_BASE+'w200'+(it.poster||'')+'" onerror="this.style.display=\'none\'" alt=""></div></td>'+
       '<td><strong>'+esc(it.title||'')+'</strong></td>'+
@@ -1256,13 +809,12 @@ function renderGrid(type, filter, genreFilter, sortMode) {
   var bc = type==='movie'?'b-movie':type==='tv'?'b-tv':'b-anime';
   var bl = type==='movie'?'Movie':type==='tv'?'TV Show':'Anime';
   var items = list.filter(function(it){
-    var matchSearch = !filter || it.title.toLowerCase().indexOf(filter) !== -1 || (it.genre||'').toLowerCase().indexOf(filter) !== -1;
+    var matchSearch = !filter || (it.title||'').toLowerCase().indexOf(filter) !== -1 || (it.genre||'').toLowerCase().indexOf(filter) !== -1;
     var matchGenre = !genreFilter || (it.genre||'') === genreFilter;
     return matchSearch && matchGenre;
   });
-  // Sort
   var sorted = items.slice();
-  if (sortMode === 'az') sorted.sort(function(a,b){ return a.title.localeCompare(b.title); });
+  if (sortMode === 'az') sorted.sort(function(a,b){ return (a.title||'').localeCompare(b.title||''); });
   else if (sortMode === 'imdb') sorted.sort(function(a,b){ return parseFloat(b.imdb||0) - parseFloat(a.imdb||0); });
   else if (sortMode === 'year') sorted.sort(function(a,b){ return parseInt(b.year||0) - parseInt(a.year||0); });
   var grid = document.getElementById(gid);
@@ -1270,6 +822,7 @@ function renderGrid(type, filter, genreFilter, sortMode) {
     grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><h3>No Results</h3><p>Try a different search or add new content</p></div>';
     return;
   }
+  // ✅ FIX: pass it.id to both editItem and handleDelete (not array index)
   grid.innerHTML = sorted.map(function(it) {
     return '<div class="cc" onclick="editItem('+it.id+',\''+type+'\')">'+
       '<div class="cc-img">'+
@@ -1310,15 +863,11 @@ async function fetchTMDB() {
   btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> Fetching...';
   setSyncing('Fetching TMDB...');
   try {
-    // Determine if we should use /tv/ endpoint:
-    // - TV shows always use /tv/
-    // - Anime uses /tv/ UNLESS user has selected "Movie" in the isMovie dropdown
     var isAnimeMovie = editType === 'anime' && document.getElementById('f_isMovie') && document.getElementById('f_isMovie').value === 'true';
     var useTvEndpoint = (editType === 'tv' || editType === 'anime') && !isAnimeMovie;
     if (parsed.type === 'movie') useTvEndpoint = false;
     if (parsed.type === 'tv')    useTvEndpoint = true;
     var endpoint = useTvEndpoint ? '/tv/' : '/movie/';
-
     var [details, credits] = await Promise.all([
       fetch(TMDB_BASE + endpoint + parsed.id + '?api_key=' + TMDB_KEY + '&language=en-US').then(r=>r.json()),
       fetch(TMDB_BASE + endpoint + parsed.id + '/credits?api_key=' + TMDB_KEY).then(r=>r.json())
@@ -1340,7 +889,6 @@ async function fetchTMDB() {
     var dirObj = crew.find(function(c){ return c.job==='Director'; }) || crew.find(function(c){ return c.department==='Directing'; }) || {};
     var director = dirObj.name || (useTvEndpoint ? ((details.created_by||[])[0]||{}).name||'' : '');
     var castArr = (credits.cast||[]).slice(0,6).map(function(c){ return {name:c.name,role:c.character,img:c.profile_path||''}; });
-
     setVal('f_title',title); setVal('f_id',parsed.id); setVal('f_year',year);
     setVal('f_genre',(details.genres||[])[0]?(details.genres[0].name):'');
     setVal('f_imdb',rating); setVal('f_rating',details.adult?'R':'PG-13');
@@ -1349,17 +897,12 @@ async function fetchTMDB() {
     setVal('f_poster',poster); setVal('f_backdrop',backdrop);
     setVal('f_cast',castArr.map(function(c){ return c.name+'|'+c.role+'|'+c.img; }).join('\n'));
     setVal('f_related','');
-
-    // Auto-detect and set isMovie for anime based on TMDB data
     if (editType === 'anime') {
       var hasSeasons = details.seasons && details.seasons.length > 0;
       setVal('f_isMovie', (!useTvEndpoint || !hasSeasons) ? 'true' : 'false');
     }
-
-    // Fetch episodes for TV shows AND anime series (not anime movies)
     var autoEps = document.getElementById('toggleAutoEps') ? document.getElementById('toggleAutoEps').checked : true;
     var shouldFetchEps = useTvEndpoint && details.seasons && details.seasons.length > 0;
-
     if (autoEps && shouldFetchEps) {
       btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> Loading episodes...';
       var realSeasons = details.seasons.filter(function(s){ return s.season_number > 0; });
@@ -1368,46 +911,27 @@ async function fetchTMDB() {
       try {
         var seasonDataArr = await Promise.all(
           realSeasons.slice(0,8).map(function(s) {
-            return fetch(TMDB_BASE+'/tv/'+parsed.id+'/season/'+s.season_number+'?api_key='+TMDB_KEY+'&language=en-US')
-              .then(function(r){ return r.json(); }).catch(function(){ return {season_number:s.season_number,episodes:[]}; });
+            return fetch(TMDB_BASE+'/tv/'+parsed.id+'/season/'+s.season_number+'?api_key='+TMDB_KEY+'&language=en-US').then(function(r){ return r.json(); }).catch(function(){ return {season_number:s.season_number,episodes:[]}; });
           })
         );
         seasonDataArr.forEach(function(sd, idx) {
           var sNum = realSeasons[idx].season_number;
-          editEps['s'+sNum] = (sd.episodes||[]).map(function(ep){
-            return {
-              e:   ep.episode_number,
-              name:ep.name||('Ep '+ep.episode_number),
-              dur: ep.runtime ? ep.runtime+'m' : (editType==='anime' ? '24m' : '45m'),
-              desc:ep.overview||''
-            };
-          });
+          editEps['s'+sNum] = (sd.episodes||[]).map(function(ep){ return {e:ep.episode_number,name:ep.name||('Ep '+ep.episode_number),dur:ep.runtime ? ep.runtime+'m' : (editType==='anime' ? '24m' : '45m'),desc:ep.overview||''}; });
         });
         renderEpBuilder();
         var totalEps = Object.keys(editEps).reduce(function(sum,sk){ return sum+editEps[sk].length; },0);
         toast('✓ '+realSeasons.slice(0,8).length+' seasons, '+totalEps+' episodes fetched', 'ok');
       } catch(e) { toast('Show filled! Episode fetch failed — add manually', 'info'); }
     } else {
-      // Anime movie or regular movie — no episodes needed
       editEps = {};
       if (editType === 'tv' || editType === 'anime') renderEpBuilder();
       toast('✓ All fields auto-filled from TMDB!', 'ok');
     }
-
-    // Mark autofilled
-    ['f_title','f_year','f_genre','f_imdb','f_runtime','f_director','f_studio','f_desc','f_tags','f_poster','f_backdrop','f_cast'].forEach(function(id){
-      var el = document.getElementById(id); if (el) el.classList.add('autofilled');
-    });
-    // Preview
+    ['f_title','f_year','f_genre','f_imdb','f_runtime','f_director','f_studio','f_desc','f_tags','f_poster','f_backdrop','f_cast'].forEach(function(id){ var el = document.getElementById(id); if (el) el.classList.add('autofilled'); });
     document.getElementById('resultPreview').classList.add('show');
     document.getElementById('rpPoster').src = IMG_BASE+'w185'+poster;
     document.getElementById('rpTitle').textContent = title+(year?' ('+year+')':'');
-    document.getElementById('rpMeta').innerHTML =
-      '<span class="rp-tag green">★ '+rating+'</span>'+
-      '<span class="rp-tag">'+year+'</span>'+
-      (runtime  ? '<span class="rp-tag">'+runtime+'</span>' : '')+
-      (director ? '<span class="rp-tag">'+esc(director)+'</span>' : '')+
-      (editType==='anime' ? '<span class="rp-tag" style="color:var(--gold)">'+(document.getElementById('f_isMovie').value==='true' ? 'Anime Movie' : 'Anime Series')+'</span>' : '');
+    document.getElementById('rpMeta').innerHTML = '<span class="rp-tag green">★ '+rating+'</span><span class="rp-tag">'+year+'</span>'+(runtime?'<span class="rp-tag">'+runtime+'</span>':'')+(director?'<span class="rp-tag">'+esc(director)+'</span>':'')+(editType==='anime'?'<span class="rp-tag" style="color:var(--gold)">'+(document.getElementById('f_isMovie').value==='true'?'Anime Movie':'Anime Series')+'</span>':'');
     document.getElementById('rpDesc').textContent = details.overview||'';
     document.getElementById('afCast').textContent = '✓ '+castArr.length+' actors';
     setSynced();
@@ -1416,6 +940,7 @@ async function fetchTMDB() {
   btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Fetch';
 }
 function setVal(id, val) { var el = document.getElementById(id); if (el) el.value = val||''; }
+
 // ═══════════════════════════════
 //  MODAL
 // ═══════════════════════════════
@@ -1427,9 +952,11 @@ function openAdd(type) {
 }
 function editItem(id, type) {
   var list = type==='movie'?DB.movies:type==='tv'?DB.tvshows:DB.anime;
-  var item = list.find(function(x){ return x.id===id; });
+  // ✅ FIX: use == (loose) to handle string/number id mismatch from KV
+  var item = list.find(function(x){ return x.id == id; });
   if (!item) return;
-  editId = id; editType = type; editEps = {};
+  editId = item.id; // store the actual id as-is from DB
+  editType = type; editEps = {};
   if (type==='tv'&&item.seasons) item.seasons.forEach(function(ss){ editEps['s'+ss.s]=(ss.episodes||[]).map(function(e){ return Object.assign({},e); }); });
   else if (type==='anime'&&item.episodes) editEps['s1']=(item.episodes||[]).map(function(e){ return Object.assign({},e); });
   document.getElementById('modalTitle').textContent = 'Edit: '+item.title;
@@ -1479,9 +1006,7 @@ function renderEpBuilder() {
   var el = document.getElementById('epBuilder');
   if (editType === 'tv') {
     if (!Object.keys(editEps).length) editEps['s1'] = [];
-    var tabsHtml = Object.keys(editEps).sort().map(function(sk,i){
-      return '<div class="stab'+(i===0?' active':'')+'" onclick="switchEpSeason(\''+sk+'\',this)">'+sk.replace('s','S')+'</div>';
-    }).join('');
+    var tabsHtml = Object.keys(editEps).sort().map(function(sk,i){ return '<div class="stab'+(i===0?' active':'')+'" onclick="switchEpSeason(\''+sk+'\',this)">'+sk.replace('s','S')+'</div>'; }).join('');
     tabsHtml += '<div class="stab" style="border-style:dashed;opacity:.6" onclick="addEpSeason()">+ Season</div>';
     el.innerHTML = '<div class="stabs" id="epStabs">'+tabsHtml+'</div><div id="epList">'+buildEpList('s1')+'</div>';
   } else {
@@ -1492,13 +1017,7 @@ function renderEpBuilder() {
 function buildEpList(sk) {
   var eps = editEps[sk]||[];
   var html = eps.map(function(ep,i){
-    return '<div class="ep-row">'+
-      '<span class="ep-n">'+(i+1)+'</span>'+
-      '<input placeholder="Episode name" value="'+esc(ep.name||'')+'" oninput="updateEp(\''+sk+'\','+i+',\'name\',this.value)">'+
-      '<input class="ep-dur" placeholder="45m" value="'+esc(ep.dur||'')+'" oninput="updateEp(\''+sk+'\','+i+',\'dur\',this.value)">'+
-      '<input placeholder="Description" style="flex:2" value="'+esc(ep.desc||'')+'" oninput="updateEp(\''+sk+'\','+i+',\'desc\',this.value)">'+
-      '<button class="ep-rm" onclick="removeEp(\''+sk+'\','+i+')">✕</button>'+
-    '</div>';
+    return '<div class="ep-row"><span class="ep-n">'+(i+1)+'</span><input placeholder="Episode name" value="'+esc(ep.name||'')+'" oninput="updateEp(\''+sk+'\','+i+',\'name\',this.value)"><input class="ep-dur" placeholder="45m" value="'+esc(ep.dur||'')+'" oninput="updateEp(\''+sk+'\','+i+',\'dur\',this.value)"><input placeholder="Description" style="flex:2" value="'+esc(ep.desc||'')+'" oninput="updateEp(\''+sk+'\','+i+',\'desc\',this.value)"><button class="ep-rm" onclick="removeEp(\''+sk+'\','+i+')">✕</button></div>';
   }).join('');
   html += '<button class="btn btn-sec btn-xs" style="margin-top:.4rem" onclick="addEp(\''+sk+'\')">+ Add Episode</button>';
   return html;
@@ -1516,7 +1035,10 @@ function gv(id){ var el=document.getElementById(id); return el?el.value.trim():'
 function saveItem() {
   var title = gv('f_title');
   if (!title) { toast('Title is required', 'err'); return; }
-  var id = parseInt(gv('f_id'))||Date.now();
+  // ✅ FIX: always store id as a NUMBER for consistent comparisons
+  var rawId = gv('f_id');
+  var id = rawId ? parseInt(rawId) : Date.now();
+  if (isNaN(id)) id = Date.now();
   var cast = gv('f_cast').split('\n').filter(Boolean).map(function(l){
     var p = l.split('|');
     return { name:(p[0]||'').trim(), role:(p[1]||'').trim(), img:(p[2]||'').trim() };
@@ -1524,61 +1046,103 @@ function saveItem() {
   var tags = gv('f_tags').split(',').map(function(t){ return t.trim(); }).filter(Boolean);
   var related = gv('f_related').split(',').map(function(r){ return parseInt(r.trim()); }).filter(Boolean);
   var item = {
-    id, title, year:gv('f_year'), genre:gv('f_genre'), rating:gv('f_rating'),
-    match:parseInt(gv('f_match'))||95, imdb:gv('f_imdb'), runtime:gv('f_runtime'),
-    director:gv('f_director'), studio:gv('f_studio'), poster:gv('f_poster'),
-    backdrop:gv('f_backdrop'), desc:gv('f_desc'), tags, cast, related
+    id: id,
+    title: title,
+    year: gv('f_year'),
+    genre: gv('f_genre'),
+    rating: gv('f_rating'),
+    match: parseInt(gv('f_match'))||95,
+    imdb: gv('f_imdb'),
+    runtime: gv('f_runtime'),
+    director: gv('f_director'),
+    studio: gv('f_studio'),
+    poster: gv('f_poster'),
+    backdrop: gv('f_backdrop'),
+    desc: gv('f_desc'),
+    tags: tags,
+    cast: cast,
+    related: related
   };
   if (editType === 'tv') {
     item.seasons = Object.keys(editEps).sort().map(function(sk){
-      return {
-        s:parseInt(sk.replace('s','')),
-        episodes:(editEps[sk]||[]).filter(function(e){ return e.name; }).map(function(e,i){ return {e:i+1,name:e.name,dur:e.dur||'45m',desc:e.desc||''}; })
-      };
+      return { s:parseInt(sk.replace('s','')), episodes:(editEps[sk]||[]).filter(function(e){ return e.name; }).map(function(e,i){ return {e:i+1,name:e.name,dur:e.dur||'45m',desc:e.desc||''}; }) };
     });
   }
   if (editType === 'anime') {
     item.isMovie = gv('f_isMovie') === 'true';
     item.episodes = (editEps['s1']||[]).filter(function(e){ return e.name; }).map(function(e,i){ return {e:i+1,name:e.name,dur:e.dur||'24m',desc:e.desc||''}; });
   }
-  var method = editId ? 'PUT' : 'POST';
-  var path = editId ? '/api/content/'+editType+'/'+editId : '/api/content/'+editType;
+  var method = editId !== null ? 'PUT' : 'POST';
+  var path = editId !== null ? '/api/content/'+editType+'/'+editId : '/api/content/'+editType;
   setSyncing('Saving...');
   api(method, path, item).then(function(res){
-    if (res.success||res.item) {
+    if (res.success || res.item) {
       var list = editType==='movie'?DB.movies:editType==='tv'?DB.tvshows:DB.anime;
-      if (editId) { var idx = list.findIndex(function(x){ return x.id===editId; }); if (idx!==-1) list[idx]=item; else list.push(item); }
-      else list.push(item);
+      if (editId !== null) {
+        // ✅ FIX: use == for finding existing item in case of type mismatch
+        var idx = list.findIndex(function(x){ return x.id == editId; });
+        if (idx !== -1) list[idx] = item; else list.push(item);
+      } else {
+        list.push(item);
+      }
       updateCounts(); renderRecent(); renderGrid('movie'); renderGrid('tv'); renderGrid('anime'); renderStats(); populateGenreFilters();
-      setSynced(); toast((editId?'Updated':'Added')+': '+title, 'ok'); closeModal();
+      setSynced(); toast((editId !== null ? 'Updated' : 'Added')+': '+title, 'ok'); closeModal();
     } else { setSyncErr(); toast('Save failed: '+(res.error||'unknown'), 'err'); }
   }).catch(function(){ setSyncErr(); toast('Network error', 'err'); });
 }
 
 // ═══════════════════════════════
-//  DELETE (with confirm dialog)
+//  DELETE  ← ALL BUGS FIXED HERE
 // ═══════════════════════════════
 var _pendingDel = null;
+
 function handleDelete(id, type, title) {
   var useConfirm = document.getElementById('toggleConfirmDel') ? document.getElementById('toggleConfirmDel').checked : true;
   if (!useConfirm) { delItem(id, type); return; }
-  _pendingDel = {id, type};
+  _pendingDel = { id: id, type: type };
+  document.getElementById('confirmIcon').textContent = '🗑️';
   document.getElementById('confirmTitle').textContent = 'Delete "'+title+'"?';
   document.getElementById('confirmMsg').textContent = 'This title will be permanently removed from your Cloudflare KV database. This cannot be undone.';
-  document.getElementById('confirmOkBtn').onclick = function(){ closeConfirm(); delItem(_pendingDel.id, _pendingDel.type); };
+  document.getElementById('confirmOkBtn').textContent = 'Delete';
+  // ✅ FIX: capture id and type in closure — don't rely on _pendingDel being intact
+  document.getElementById('confirmOkBtn').onclick = (function(capturedId, capturedType) {
+    return function() {
+      closeConfirm();
+      delItem(capturedId, capturedType);
+    };
+  })(id, type);
   document.getElementById('confirmOverlay').classList.add('open');
 }
-function closeConfirm(){ document.getElementById('confirmOverlay').classList.remove('open'); _pendingDel = null; }
+
+function closeConfirm() {
+  document.getElementById('confirmOverlay').classList.remove('open');
+  _pendingDel = null;
+}
+
 function delItem(id, type) {
   setSyncing('Deleting...');
+  // ✅ FIX: send id as-is in URL (Worker does parseInt on its end anyway)
   api('DELETE', '/api/content/'+type+'/'+id).then(function(res){
     if (res.success) {
-      var key = type==='movie'?'movies':type==='tv'?'tvshows':'anime';
-      DB[key] = DB[key].filter(function(x){ return x.id!==id; });
-      updateCounts(); renderRecent(); renderGrid(type); renderStats(); populateGenreFilters();
-      setSynced(); toast('Deleted successfully', 'ok');
-    } else { setSyncErr(); toast('Delete failed', 'err'); }
-  }).catch(function(){ setSyncErr(); toast('Network error', 'err'); });
+      // ✅ FIX: correct db key mapping (type 'tv' → 'tvshows')
+      var key = type==='movie' ? 'movies' : type==='tv' ? 'tvshows' : 'anime';
+      // ✅ FIX: use == (loose equality) to safely handle string vs number id
+      DB[key] = DB[key].filter(function(x){ return x.id != id; });
+      updateCounts();
+      renderRecent();
+      renderGrid(type);
+      renderStats();
+      populateGenreFilters();
+      setSynced();
+      toast('Deleted successfully', 'ok');
+    } else {
+      setSyncErr();
+      toast('Delete failed: '+(res.error||'Worker returned failure'), 'err');
+    }
+  }).catch(function(e){
+    setSyncErr();
+    toast('Network error during delete', 'err');
+  });
 }
 
 // ═══════════════════════════════
@@ -1593,7 +1157,6 @@ function exportContent() {
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
   toast('Exported successfully ✓', 'ok');
-  // Also put in bulk area for convenience
   if (document.getElementById('bulkInput')) document.getElementById('bulkInput').value = json;
 }
 function validateBulk() {
@@ -1617,7 +1180,6 @@ function bulkImport() {
   var data;
   try { data = JSON.parse(raw); } catch(e) { toast('Invalid JSON: '+e.message, 'err'); return; }
   if (!data.movies && !data.tvshows && !data.anime) { toast('JSON must have movies, tvshows, or anime keys', 'err'); return; }
-  _pendingDel = null;
   document.getElementById('confirmTitle').textContent = 'Replace All Content?';
   document.getElementById('confirmIcon').textContent = '⚠️';
   document.getElementById('confirmMsg').textContent = 'This will REPLACE ALL existing content in your database with the imported data ('+(data.movies||[]).length+' movies, '+(data.tvshows||[]).length+' TV shows, '+(data.anime||[]).length+' anime). This cannot be undone.';
@@ -1696,44 +1258,39 @@ function toast(msg, type) {
   if (savedKey) TMDB_KEY = savedKey;
 })();
 
-// ══ REQUEST MANAGEMENT (admin) ═══════════════════════════
-
+// ═══════════════════════════════
+//  REQUEST MANAGEMENT
+// ═══════════════════════════════
 var ALL_REQUESTS = [];
-var REQ_FILTER   = 'all';
+var REQ_FILTER = 'all';
 
 function loadRequests() {
   api('GET', '/api/requests').then(function(data) {
     ALL_REQUESTS = Array.isArray(data) ? data : [];
-    renderRequestStats();
-    renderRequests();
+    renderRequestStats(); renderRequests();
     var pending = ALL_REQUESTS.filter(function(r){ return r.status === 'pending'; }).length;
     var badge = document.getElementById('sbReqCount');
     if (badge) badge.textContent = pending;
   }).catch(function(){});
 }
-
 function renderRequestStats() {
-  var total    = ALL_REQUESTS.length;
-  var pending  = ALL_REQUESTS.filter(function(r){ return r.status === 'pending';  }).length;
-  var approved = ALL_REQUESTS.filter(function(r){ return r.status === 'approved'; }).length;
-  var declined = ALL_REQUESTS.filter(function(r){ return r.status === 'declined'; }).length;
+  var total = ALL_REQUESTS.length;
+  var pending = ALL_REQUESTS.filter(function(r){ return r.status==='pending'; }).length;
+  var approved = ALL_REQUESTS.filter(function(r){ return r.status==='approved'; }).length;
+  var declined = ALL_REQUESTS.filter(function(r){ return r.status==='declined'; }).length;
   var el = document.getElementById('reqStats');
   if (!el) return;
-  el.innerHTML =
-    rPill('all',total,'All Requests') + rPill('pending',pending,'Pending') +
-    rPill('approved',approved,'Approved') + rPill('declined',declined,'Declined');
+  el.innerHTML = rPill('all',total,'All Requests')+rPill('pending',pending,'Pending')+rPill('approved',approved,'Approved')+rPill('declined',declined,'Declined');
 }
 function rPill(s, count, label) {
   return '<div class="req-stat-pill"><div class="req-stat-dot '+s+'"></div><span style="color:var(--text2)">'+label+'</span><span style="color:var(--text3);font-weight:400">'+count+'</span></div>';
 }
-
 function filterRequests(status, el) {
   REQ_FILTER = status;
   document.querySelectorAll('.req-pill-filter').forEach(function(b){ b.classList.remove('active'); });
   el.classList.add('active');
   renderRequests();
 }
-
 function renderRequests() {
   var list = REQ_FILTER === 'all' ? ALL_REQUESTS : ALL_REQUESTS.filter(function(r){ return r.status === REQ_FILTER; });
   var container = document.getElementById('reqList');
@@ -1751,17 +1308,12 @@ function renderRequests() {
       '<div class="req-card-icon">'+icon+'</div>'+
       '<div class="req-card-body">'+
         '<div class="req-card-title">'+esc(req.title)+'</div>'+
-        '<div class="req-card-meta">'+
-          '<span class="req-badge '+req.type+'">'+req.type+'</span>'+
-          '<span class="req-badge '+req.status+'">'+req.status+'</span>'+
-          '<span class="req-card-time">'+relTime(req.createdAt)+'</span>'+
-          (req.name ? '<span class="req-card-requester">by '+esc(req.name)+'</span>' : '')+
-        '</div>'+
-        (hasNote ? '<div class="req-card-note">'+esc(req.note)+'</div>' : '')+
+        '<div class="req-card-meta"><span class="req-badge '+req.type+'">'+req.type+'</span><span class="req-badge '+req.status+'">'+req.status+'</span><span class="req-card-time">'+relTime(req.createdAt)+'</span>'+(req.name?'<span class="req-card-requester">by '+esc(req.name)+'</span>':'')+'</div>'+
+        (hasNote?'<div class="req-card-note">'+esc(req.note)+'</div>':'')+
         '<div class="req-card-actions">'+
-          (req.status !== 'approved' ? '<button class="btn btn-green btn-xs" onclick="setReqStatus(\''+id+'\',\'approved\')">&#10003; Approve</button>' : '<button class="btn btn-sec btn-xs" style="opacity:.4" disabled>&#10003; Approved</button>')+
-          (req.status !== 'declined' ? '<button class="btn btn-danger btn-xs" onclick="setReqStatus(\''+id+'\',\'declined\')">&#10005; Decline</button>' : '<button class="btn btn-sec btn-xs" style="opacity:.4" disabled>&#10005; Declined</button>')+
-          (req.status !== 'pending'  ? '<button class="btn btn-sec btn-xs" onclick="setReqStatus(\''+id+'\',\'pending\')">&#8617; Reset</button>' : '')+
+          (req.status!=='approved'?'<button class="btn btn-green btn-xs" onclick="setReqStatus(\''+id+'\',\'approved\')">&#10003; Approve</button>':'<button class="btn btn-sec btn-xs" style="opacity:.4" disabled>&#10003; Approved</button>')+
+          (req.status!=='declined'?'<button class="btn btn-danger btn-xs" onclick="setReqStatus(\''+id+'\',\'declined\')">&#10005; Decline</button>':'<button class="btn btn-sec btn-xs" style="opacity:.4" disabled>&#10005; Declined</button>')+
+          (req.status!=='pending'?'<button class="btn btn-sec btn-xs" onclick="setReqStatus(\''+id+'\',\'pending\')">&#8617; Reset</button>':'')+
           '<button class="btn btn-sec btn-xs" onclick="deleteOneRequest(\''+id+'\')">&#128465;</button>'+
           '<button class="btn btn-sec btn-xs" style="margin-left:auto" onclick="addRequestedTitle('+safeReq+')">+ Add to Library</button>'+
         '</div>'+
@@ -1770,7 +1322,6 @@ function renderRequests() {
     '</div>';
   }).join('');
 }
-
 function setReqStatus(id, status) {
   api('PUT', '/api/requests/'+id, {status:status}).then(function(res){
     if (res.success) {
@@ -1784,11 +1335,7 @@ function setReqStatus(id, status) {
     }
   });
 }
-
-function saveAdminNote(id, note) {
-  api('PUT', '/api/requests/'+id, {adminNote:note}).then(function(){}).catch(function(){});
-}
-
+function saveAdminNote(id, note) { api('PUT', '/api/requests/'+id, {adminNote:note}).catch(function(){}); }
 function deleteOneRequest(id) {
   api('DELETE', '/api/requests/'+id).then(function(res){
     if (res.success) {
@@ -1801,11 +1348,10 @@ function deleteOneRequest(id) {
     }
   });
 }
-
 function clearAllRequests() {
   document.getElementById('confirmTitle').textContent = 'Clear All Requests?';
-  document.getElementById('confirmIcon').textContent  = '🗑️';
-  document.getElementById('confirmMsg').textContent   = 'All '+ALL_REQUESTS.length+' requests will be permanently deleted.';
+  document.getElementById('confirmIcon').textContent = '🗑️';
+  document.getElementById('confirmMsg').textContent = 'All '+ALL_REQUESTS.length+' requests will be permanently deleted.';
   document.getElementById('confirmOkBtn').textContent = 'Clear All';
   document.getElementById('confirmOkBtn').onclick = function() {
     closeConfirm();
@@ -1821,27 +1367,20 @@ function clearAllRequests() {
   };
   document.getElementById('confirmOverlay').classList.add('open');
 }
-
 function addRequestedTitle(req) {
   var typeMap = {movie:'movie',tv:'tv',anime:'anime'};
   openAdd(typeMap[req.type]||'movie');
-  setTimeout(function(){
-    var el = document.getElementById('f_title');
-    if (el) { el.value = req.title; el.classList.add('autofilled'); }
-  }, 50);
+  setTimeout(function(){ var el = document.getElementById('f_title'); if (el) { el.value = req.title; el.classList.add('autofilled'); } }, 50);
   toast('Title pre-filled — use Fetch to auto-populate the rest ✨','info');
 }
-
 function relTime(iso) {
   if (!iso) return '—';
-  var diff  = Date.now() - new Date(iso).getTime();
-  var mins  = Math.floor(diff/60000);
-  var hours = Math.floor(diff/3600000);
-  var days  = Math.floor(diff/86400000);
-  if (mins  < 1)  return 'just now';
-  if (mins  < 60) return mins+'m ago';
+  var diff = Date.now() - new Date(iso).getTime();
+  var mins = Math.floor(diff/60000), hours = Math.floor(diff/3600000), days = Math.floor(diff/86400000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins+'m ago';
   if (hours < 24) return hours+'h ago';
-  if (days  < 30) return days+'d ago';
+  if (days < 30) return days+'d ago';
   return new Date(iso).toLocaleDateString();
 }
 </script>
