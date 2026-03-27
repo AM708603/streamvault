@@ -1441,6 +1441,7 @@ function _goHome(){
   CUR_SEC='home';
   showPage('pg-home');
   setNavActive(null);
+  resetHomeMeta();
   buildSlides();buildRows();startSlider();
 }
 function _goSection(sec,btn){
@@ -1719,6 +1720,7 @@ function clearMyList(){
 function openDetail(k){var r=R[k];if(!r)return;showDetail(r.item,r.type);}
 function showDetail(item,type){
   pushRoute(titlePath(item));
+  updateContentMeta(item,type);
   PREV_PG=document.querySelector('.page.active').id;
   clearInterval(SLIDE_TMR);
   CUR_ITEM=item;CUR_TYPE=type;
@@ -2427,6 +2429,74 @@ document.getElementById('info-ov').addEventListener('click', function(e) {
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') closeInfoModal();
 }, true);
+
+// ══════════════════════════════════════
+//  DYNAMIC SEO META UPDATER
+// ══════════════════════════════════════
+function seoSlug(title){
+  return title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+}
+
+function updateContentMeta(item,type){
+  var slug=seoSlug(item.title);
+  var typeLabel=type==='movie'?'Movie':type==='tv'?'TV Show':'Anime';
+  var pageTitle=item.title+' ('+item.year+') — Watch '+typeLabel+' Online Free | StreamVault';
+  var pageDesc=((item.desc||'').slice(0,148)+(item.desc&&item.desc.length>148?'...':'')+' Stream free on StreamVault.');
+  var pageUrl='https://streamzvault.netlify.app/'+type+'/'+slug;
+
+  document.title=pageTitle;
+
+  var setMeta=function(sel,val){var el=document.querySelector(sel);if(el)el.setAttribute('content',val);};
+  setMeta('meta[name="description"]',pageDesc);
+  setMeta('meta[property="og:title"]',pageTitle);
+  setMeta('meta[property="og:description"]',pageDesc);
+  setMeta('meta[property="og:url"]',pageUrl);
+  setMeta('meta[name="twitter:title"]',pageTitle);
+  setMeta('meta[name="twitter:description"]',pageDesc);
+  if(item.poster){
+    var imgUrl='https://image.tmdb.org/t/p/w500'+item.poster;
+    setMeta('meta[property="og:image"]',imgUrl);
+    setMeta('meta[name="twitter:image"]',imgUrl);
+    setMeta('meta[property="og:image:alt"]',item.title+' poster');
+  }
+  var can=document.querySelector('link[rel="canonical"]');
+  if(can)can.href=pageUrl;
+
+  // Inject JSON-LD schema
+  var old=document.getElementById('content-schema');
+  if(old)old.remove();
+  var schema={
+    '@context':'https://schema.org',
+    '@type':type==='movie'?'Movie':'TVSeries',
+    'name':item.title,
+    'description':item.desc||'',
+    'datePublished':item.year+'',
+    'genre':item.genre||'',
+    'url':pageUrl,
+    'aggregateRating':{'@type':'AggregateRating','ratingValue':item.imdb||'7','bestRating':'10','ratingCount':'1000'},
+    'potentialAction':{'@type':'WatchAction','target':pageUrl}
+  };
+  if(item.poster)schema['image']='https://image.tmdb.org/t/p/w500'+item.poster;
+  if(type==='movie'&&item.director)schema['director']={'@type':'Person','name':item.director};
+  if(item.cast&&item.cast.length)schema['actor']=item.cast.slice(0,5).map(function(c){return{'@type':'Person','name':c.n||c.name||''};});
+  var s=document.createElement('script');
+  s.type='application/ld+json';s.id='content-schema';
+  s.textContent=JSON.stringify(schema);
+  document.head.appendChild(s);
+}
+
+function resetHomeMeta(){
+  document.title='StreamVault — Watch Movies, TV Shows & Anime Online Free';
+  var setMeta=function(sel,val){var el=document.querySelector(sel);if(el)el.setAttribute('content',val);};
+  setMeta('meta[name="description"]','StreamVault is your free online streaming destination. Watch the latest movies, binge-worthy TV shows and top anime — all in one place, no sign-up needed.');
+  setMeta('meta[property="og:title"]','StreamVault — Watch Movies, TV Shows & Anime Online Free');
+  setMeta('meta[property="og:url"]','https://streamzvault.netlify.app/');
+  var can=document.querySelector('link[rel="canonical"]');
+  if(can)can.href='https://streamzvault.netlify.app/';
+  var old=document.getElementById('content-schema');
+  if(old)old.remove();
+}
+
 </script>
 
 </body>
