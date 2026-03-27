@@ -1,5 +1,17 @@
 User-agent: *
 Allow: /
-Disallow: /admin.html
+Disallow: /api/
+Disallow: /admin
 
+# Sitemap location
 Sitemap: https://streamzvault.netlify.app/sitemap.xml
+
+# Allow major search engine crawlers
+User-agent: Googlebot
+Crawl-delay: 1
+
+User-agent: Bingbot
+Crawl-delay: 2
+
+User-agent: DuckDuckBot
+Crawl-delay: 1
