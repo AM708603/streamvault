@@ -1,19 +1,8 @@
 // ============================================================
-//  StreamVault — Cloudflare Worker Backend
-// ============================================================
-//
-//  SETUP STEPS:
-//  1. Go to workers.cloudflare.com → Create Worker → paste this code
-//  2. Worker settings → Variables → KV Namespace Bindings:
-//     Variable name: SV_KV  →  select your KV namespace
-//  3. Save & Deploy
-//  4. Copy Worker URL into admin.html login screen
-//
+//  StreamVault — Cloudflare Worker Backend  (FIXED)
 // ============================================================
 
-// ── ADMIN PASSWORD (must match admin.html) ────────────────
 const ADMIN_PASSWORD = "streamvault2025";
-// ─────────────────────────────────────────────────────────
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -37,7 +26,7 @@ export default {
       return await getContent(env);
     }
 
-    if (request.method === "GET" && path.startsWith("/api/content/")) {
+    if (request.method === "GET" && path.startsWith("/api/content/") && path.split("/").length === 4) {
       const type = path.split("/")[3];
       return await getContentByType(env, type);
     }
@@ -46,11 +35,20 @@ export default {
       return json({ status: "ok", timestamp: Date.now() });
     }
 
-    // ── ADMIN ROUTES (password required) ────────────────
-
     // ── PUBLIC: Submit a content request ────────────────
     if (request.method === "POST" && path === "/api/requests") {
       return await submitRequest(env, request);
+    }
+
+    // ── ALL REMAINING ROUTES REQUIRE AUTH ───────────────
+    const adminPass = request.headers.get("X-Admin-Password");
+    if (adminPass !== ADMIN_PASSWORD) {
+      return json({ error: "Unauthorized" }, 401);
+    }
+
+    // POST /api/auth
+    if (request.method === "POST" && path === "/api/auth") {
+      return json({ success: true, message: "Authenticated" });
     }
 
     // ── ADMIN: Manage content requests ──────────────────
@@ -69,16 +67,7 @@ export default {
       return await clearRequests(env);
     }
 
-
-    const adminPass = request.headers.get("X-Admin-Password");
-    if (adminPass !== ADMIN_PASSWORD) {
-      return json({ error: "Unauthorized" }, 401);
-    }
-
-    // POST /api/auth → verify credentials
-    if (request.method === "POST" && path === "/api/auth") {
-      return json({ success: true, message: "Authenticated" });
-    }
+    // ── ADMIN: Content CRUD ──────────────────────────────
 
     // POST /api/content/:type → add item
     if (request.method === "POST" && path.startsWith("/api/content/")) {
@@ -89,13 +78,15 @@ export default {
     // PUT /api/content/:type/:id → update item
     if (request.method === "PUT" && path.startsWith("/api/content/")) {
       const parts = path.split("/");
-      return await updateItem(env, parts[3], parseInt(parts[4]), request);
+      // ✅ FIX: parse id to Number so strict === works in filter
+      return await updateItem(env, parts[3], Number(parts[4]), request);
     }
 
     // DELETE /api/content/:type/:id → delete item
     if (request.method === "DELETE" && path.startsWith("/api/content/")) {
       const parts = path.split("/");
-      return await deleteItem(env, parts[3], parseInt(parts[4]));
+      // ✅ FIX: parse id to Number so strict === works in filter
+      return await deleteItem(env, parts[3], Number(parts[4]));
     }
 
     // POST /api/bulk → replace entire database
@@ -107,7 +98,7 @@ export default {
   },
 };
 
-// ── DB HELPERS ────────────────────────────────────────────
+// ── HELPERS ───────────────────────────────────────────────
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: CORS_HEADERS });
@@ -126,11 +117,15 @@ async function saveDB(env, db) {
 }
 
 function typeKey(type) {
-  const map = { movie:"movies", movies:"movies", tv:"tvshows", tvshows:"tvshows", anime:"anime" };
+  const map = {
+    movie: "movies", movies: "movies",
+    tv: "tvshows",  tvshows: "tvshows",
+    anime: "anime",
+  };
   return map[type] || null;
 }
 
-// ── ROUTE HANDLERS ───────────────────────────────────────
+// ── CONTENT HANDLERS ─────────────────────────────────────
 
 async function getContent(env) {
   return json(await getDB(env));
@@ -147,9 +142,25 @@ async function addItem(env, type, request) {
   const db  = await getDB(env);
   const key = typeKey(type);
   if (!key) return json({ error: "Invalid type" }, 400);
+
   const item = await request.json();
-  if (!item.id) item.id = Date.now();
-  db[key].push(item);
+
+  // ✅ FIX: always store id as a Number
+  if (!item.id) {
+    item.id = Date.now();
+  } else {
+    item.id = Number(item.id);
+    if (isNaN(item.id)) item.id = Date.now();
+  }
+
+  // ✅ FIX: prevent duplicate ids — update in place if id already exists
+  const existingIdx = db[key].findIndex((x) => Number(x.id) === item.id);
+  if (existingIdx !== -1) {
+    db[key][existingIdx] = item;
+  } else {
+    db[key].push(item);
+  }
+
   await saveDB(env, db);
   return json({ success: true, item });
 }
@@ -158,10 +169,13 @@ async function updateItem(env, type, id, request) {
   const db  = await getDB(env);
   const key = typeKey(type);
   if (!key) return json({ error: "Invalid type" }, 400);
+
   const updated = await request.json();
-  const idx = db[key].findIndex((x) => x.id === id);
+  // ✅ FIX: compare as Number on both sides
+  const idx = db[key].findIndex((x) => Number(x.id) === Number(id));
   if (idx === -1) return json({ error: "Not found" }, 404);
-  db[key][idx] = { ...updated, id };
+
+  db[key][idx] = { ...updated, id: Number(id) };
   await saveDB(env, db);
   return json({ success: true });
 }
@@ -170,23 +184,42 @@ async function deleteItem(env, type, id) {
   const db  = await getDB(env);
   const key = typeKey(type);
   if (!key) return json({ error: "Invalid type" }, 400);
-  db[key] = db[key].filter((x) => x.id !== id);
+
+  const before = db[key].length;
+  // ✅ FIX: compare as Number on both sides — this is the core delete bug
+  db[key] = db[key].filter((x) => Number(x.id) !== Number(id));
+  const deleted = before - db[key].length;
+
   await saveDB(env, db);
-  return json({ success: true });
+
+  // ✅ FIX: always return success true (item may have already been removed),
+  //         but include a flag so the client knows if it was actually found
+  return json({ success: true, deleted });
 }
 
 async function bulkSave(env, request) {
   const data = await request.json();
+
+  // ✅ FIX: normalise all ids to Number during bulk import
+  const normalise = (arr) => (Array.isArray(arr) ? arr : []).map((item) => ({
+    ...item,
+    id: item.id ? Number(item.id) : Date.now(),
+  }));
+
   const db = {
-    movies:   Array.isArray(data.movies)   ? data.movies   : [],
-    tvshows:  Array.isArray(data.tvshows)  ? data.tvshows  : [],
-    anime:    Array.isArray(data.anime)    ? data.anime    : [],
+    movies:  normalise(data.movies),
+    tvshows: normalise(data.tvshows),
+    anime:   normalise(data.anime),
   };
+
   await saveDB(env, db);
-  return json({ success: true, counts: { movies: db.movies.length, tvshows: db.tvshows.length, anime: db.anime.length } });
+  return json({
+    success: true,
+    counts: { movies: db.movies.length, tvshows: db.tvshows.length, anime: db.anime.length },
+  });
 }
 
-// ── REQUEST KV HELPERS ───────────────────────────────────
+// ── REQUEST HANDLERS ─────────────────────────────────────
 
 async function getRequestsDB(env) {
   try {
@@ -200,8 +233,6 @@ async function saveRequestsDB(env, requests) {
   await env.SV_KV.put("requests", JSON.stringify(requests));
 }
 
-// ── REQUEST HANDLERS ─────────────────────────────────────
-
 async function submitRequest(env, request) {
   const body  = await request.json();
   const title = (body.title || "").trim();
@@ -213,7 +244,6 @@ async function submitRequest(env, request) {
 
   const requests = await getRequestsDB(env);
 
-  // Rate-limit: max 3 pending per IP
   const ip = request.headers.get("CF-Connecting-IP") || "unknown";
   const pendingFromIp = requests.filter(r => r.ip === ip && r.status === "pending").length;
   if (pendingFromIp >= 3) {
@@ -222,11 +252,7 @@ async function submitRequest(env, request) {
 
   const req = {
     id:        Date.now().toString(),
-    title,
-    type,
-    note,
-    name,
-    ip,
+    title, type, note, name, ip,
     status:    "pending",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
