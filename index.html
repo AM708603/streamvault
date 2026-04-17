@@ -1562,7 +1562,7 @@ function startSlider(){clearInterval(SLIDE_TMR);SLIDE_TMR=setInterval(function()
 // ══════════════════════
 function buildRows(){
   var rows=[
-    {title:'Trending <b>Now</b>',   items:MOVIES.slice(0,5).concat(TV.slice(0,2)),types:A('movie',5).concat(A('tv',2)),sec:'home'},
+    {title:'Trending <b>Now</b>',   items:MOVIES.slice(0,5).concat(TV.slice(0,2)),types:A('movie',5).concat(A('tv',5)),sec:'home'},
     {title:'Top <b>Movies</b>',     items:MOVIES,types:A('movie',MOVIES.length),sec:'movies'},
     {title:'Binge-Worthy <b>Series</b>',items:TV,types:A('tv',TV.length),sec:'tvshows'},
     {title:'Anime <b>Picks</b>',    items:ANIME,types:A('anime',ANIME.length),sec:'anime'},
