@@ -1216,9 +1216,9 @@ async function init(){
       if(d.anime&&d.anime.length)ANIME=d.anime;
     }
   }catch(e){}
-  MOVIES=MOVIES.slice().reverse();
-  TV=TV.slice().reverse();
-  ANIME=ANIME.slice().reverse();
+MOVIES=MOVIES.slice().sort(function(a,b){return b.year-a.year;});
+TV=TV.slice().sort(function(a,b){return b.year-a.year;});
+ANIME=ANIME.slice().sort(function(a,b){return b.year-a.year;});
   buildSlides();
   buildRows();
   handleRoute(window.location.pathname);
