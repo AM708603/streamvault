@@ -2151,22 +2151,20 @@ function closeInfoModal(){document.getElementById('info-ov').classList.remove('s
 document.getElementById('info-ov').addEventListener('click',function(e){if(e.target===this)closeInfoModal();});
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeInfoModal();},true);
 
-  // ═══════════════════════════════════════════════════════════════════
-//  DOWNLOAD BUTTON - Add this at the bottom of your script section
+// ═══════════════════════════════════════════════════════════════════
+//  DOWNLOAD BUTTON - UPDATED FOR VIDEASY
 // ═══════════════════════════════════════════════════════════════════
 
 function initDownloadButton() {
     console.log('[DOWNLOAD] initDownloadButton() called');
     
-    // Remove existing button if any
     const existingBtn = document.getElementById('videasy-download-btn');
     if (existingBtn) existingBtn.remove();
     
-    // Create download button
     const downloadBtn = document.createElement('button');
     downloadBtn.id = 'videasy-download-btn';
     downloadBtn.innerHTML = `
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
             <polyline points="7 10 12 15 17 10"/>
             <line x1="12" y1="15" x2="12" y2="3"/>
@@ -2174,21 +2172,19 @@ function initDownloadButton() {
         <span>Download</span>
     `;
     downloadBtn.className = 'play-top-btn download-btn';
-    downloadBtn.title = 'Click to download detected stream';
     downloadBtn.style.cssText = `
-        background: #E50914;
-        border: none;
-        color: white;
-        width: auto;
-        border-radius: 6px;
-        padding: 0 14px;
-        gap: 6px;
-        font-weight: 600;
-        font-size: 13px;
+        background: #E50914 !important;
+        border: none !important;
+        color: white !important;
+        width: auto !important;
+        border-radius: 6px !important;
+        padding: 0 14px !important;
+        gap: 6px !important;
+        font-weight: 600 !important;
+        font-size: 13px !important;
     `;
     downloadBtn.onclick = handleDownload;
     
-    // Insert into top-actions
     const actionsContainer = document.querySelector('.play-top-actions');
     if (actionsContainer) {
         actionsContainer.insertBefore(downloadBtn, actionsContainer.firstChild);
@@ -2196,120 +2192,215 @@ function initDownloadButton() {
     }
 }
 
+// Track all network requests
+let capturedStreamUrl = null;
+let networkMonitorActive = false;
+
+function startNetworkMonitor() {
+    if (networkMonitorActive) return;
+    networkMonitorActive = true;
+    capturedStreamUrl = null;
+    
+    console.log('[DOWNLOAD] Starting network monitor...');
+    
+    // Save original functions
+    const originalFetch = window.fetch;
+    const originalXHROpen = XMLHttpRequest.prototype.open;
+    const originalXHRSend = XMLHttpRequest.prototype.send;
+    
+    // Monitor fetch requests
+    window.fetch = function(...args) {
+        const url = args[0];
+        checkUrlForStream(url);
+        return originalFetch.apply(this, args);
+    };
+    
+    // Monitor XHR requests
+    XMLHttpRequest.prototype.open = function(method, url, ...rest) {
+        this._monitoredUrl = url;
+        checkUrlForStream(url);
+        return originalXHROpen.call(this, method, url, ...rest);
+    };
+    
+    XMLHttpRequest.prototype.send = function(...args) {
+        if (this._monitoredUrl) {
+            checkUrlForStream(this._monitoredUrl);
+        }
+        return originalXHRSend.call(this, ...args);
+    };
+    
+    // Also monitor for video elements being created
+    const observer = new MutationObserver(() => {
+        const videos = document.querySelectorAll('video');
+        videos.forEach(video => {
+            if (video.src && !capturedStreamUrl) {
+                capturedStreamUrl = video.src;
+                console.log('[DOWNLOAD] Captured from video element:', capturedStreamUrl);
+            }
+        });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    
+    // Stop monitor after 15 seconds
+    setTimeout(() => {
+        window.fetch = originalFetch;
+        XMLHttpRequest.prototype.open = originalXHROpen;
+        XMLHttpRequest.prototype.send = originalXHRSend;
+        networkMonitorActive = false;
+        console.log('[DOWNLOAD] Network monitor stopped. Captured:', capturedStreamUrl);
+    }, 15000);
+}
+
+function checkUrlForStream(url) {
+    if (!url || capturedStreamUrl) return;
+    
+    const urlStr = String(url).toLowerCase();
+    
+    // Look for video stream patterns
+    if (urlStr.includes('.m3u8') || 
+        urlStr.includes('.mp4') || 
+        urlStr.includes('.ts') ||
+        urlStr.includes('master.m3u8') ||
+        urlStr.includes('index.m3u8') ||
+        (urlStr.includes('/hls/') && urlStr.includes('.m3u8')) ||
+        (urlStr.includes('/stream/') && urlStr.includes('.mp4'))) {
+        
+        capturedStreamUrl = String(url);
+        console.log('[DOWNLOAD] ✅ STREAM CAPTURED:', capturedStreamUrl);
+    }
+    
+    // Special pattern for VIDEASY
+    if (urlStr.includes('videasy') && (urlStr.includes('.m3u8') || urlStr.includes('/video/'))) {
+        capturedStreamUrl = String(url);
+        console.log('[DOWNLOAD] ✅ VIDEASY STREAM:', capturedStreamUrl);
+    }
+}
+
 async function detectStreamUrl() {
+    // Reset and start fresh monitoring
+    startNetworkMonitor();
+    
     return new Promise((resolve) => {
-        console.log('[DOWNLOAD] Starting stream detection...');
-        
-        const iframe = document.querySelector('#playFrame iframe');
-        if (!iframe) {
-            resolve(null);
-            return;
-        }
-        
-        let detectedUrl = null;
-        
-        // Override fetch to intercept network requests
-        const originalFetch = window.fetch;
-        window.fetch = function(...args) {
-            const url = args[0];
-            if (typeof url === 'string' && isVideoUrl(url)) {
-                console.log('[DOWNLOAD] Stream detected:', url);
-                detectedUrl = url;
+        // Check every second for captured stream
+        let checks = 0;
+        const interval = setInterval(() => {
+            checks++;
+            if (capturedStreamUrl) {
+                clearInterval(interval);
+                resolve(capturedStreamUrl);
+            } else if (checks > 12) { // 12 seconds max
+                clearInterval(interval);
+                
+                // Last resort: try to extract from iframe
+                try {
+                    const iframe = document.querySelector('#playFrame iframe');
+                    if (iframe && iframe.src) {
+                        const src = iframe.src;
+                        if (src.includes('.m3u8') || src.includes('.mp4')) {
+                            resolve(src);
+                            return;
+                        }
+                    }
+                } catch(e) {}
+                
+                resolve(null);
             }
-            return originalFetch.apply(this, args);
-        };
-        
-        // Override XHR
-        const originalXHROpen = XMLHttpRequest.prototype.open;
-        XMLHttpRequest.prototype.open = function(method, url, ...rest) {
-            if (isVideoUrl(url)) {
-                console.log('[DOWNLOAD] Stream detected via XHR:', url);
-                detectedUrl = url;
-            }
-            return originalXHROpen.call(this, method, url, ...rest);
-        };
-        
-        function isVideoUrl(url) {
-            if (!url) return false;
-            const urlStr = String(url).toLowerCase();
-            return urlStr.includes('.m3u8') || urlStr.includes('.mp4') || 
-                   urlStr.includes('.ts') || urlStr.includes('.mpd');
-        }
-        
-        // Restore after 6 seconds
-        setTimeout(() => {
-            window.fetch = originalFetch;
-            XMLHttpRequest.prototype.open = originalXHROpen;
-            resolve(detectedUrl);
-            console.log('[DOWNLOAD] Detection complete:', detectedUrl || 'NOT FOUND');
-        }, 6000);
+        }, 1000);
     });
 }
 
 async function handleDownload() {
-    console.log('[DOWNLOAD] Download clicked');
+    console.log('[DOWNLOAD] Download button clicked');
     
     const downloadBtn = document.getElementById('videasy-download-btn');
-    const originalText = downloadBtn.innerHTML;
+    if (!downloadBtn) return;
     
-    downloadBtn.innerHTML = `<span>⏳ Detecting...</span>`;
+    const originalHTML = downloadBtn.innerHTML;
+    downloadBtn.innerHTML = `<span>⏳ Detecting stream...</span>`;
     downloadBtn.disabled = true;
+    downloadBtn.style.opacity = '0.7';
     
     try {
+        // Show instructions to user
+        showToast('🎬 Playing video... detecting stream URL (5-10 seconds)');
+        
         const streamUrl = await detectStreamUrl();
         
         if (!streamUrl) {
-            showToast('❌ No stream detected. Play video for a few seconds.');
-            downloadBtn.innerHTML = originalText;
+            showToast('❌ No stream detected. Make sure video is playing for 10+ seconds.');
+            downloadBtn.innerHTML = originalHTML;
             downloadBtn.disabled = false;
+            downloadBtn.style.opacity = '';
             return;
         }
         
+        console.log('[DOWNLOAD] Final stream URL:', streamUrl);
+        
         // Get movie title
-        let title = 'stream';
+        let title = 'videasy_stream';
         if (typeof CUR_ITEM !== 'undefined' && CUR_ITEM && CUR_ITEM.title) {
             title = CUR_ITEM.title;
             if (typeof CUR_EP !== 'undefined' && CUR_EP) {
-                if (CUR_EP.s) title += ` S${CUR_EP.s}E${CUR_EP.e}`;
+                if (CUR_EP.s) title += `_S${CUR_EP.s}E${CUR_EP.e}`;
+                else if (CUR_EP.e) title += `_Ep${CUR_EP.e}`;
             }
         }
         
-        const filename = `${title.replace(/[^\w\s]/gi, '')}.mp4`;
+        const filename = `${title.replace(/[^a-zA-Z0-9]/g, '_')}.mp4`;
         
         downloadBtn.innerHTML = `<span>📥 Downloading...</span>`;
         
+        // Try to download
         try {
-            const response = await fetch(streamUrl);
-            const blob = await response.blob();
-            const blobUrl = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = blobUrl;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(blobUrl);
-            showToast(`✅ Download started: ${filename}`);
-        } catch (e) {
-            navigator.clipboard.writeText(streamUrl);
-            showToast(`📋 Stream URL copied to clipboard!`);
+            const response = await fetch(streamUrl, {
+                headers: {
+                    'Referer': window.location.href,
+                    'Origin': window.location.origin
+                }
+            });
+            
+            if (response.ok) {
+                const blob = await response.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(blobUrl);
+                showToast(`✅ Download started: ${filename}`);
+            } else {
+                throw new Error(`HTTP ${response.status}`);
+            }
+        } catch (fetchError) {
+            console.warn('[DOWNLOAD] Fetch failed, copying URL instead:', fetchError);
+            await navigator.clipboard.writeText(streamUrl);
+            showToast(`📋 Stream URL copied to clipboard! Use a download manager.`);
         }
         
     } catch (error) {
-        showToast(`❌ Download failed`);
+        console.error('[DOWNLOAD] Error:', error);
+        showToast(`❌ Error: ${error.message}`);
     } finally {
-        downloadBtn.innerHTML = originalText;
+        downloadBtn.innerHTML = originalHTML;
         downloadBtn.disabled = false;
+        downloadBtn.style.opacity = '';
     }
 }
 
-// Auto-initialize when player page becomes active
-const playerObserver = new MutationObserver(() => {
+// Auto-initialize when player loads
+function checkAndInitDownload() {
     if (document.querySelector('#pg-player.active') && !document.getElementById('videasy-download-btn')) {
         setTimeout(initDownloadButton, 1500);
     }
-});
+}
+
+const playerObserver = new MutationObserver(checkAndInitDownload);
 playerObserver.observe(document.body, { attributes: true, subtree: false, attributeFilter: ['class'] });
+
+// Initial check
+setTimeout(checkAndInitDownload, 2000);
 </script>
 </body>
 </html>
