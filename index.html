@@ -2158,8 +2158,11 @@ document.getElementById('info-ov').addEventListener('click',function(e){if(e.tar
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeInfoModal();},true);
 
 // ═══════════════════════════════════════════════════════════════════
-//  DOWNLOAD BUTTON - WORKS WITH CORS BYPASS
+//  DOWNLOAD BUTTON - CAPTURES VIDEASY STREAMS
 // ═══════════════════════════════════════════════════════════════════
+
+let detectedStreamUrl = null;
+let isMonitoring = false;
 
 function initDownloadButton() {
     console.log('[DOWNLOAD] initDownloadButton() called');
@@ -2188,219 +2191,285 @@ function initDownloadButton() {
         gap: 6px !important;
         font-weight: 600 !important;
         font-size: 13px !important;
+        cursor: pointer !important;
+        transition: all 0.2s !important;
     `;
-    downloadBtn.onclick = showDownloadOptions;
+    downloadBtn.onclick = startStreamDetection;
     
     const actionsContainer = document.querySelector('.play-top-actions');
     if (actionsContainer) {
         actionsContainer.insertBefore(downloadBtn, actionsContainer.firstChild);
         console.log('[DOWNLOAD] Button inserted');
     }
+    
+    // Auto-start monitoring when video plays
+    if (!isMonitoring) {
+        setTimeout(startBackgroundMonitoring, 2000);
+    }
 }
 
-function showDownloadOptions() {
-    // Create a modal with download options
+function startBackgroundMonitoring() {
+    if (isMonitoring) return;
+    isMonitoring = true;
+    
+    console.log('[DOWNLOAD] Background monitoring started for stream detection...');
+    
+    // Monitor fetch requests globally
+    const originalFetch = window.fetch;
+    window.fetch = function(...args) {
+        const url = args[0];
+        if (typeof url === 'string' && isVideoUrl(url)) {
+            detectedStreamUrl = url;
+            console.log('[DOWNLOAD] ✅ Stream captured via fetch:', url);
+            showToast('✓ Stream detected! Click Download button.');
+        }
+        return originalFetch.apply(this, args);
+    };
+    
+    // Monitor XHR requests
+    const originalXHROpen = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function(method, url, ...rest) {
+        if (isVideoUrl(url)) {
+            detectedStreamUrl = url;
+            console.log('[DOWNLOAD] ✅ Stream captured via XHR:', url);
+            showToast('✓ Stream detected! Click Download button.');
+        }
+        return originalXHROpen.call(this, method, url, ...rest);
+    };
+    
+    // Also check periodically for video elements
+    const checkInterval = setInterval(() => {
+        // Check iframe content for video elements (if accessible)
+        try {
+            const iframe = document.querySelector('#playFrame iframe');
+            if (iframe && iframe.contentDocument) {
+                const videos = iframe.contentDocument.querySelectorAll('video');
+                for (const video of videos) {
+                    if (video.src && isVideoUrl(video.src)) {
+                        detectedStreamUrl = video.src;
+                        console.log('[DOWNLOAD] ✅ Stream from video element:', video.src);
+                        showToast('✓ Stream detected! Click Download button.');
+                        clearInterval(checkInterval);
+                    }
+                }
+            }
+        } catch(e) {
+            // Cross-origin iframe, can't access
+        }
+        
+        // Check network tab entries via performance API
+        try {
+            const entries = performance.getEntriesByType('resource');
+            for (const entry of entries) {
+                if (isVideoUrl(entry.name)) {
+                    detectedStreamUrl = entry.name;
+                    console.log('[DOWNLOAD] ✅ Stream from performance API:', entry.name);
+                    showToast('✓ Stream detected! Click Download button.');
+                    clearInterval(checkInterval);
+                }
+            }
+        } catch(e) {}
+    }, 3000);
+    
+    // Stop monitoring after 2 minutes
+    setTimeout(() => {
+        if (window.fetch !== originalFetch) window.fetch = originalFetch;
+        if (XMLHttpRequest.prototype.open !== originalXHROpen) XMLHttpRequest.prototype.open = originalXHROpen;
+        isMonitoring = false;
+        console.log('[DOWNLOAD] Background monitoring stopped');
+    }, 120000);
+}
+
+function isVideoUrl(url) {
+    if (!url) return false;
+    const urlStr = String(url).toLowerCase();
+    return urlStr.includes('.m3u8') || 
+           urlStr.includes('.mp4') || 
+           urlStr.includes('.ts') ||
+           urlStr.includes('master.m3u8') ||
+           urlStr.includes('index.m3u8') ||
+           (urlStr.includes('/hls/') && urlStr.includes('.m3u8')) ||
+           (urlStr.includes('/video/') && urlStr.includes('.mp4'));
+}
+
+async function startStreamDetection() {
+    console.log('[DOWNLOAD] Manual stream detection started');
+    
+    const downloadBtn = document.getElementById('videasy-download-btn');
+    const originalHTML = downloadBtn.innerHTML;
+    
+    downloadBtn.innerHTML = `<span>🔍 Detecting stream...</span>`;
+    downloadBtn.disabled = true;
+    downloadBtn.style.opacity = '0.7';
+    
+    // Reset detected stream
+    detectedStreamUrl = null;
+    
+    // Show instruction toast
+    showToast('Playing video... detecting stream (5-10 seconds)');
+    
+    // Wait for stream detection
+    await waitForStream();
+    
+    if (detectedStreamUrl) {
+        console.log('[DOWNLOAD] Stream found:', detectedStreamUrl);
+        await downloadStream(detectedStreamUrl);
+    } else {
+        console.log('[DOWNLOAD] No stream detected');
+        showManualInstructions();
+    }
+    
+    downloadBtn.innerHTML = originalHTML;
+    downloadBtn.disabled = false;
+    downloadBtn.style.opacity = '';
+}
+
+function waitForStream() {
+    return new Promise((resolve) => {
+        let attempts = 0;
+        const maxAttempts = 30; // 15 seconds maximum
+        
+        const interval = setInterval(() => {
+            attempts++;
+            
+            if (detectedStreamUrl) {
+                clearInterval(interval);
+                resolve(true);
+            } else if (attempts >= maxAttempts) {
+                clearInterval(interval);
+                resolve(false);
+            }
+        }, 500);
+    });
+}
+
+async function downloadStream(url) {
+    console.log('[DOWNLOAD] Attempting to download:', url);
+    
+    const title = getCurrentTitle();
+    const filename = `${title.replace(/[^a-z0-9]/gi, '_')}.mp4`;
+    
+    try {
+        // Try to fetch with CORS
+        const response = await fetch(url, {
+            mode: 'cors',
+            headers: {
+                'Referer': window.location.href,
+                'Origin': window.location.origin
+            }
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(blobUrl);
+            showToast(`✅ Download started: ${filename}`);
+        } else {
+            throw new Error(`HTTP ${response.status}`);
+        }
+    } catch (corsError) {
+        console.warn('[DOWNLOAD] CORS error, opening in new tab:', corsError);
+        // Open in new tab as fallback
+        window.open(url, '_blank');
+        showToast('🎬 Stream opened in new tab. Right-click → Save As.');
+    }
+}
+
+function showManualInstructions() {
+    console.log('[DOWNLOAD] Showing manual instructions');
+    
     const modal = document.createElement('div');
-    modal.id = 'download-modal';
     modal.style.cssText = `
         position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.9);
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #1a1a1a;
+        border: 1px solid #E50914;
+        border-radius: 12px;
+        padding: 24px;
         z-index: 10001;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        backdrop-filter: blur(8px);
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 0 50px rgba(0,0,0,0.8);
     `;
     
-    const currentTitle = getCurrentTitle();
-    const iframeSrc = document.querySelector('#playFrame iframe')?.src || '';
-    const mediaId = extractMediaId(iframeSrc);
+    const iframeSrc = document.querySelector('#playFrame iframe')?.src || 'Unknown';
     
     modal.innerHTML = `
-        <div style="
-            background: #141414;
-            border-radius: 16px;
-            max-width: 500px;
-            width: 90%;
-            padding: 28px;
-            border: 1px solid #E50914;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-        ">
-            <h2 style="color: #E50914; margin-bottom: 8px; font-family: 'Bebas Neue', sans-serif;">📥 Download Options</h2>
-            <p style="color: #888; margin-bottom: 24px; font-size: 14px;">${currentTitle}</p>
-            
-            <div style="margin-bottom: 20px;">
-                <button id="download-method-1" style="
-                    width: 100%;
-                    background: #E50914;
-                    color: white;
-                    border: none;
-                    padding: 14px;
-                    border-radius: 8px;
-                    font-size: 16px;
-                    font-weight: 600;
-                    cursor: pointer;
-                    margin-bottom: 12px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 10px;
-                ">
-                    🎬 Method 1: Open Developer Tools
-                </button>
-                <p style="color: #666; font-size: 12px; margin-top: -8px; margin-bottom: 16px;">
-                    1. Press F12 → Network tab → Filter "Media"<br>
-                    2. Refresh page and play video<br>
-                    3. Right-click the .m3u8/.mp4 file → Open in new tab → Save As
-                </p>
-                
-                <button id="download-method-2" style="
-                    width: 100%;
-                    background: #2a2a2a;
-                    color: white;
-                    border: 1px solid #444;
-                    padding: 14px;
-                    border-radius: 8px;
-                    font-size: 16px;
-                    font-weight: 600;
-                    cursor: pointer;
-                    margin-bottom: 12px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 10px;
-                ">
-                    🔧 Method 2: Use Video Downloader Extension
-                </button>
-                <p style="color: #666; font-size: 12px; margin-top: -8px; margin-bottom: 16px;">
-                    Install "Video DownloadHelper" or "Stream Video Downloader" from Chrome Web Store
-                </p>
-                
-                <button id="download-method-3" style="
-                    width: 100%;
-                    background: #2a2a2a;
-                    color: white;
-                    border: 1px solid #444;
-                    padding: 14px;
-                    border-radius: 8px;
-                    font-size: 16px;
-                    font-weight: 600;
-                    cursor: pointer;
-                    margin-bottom: 12px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 10px;
-                ">
-                    📋 Method 3: Copy Stream Info
-                </button>
-                <p style="color: #666; font-size: 12px; margin-top: -8px;">
-                    Get the iframe URL and media ID for manual downloading
-                </p>
-            </div>
-            
-            <div id="stream-info" style="
-                background: #0a0a0a;
-                border-radius: 8px;
-                padding: 12px;
-                margin-top: 16px;
-                display: none;
-                border-left: 3px solid #E50914;
-            ">
-                <p style="color: #888; font-size: 12px; margin-bottom: 8px;">Stream Information:</p>
-                <code style="color: #46d369; font-size: 11px; word-break: break-all;">${iframeSrc}</code>
-                <p style="color: #666; font-size: 11px; margin-top: 8px;">Media ID: ${mediaId || 'N/A'}</p>
-                <button id="copy-stream-info" style="
-                    background: #333;
-                    color: white;
-                    border: none;
-                    padding: 6px 12px;
-                    border-radius: 4px;
-                    margin-top: 10px;
-                    cursor: pointer;
-                    font-size: 12px;
-                ">Copy to Clipboard</button>
-            </div>
-            
-            <button id="close-download-modal" style="
-                width: 100%;
-                background: transparent;
-                color: #888;
-                border: 1px solid #333;
-                padding: 10px;
-                border-radius: 8px;
-                margin-top: 16px;
-                cursor: pointer;
-            ">Close</button>
+        <h3 style="color: #E50914; margin-bottom: 16px;">📥 Manual Download Instructions</h3>
+        
+        <div style="margin-bottom: 20px;">
+            <p style="color: #46d369; margin-bottom: 10px;"><strong>Method 1: Use Developer Tools</strong></p>
+            <ol style="color: #ccc; margin-left: 20px; line-height: 1.8;">
+                <li>Press <strong style="color:white;">F12</strong> to open Developer Tools</li>
+                <li>Click the <strong style="color:white;">Network</strong> tab</li>
+                <li>Filter by <strong style="color:white;">Media</strong> or type <strong style="color:white;">.m3u8</strong></li>
+                <li><strong style="color:white;">Refresh the page</strong> and play the video</li>
+                <li>Right-click the .m3u8/.mp4 file → <strong style="color:white;">Open in new tab</strong></li>
+                <li>Right-click video → <strong style="color:white;">Save video as...</strong></li>
+            </ol>
         </div>
+        
+        <div style="margin-bottom: 20px;">
+            <p style="color: #46d369; margin-bottom: 10px;"><strong>Method 2: Browser Extension</strong></p>
+            <p style="color: #ccc;">Install <strong>"Video DownloadHelper"</strong> or <strong>"Stream Video Downloader"</strong> from Chrome Web Store</p>
+        </div>
+        
+        <div style="margin-bottom: 20px; background: #0a0a0a; padding: 12px; border-radius: 8px;">
+            <p style="color: #666; margin-bottom: 8px; font-size: 12px;">Current iframe URL:</p>
+            <code style="color: #46d369; font-size: 11px; word-break: break-all;">${iframeSrc}</code>
+            <button id="copy-url-btn" style="
+                background: #E50914;
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 4px;
+                margin-top: 10px;
+                cursor: pointer;
+                font-size: 12px;
+            ">Copy URL</button>
+        </div>
+        
+        <button id="close-manual-modal" style="
+            width: 100%;
+            background: #333;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+        ">Close</button>
     `;
     
     document.body.appendChild(modal);
     
-    // Method 1: Open DevTools guide
-    document.getElementById('download-method-1').onclick = () => {
-        if (typeof window !== 'undefined') {
-            alert('1. Press F12 to open Developer Tools\n2. Click "Network" tab\n3. Filter by "Media"\n4. Refresh the page and play the video\n5. Right-click the .m3u8 file → Open in new tab → Save As');
-        }
-        // Try to open devtools if possible
-        if (window.parent && window.parent !== window) {
-            // Already in devtools context
-        }
+    document.getElementById('copy-url-btn').onclick = () => {
+        navigator.clipboard.writeText(iframeSrc);
+        showToast('✓ Iframe URL copied to clipboard');
     };
     
-    // Method 2: Extension recommendation
-    document.getElementById('download-method-2').onclick = () => {
-        window.open('https://chrome.google.com/webstore/detail/video-downloadhelper/lmjnegcaeklhafolokijcfjliaehphdd', '_blank');
-        alert('Recommended extensions:\n- Video DownloadHelper\n- Stream Video Downloader\n- Cococut Video Downloader');
-    };
-    
-    // Method 3: Show stream info
-    document.getElementById('download-method-3').onclick = () => {
-        const infoDiv = document.getElementById('stream-info');
-        if (infoDiv) {
-            infoDiv.style.display = 'block';
-        }
-    };
-    
-    // Copy stream info
-    const copyBtn = document.getElementById('copy-stream-info');
-    if (copyBtn) {
-        copyBtn.onclick = () => {
-            const info = `Title: ${currentTitle}\nIframe URL: ${iframeSrc}\nMedia ID: ${mediaId || 'N/A'}\nTimestamp: ${new Date().toISOString()}`;
-            navigator.clipboard.writeText(info);
-            copyBtn.textContent = 'Copied!';
-            setTimeout(() => {
-                copyBtn.textContent = 'Copy to Clipboard';
-            }, 2000);
-        };
-    }
-    
-    // Close modal
-    document.getElementById('close-download-modal').onclick = () => {
+    document.getElementById('close-manual-modal').onclick = () => {
         modal.remove();
     };
     
-    // Close on background click
     modal.onclick = (e) => {
         if (e.target === modal) modal.remove();
     };
-}
-
-function extractMediaId(iframeSrc) {
-    const match = iframeSrc.match(/\/(?:movie|tv|anime)\/(\d+)/);
-    return match ? match[1] : null;
 }
 
 function getCurrentTitle() {
     if (typeof CUR_ITEM !== 'undefined' && CUR_ITEM && CUR_ITEM.title) {
         let title = CUR_ITEM.title;
         if (typeof CUR_EP !== 'undefined' && CUR_EP) {
-            if (CUR_EP.s) title += ` S${CUR_EP.s}E${CUR_EP.e}`;
-            else if (CUR_EP.e) title += ` Ep${CUR_EP.e}`;
+            if (CUR_EP.s) title += `_S${CUR_EP.s}E${CUR_EP.e}`;
+            else if (CUR_EP.e) title += `_Ep${CUR_EP.e}`;
         }
         return title;
     }
@@ -2415,18 +2484,54 @@ function getCurrentTitle() {
     return 'StreamVault_Video';
 }
 
+// Toast notification
+function showToast(msg) {
+    let toast = document.getElementById('download-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'download-toast';
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.95);
+            color: #46d369;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 10002;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            border-left: 3px solid #E50914;
+            font-weight: 500;
+        `;
+        document.body.appendChild(toast);
+    }
+    toast.textContent = msg;
+    toast.style.opacity = '1';
+    setTimeout(() => { toast.style.opacity = '0'; }, 4000);
+}
+
 // Auto-initialize when player loads
-const downloadObserver = new MutationObserver(() => {
-    if (document.querySelector('#pg-player.active') && !document.getElementById('videasy-download-btn')) {
-        setTimeout(initDownloadButton, 1500);
+const playerObserver = new MutationObserver(() => {
+    if (document.querySelector('#pg-player.active')) {
+        if (!document.getElementById('videasy-download-btn')) {
+            setTimeout(initDownloadButton, 1500);
+        }
+        // Also start background monitoring
+        if (!isMonitoring) {
+            setTimeout(startBackgroundMonitoring, 3000);
+        }
     }
 });
-downloadObserver.observe(document.body, { attributes: true, subtree: false, attributeFilter: ['class'] });
+playerObserver.observe(document.body, { attributes: true, subtree: false, attributeFilter: ['class'] });
 
 // Initial check
 setTimeout(() => {
     if (document.querySelector('#pg-player.active')) {
         initDownloadButton();
+        setTimeout(startBackgroundMonitoring, 3000);
     }
 }, 2000);
 </script>
