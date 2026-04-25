@@ -1216,9 +1216,9 @@ async function init(){
       if(d.anime&&d.anime.length)ANIME=d.anime;
     }
   }catch(e){}
- MOVIES=MOVIES.slice().sort(function(a,b){return b.year-a.year;});
-TV=TV.slice().sort(function(a,b){return b.year-a.year;});
-ANIME=ANIME.slice().sort(function(a,b){return b.year-a.year;});
+MOVIES=MOVIES.slice().sort(function(a,b){return b.year-a.year||MOVIES.indexOf(b)-MOVIES.indexOf(a);});
+TV=TV.slice().sort(function(a,b){return b.year-a.year||TV.indexOf(b)-TV.indexOf(a);});
+ANIME=ANIME.slice().sort(function(a,b){return b.year-a.year||ANIME.indexOf(b)-ANIME.indexOf(a);});
   buildSlides();
   buildRows();
   handleRoute(window.location.pathname);
