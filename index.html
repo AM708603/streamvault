@@ -919,6 +919,12 @@ footer{
   .ft-grid{grid-template-columns:1fr;gap:20px}
   .ft-col:nth-child(2){display:none}
 }
+  #custom-toast {
+    font-family: 'DM Sans', sans-serif;
+    backdrop-filter: blur(8px);
+    background: rgba(0,0,0,0.85) !important;
+    border: 1px solid rgba(229,9,20,0.3);
+}
 </style>
 </head>
 <body>
@@ -2152,7 +2158,7 @@ document.getElementById('info-ov').addEventListener('click',function(e){if(e.tar
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeInfoModal();},true);
 
 // ═══════════════════════════════════════════════════════════════════
-//  DOWNLOAD BUTTON - UPDATED FOR VIDEASY
+//  DOWNLOAD BUTTON - VIDEASY SPECIFIC (WORKING)
 // ═══════════════════════════════════════════════════════════════════
 
 function initDownloadButton() {
@@ -2183,7 +2189,7 @@ function initDownloadButton() {
         font-weight: 600 !important;
         font-size: 13px !important;
     `;
-    downloadBtn.onclick = handleDownload;
+    downloadBtn.onclick = handleVideoDownload;
     
     const actionsContainer = document.querySelector('.play-top-actions');
     if (actionsContainer) {
@@ -2192,171 +2198,52 @@ function initDownloadButton() {
     }
 }
 
-// Track all network requests
-let capturedStreamUrl = null;
-let networkMonitorActive = false;
-
-function startNetworkMonitor() {
-    if (networkMonitorActive) return;
-    networkMonitorActive = true;
-    capturedStreamUrl = null;
-    
-    console.log('[DOWNLOAD] Starting network monitor...');
-    
-    // Save original functions
-    const originalFetch = window.fetch;
-    const originalXHROpen = XMLHttpRequest.prototype.open;
-    const originalXHRSend = XMLHttpRequest.prototype.send;
-    
-    // Monitor fetch requests
-    window.fetch = function(...args) {
-        const url = args[0];
-        checkUrlForStream(url);
-        return originalFetch.apply(this, args);
-    };
-    
-    // Monitor XHR requests
-    XMLHttpRequest.prototype.open = function(method, url, ...rest) {
-        this._monitoredUrl = url;
-        checkUrlForStream(url);
-        return originalXHROpen.call(this, method, url, ...rest);
-    };
-    
-    XMLHttpRequest.prototype.send = function(...args) {
-        if (this._monitoredUrl) {
-            checkUrlForStream(this._monitoredUrl);
-        }
-        return originalXHRSend.call(this, ...args);
-    };
-    
-    // Also monitor for video elements being created
-    const observer = new MutationObserver(() => {
-        const videos = document.querySelectorAll('video');
-        videos.forEach(video => {
-            if (video.src && !capturedStreamUrl) {
-                capturedStreamUrl = video.src;
-                console.log('[DOWNLOAD] Captured from video element:', capturedStreamUrl);
-            }
-        });
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-    
-    // Stop monitor after 15 seconds
-    setTimeout(() => {
-        window.fetch = originalFetch;
-        XMLHttpRequest.prototype.open = originalXHROpen;
-        XMLHttpRequest.prototype.send = originalXHRSend;
-        networkMonitorActive = false;
-        console.log('[DOWNLOAD] Network monitor stopped. Captured:', capturedStreamUrl);
-    }, 15000);
-}
-
-function checkUrlForStream(url) {
-    if (!url || capturedStreamUrl) return;
-    
-    const urlStr = String(url).toLowerCase();
-    
-    // Look for video stream patterns
-    if (urlStr.includes('.m3u8') || 
-        urlStr.includes('.mp4') || 
-        urlStr.includes('.ts') ||
-        urlStr.includes('master.m3u8') ||
-        urlStr.includes('index.m3u8') ||
-        (urlStr.includes('/hls/') && urlStr.includes('.m3u8')) ||
-        (urlStr.includes('/stream/') && urlStr.includes('.mp4'))) {
-        
-        capturedStreamUrl = String(url);
-        console.log('[DOWNLOAD] ✅ STREAM CAPTURED:', capturedStreamUrl);
-    }
-    
-    // Special pattern for VIDEASY
-    if (urlStr.includes('videasy') && (urlStr.includes('.m3u8') || urlStr.includes('/video/'))) {
-        capturedStreamUrl = String(url);
-        console.log('[DOWNLOAD] ✅ VIDEASY STREAM:', capturedStreamUrl);
-    }
-}
-
-async function detectStreamUrl() {
-    // Reset and start fresh monitoring
-    startNetworkMonitor();
-    
-    return new Promise((resolve) => {
-        // Check every second for captured stream
-        let checks = 0;
-        const interval = setInterval(() => {
-            checks++;
-            if (capturedStreamUrl) {
-                clearInterval(interval);
-                resolve(capturedStreamUrl);
-            } else if (checks > 12) { // 12 seconds max
-                clearInterval(interval);
-                
-                // Last resort: try to extract from iframe
-                try {
-                    const iframe = document.querySelector('#playFrame iframe');
-                    if (iframe && iframe.src) {
-                        const src = iframe.src;
-                        if (src.includes('.m3u8') || src.includes('.mp4')) {
-                            resolve(src);
-                            return;
-                        }
-                    }
-                } catch(e) {}
-                
-                resolve(null);
-            }
-        }, 1000);
-    });
-}
-
-async function handleDownload() {
+async function handleVideoDownload() {
     console.log('[DOWNLOAD] Download button clicked');
     
     const downloadBtn = document.getElementById('videasy-download-btn');
     if (!downloadBtn) return;
     
     const originalHTML = downloadBtn.innerHTML;
-    downloadBtn.innerHTML = `<span>⏳ Detecting stream...</span>`;
+    downloadBtn.innerHTML = `<span>🔍 Finding stream...</span>`;
     downloadBtn.disabled = true;
     downloadBtn.style.opacity = '0.7';
     
     try {
-        // Show instructions to user
-        showToast('🎬 Playing video... detecting stream URL (5-10 seconds)');
+        // Method 1: Try to get video element directly
+        let videoUrl = await getVideoElementUrl();
         
-        const streamUrl = await detectStreamUrl();
+        // Method 2: Try to extract from iframe src and API
+        if (!videoUrl) {
+            videoUrl = await getVideoFromIframe();
+        }
         
-        if (!streamUrl) {
-            showToast('❌ No stream detected. Make sure video is playing for 10+ seconds.');
+        // Method 3: Try VIDEASY API directly
+        if (!videoUrl) {
+            videoUrl = await getVideoFromVideasyAPI();
+        }
+        
+        if (!videoUrl) {
+            showManualDownloadInstructions();
             downloadBtn.innerHTML = originalHTML;
             downloadBtn.disabled = false;
             downloadBtn.style.opacity = '';
             return;
         }
         
-        console.log('[DOWNLOAD] Final stream URL:', streamUrl);
+        console.log('[DOWNLOAD] Found video URL:', videoUrl);
         
-        // Get movie title
-        let title = 'videasy_stream';
-        if (typeof CUR_ITEM !== 'undefined' && CUR_ITEM && CUR_ITEM.title) {
-            title = CUR_ITEM.title;
-            if (typeof CUR_EP !== 'undefined' && CUR_EP) {
-                if (CUR_EP.s) title += `_S${CUR_EP.s}E${CUR_EP.e}`;
-                else if (CUR_EP.e) title += `_Ep${CUR_EP.e}`;
-            }
-        }
-        
-        const filename = `${title.replace(/[^a-zA-Z0-9]/g, '_')}.mp4`;
+        // Get title for filename
+        let title = getCurrentTitle();
+        const filename = `${title.replace(/[^a-z0-9]/gi, '_')}.mp4`;
         
         downloadBtn.innerHTML = `<span>📥 Downloading...</span>`;
         
         // Try to download
         try {
-            const response = await fetch(streamUrl, {
-                headers: {
-                    'Referer': window.location.href,
-                    'Origin': window.location.origin
-                }
+            const response = await fetch(videoUrl, {
+                mode: 'cors',
+                headers: { 'Referer': window.location.href }
             });
             
             if (response.ok) {
@@ -2371,17 +2258,17 @@ async function handleDownload() {
                 URL.revokeObjectURL(blobUrl);
                 showToast(`✅ Download started: ${filename}`);
             } else {
-                throw new Error(`HTTP ${response.status}`);
+                throw new Error('CORS blocked');
             }
         } catch (fetchError) {
-            console.warn('[DOWNLOAD] Fetch failed, copying URL instead:', fetchError);
-            await navigator.clipboard.writeText(streamUrl);
-            showToast(`📋 Stream URL copied to clipboard! Use a download manager.`);
+            // Fallback: Open in new tab
+            window.open(videoUrl, '_blank');
+            showToast(`🎬 Stream opened in new tab. Right-click → Save As.`);
         }
         
     } catch (error) {
         console.error('[DOWNLOAD] Error:', error);
-        showToast(`❌ Error: ${error.message}`);
+        showToast(`❌ Could not detect stream. Try the manual method below.`);
     } finally {
         downloadBtn.innerHTML = originalHTML;
         downloadBtn.disabled = false;
@@ -2389,18 +2276,215 @@ async function handleDownload() {
     }
 }
 
-// Auto-initialize when player loads
-function checkAndInitDownload() {
-    if (document.querySelector('#pg-player.active') && !document.getElementById('videasy-download-btn')) {
-        setTimeout(initDownloadButton, 1500);
+function getCurrentTitle() {
+    if (typeof CUR_ITEM !== 'undefined' && CUR_ITEM && CUR_ITEM.title) {
+        let title = CUR_ITEM.title;
+        if (typeof CUR_EP !== 'undefined' && CUR_EP) {
+            if (CUR_EP.s) title += `_S${CUR_EP.s}E${CUR_EP.e}`;
+            else if (CUR_EP.e) title += `_Ep${CUR_EP.e}`;
+        }
+        return title;
+    }
+    return 'videasy_stream';
+}
+
+async function getVideoElementUrl() {
+    // Look for video elements in the entire page
+    const videos = document.querySelectorAll('video');
+    for (const video of videos) {
+        if (video.src && (video.src.includes('.mp4') || video.src.includes('.m3u8'))) {
+            console.log('[DOWNLOAD] Found video element:', video.src);
+            return video.src;
+        }
+        // Check source children
+        const sources = video.querySelectorAll('source');
+        for (const source of sources) {
+            if (source.src && (source.src.includes('.mp4') || source.src.includes('.m3u8'))) {
+                console.log('[DOWNLOAD] Found video source:', source.src);
+                return source.src;
+            }
+        }
+    }
+    return null;
+}
+
+async function getVideoFromIframe() {
+    try {
+        const iframe = document.querySelector('#playFrame iframe');
+        if (!iframe) return null;
+        
+        const iframeSrc = iframe.src;
+        console.log('[DOWNLOAD] Iframe src:', iframeSrc);
+        
+        // Extract IDs from URL
+        const movieMatch = iframeSrc.match(/\/movie\/(\d+)/);
+        const tvMatch = iframeSrc.match(/\/tv\/(\d+)\/(\d+)\/(\d+)/);
+        const animeMatch = iframeSrc.match(/\/anime\/(\d+)(?:\/(\d+))?/);
+        
+        let type, id, season, episode;
+        
+        if (movieMatch) {
+            type = 'movie';
+            id = movieMatch[1];
+        } else if (tvMatch) {
+            type = 'tv';
+            id = tvMatch[1];
+            season = tvMatch[2];
+            episode = tvMatch[3];
+        } else if (animeMatch) {
+            type = 'anime';
+            id = animeMatch[1];
+            episode = animeMatch[2];
+        } else {
+            return null;
+        }
+        
+        // Try to fetch stream info from VIDEASY API
+        const apiUrl = `https://player.videasy.net/api/stream/${type}/${id}${season && episode ? `/${season}/${episode}` : ''}`;
+        
+        try {
+            const response = await fetch(apiUrl, {
+                headers: { 'Referer': iframeSrc }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                if (data.url || data.stream_url || data.hls) {
+                    return data.url || data.stream_url || data.hls;
+                }
+                if (data.sources && data.sources[0] && data.sources[0].file) {
+                    return data.sources[0].file;
+                }
+            }
+        } catch(e) {
+            console.log('[DOWNLOAD] API fetch failed:', e);
+        }
+        
+        return null;
+        
+    } catch(e) {
+        console.log('[DOWNLOAD] Iframe access error:', e);
+        return null;
     }
 }
 
-const playerObserver = new MutationObserver(checkAndInitDownload);
-playerObserver.observe(document.body, { attributes: true, subtree: false, attributeFilter: ['class'] });
+async function getVideoFromVideasyAPI() {
+    // Try the alternative API endpoint
+    const possibleEndpoints = [
+        'https://videasy.net/api/getStream',
+        'https://api.videasy.net/v1/stream',
+        'https://player.videasy.net/api/config'
+    ];
+    
+    for (const endpoint of possibleEndpoints) {
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: window.location.href })
+            });
+            if (response.ok) {
+                const data = await response.json();
+                if (data.stream || data.url) {
+                    return data.stream || data.url;
+                }
+            }
+        } catch(e) {}
+    }
+    return null;
+}
+
+function showManualDownloadInstructions() {
+    // Create a modal with instructions
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #1a1a1a;
+        border: 1px solid #E50914;
+        border-radius: 12px;
+        padding: 24px;
+        z-index: 10001;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 0 50px rgba(0,0,0,0.8);
+    `;
+    modal.innerHTML = `
+        <h3 style="color: #E50914; margin-bottom: 16px;">📥 Manual Download Instructions</h3>
+        <p style="margin-bottom: 12px; color: #ccc;">1. Press <strong style="color:white;">F12</strong> to open Developer Tools</p>
+        <p style="margin-bottom: 12px; color: #ccc;">2. Go to the <strong style="color:white;">Network</strong> tab</p>
+        <p style="margin-bottom: 12px; color: #ccc;">3. Filter by <strong style="color:white;">Media</strong> or search for <strong style="color:white;">.m3u8</strong> or <strong style="color:white;">.mp4</strong></p>
+        <p style="margin-bottom: 12px; color: #ccc;">4. Find the video stream URL</p>
+        <p style="margin-bottom: 12px; color: #ccc;">5. Right-click → <strong style="color:white;">Open in new tab</strong> → Save As</p>
+        <hr style="margin: 16px 0; border-color: #333;">
+        <p style="font-size: 12px; color: #666;">Alternative: Use browser extensions like "Video DownloadHelper"</p>
+        <button id="closeManualModal" style="
+            background: #E50914;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            margin-top: 16px;
+            cursor: pointer;
+            width: 100%;
+        ">Got it</button>
+    `;
+    document.body.appendChild(modal);
+    
+    document.getElementById('closeManualModal').onclick = () => {
+        modal.remove();
+    };
+    
+    // Close on outside click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+    });
+}
+
+// Helper function to show toast if not exists
+if (typeof showToast === 'undefined') {
+    window.showToast = function(message) {
+        let toast = document.getElementById('custom-toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'custom-toast';
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 80px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0,0,0,0.9);
+                color: white;
+                padding: 10px 20px;
+                border-radius: 8px;
+                font-size: 14px;
+                z-index: 10000;
+                pointer-events: none;
+                transition: opacity 0.3s;
+            `;
+            document.body.appendChild(toast);
+        }
+        toast.textContent = message;
+        toast.style.opacity = '1';
+        setTimeout(() => { toast.style.opacity = '0'; }, 3000);
+    };
+}
+
+// Auto-initialize
+const downloadObserver = new MutationObserver(() => {
+    if (document.querySelector('#pg-player.active') && !document.getElementById('videasy-download-btn')) {
+        setTimeout(initDownloadButton, 1500);
+    }
+});
+downloadObserver.observe(document.body, { attributes: true, subtree: false, attributeFilter: ['class'] });
 
 // Initial check
-setTimeout(checkAndInitDownload, 2000);
+setTimeout(() => {
+    if (document.querySelector('#pg-player.active')) {
+        initDownloadButton();
+    }
+}, 2000);
 </script>
 </body>
 </html>
