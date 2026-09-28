@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1415,7 +1416,7 @@ button:focus-visible,
   color:#ddd;font-size:.72rem;font-weight:600;cursor:pointer;white-space:nowrap;
 }
 .src-top-btn:hover{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.22)}
-.src-menu{
+.src-menu{max-height:min(70vh,320px);overflow-y:auto;
   display:none;position:absolute;top:calc(100% + 8px);right:0;
   min-width:148px;background:rgba(16,16,18,.98);border:1px solid rgba(255,255,255,.12);
   border-radius:10px;padding:6px;box-shadow:0 12px 40px rgba(0,0,0,.55);z-index:40;
@@ -1448,12 +1449,7 @@ button:focus-visible,
               <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
               <span id="srcFabLabel">Videasy</span>
             </button>
-            <div class="src-menu" id="srcMenu">
-              <button type="button" class="src-opt on" data-p="videasy" onclick="setPlayProvider('videasy')">Videasy</button>
-              <button type="button" class="src-opt" data-p="vidsrc" onclick="setPlayProvider('vidsrc')">VidSrc</button>
-              <button type="button" class="src-opt" data-p="embeds" onclick="setPlayProvider('embeds')">EmbedSU</button>
-              <button type="button" class="src-opt" data-p="autoembed" onclick="setPlayProvider('autoembed')">AutoEmbed</button>
-            </div>
+            <div class="src-menu" id="srcMenu"></div></div>
           </div>
           <button class="play-top-btn" id="playListBtn" onclick="playerToggleList()" title="My List">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
@@ -1688,7 +1684,7 @@ button:focus-visible,
 // ══════════════════════
 //  CONFIG
 // ══════════════════════
-var CF = 'https://streamvault.amworkmanage.workers.dev';
+var CF = 'https://raspy-butterfly-0610.amworkmanage.workers.dev';
 var IB = 'https://image.tmdb.org/t/p/w1280';
 var IP = 'https://image.tmdb.org/t/p/w500';
 var IA = 'https://image.tmdb.org/t/p/w185';
@@ -2483,43 +2479,102 @@ function playerToggleList(){
 // ══════════════════════
 //  BUILD SRC — Hindi server (server=2) as default
 // ══════════════════════
-var PLAY_PROVIDER = 'videasy'; // videasy | vidsrc | embeds | autoembed
-var PLAY_SERVER = 1;
+var PLAY_PROVIDER = 'videasy';
+try { var _pp = localStorage.getItem('sv_provider'); if (_pp) PLAY_PROVIDER = _pp; } catch (e) {}
 
-try {
-  var _pp = localStorage.getItem('sv_provider'); if (_pp) PLAY_PROVIDER = _pp;
-  var _ps = localStorage.getItem('sv_server'); if (_ps) PLAY_SERVER = Number(_ps) || 1;
-} catch (e) {}
+// All embed sources (TMDB id). Domains change often — switch if one fails.
+var PLAYER_SOURCES = [
+  { id: 'videasy',     label: 'Videasy',
+    movie: function(id){ return 'https://player.videasy.ws/embed/movie/'+id+'?ds_lang=en'; },
+    tv: function(id,s,e){ return 'https://player.videasy.ws/embed/tv/'+id+'/'+s+'/'+e+'?ds_lang=en&autonext=1'; } },
+  { id: 'vidsrcmov',   label: 'VidSrc.mov',
+    movie: function(id){ return 'https://vidsrc.mov/embed/movie/'+id; },
+    tv: function(id,s,e){ return 'https://vidsrc.mov/embed/tv/'+id+'/'+s+'/'+e; } },
+  { id: 'vidsrcfyi',   label: 'VidSrc.fyi',
+    movie: function(id){ return 'https://vidsrc.fyi/embed/movie/'+id; },
+    tv: function(id,s,e){ return 'https://vidsrc.fyi/embed/tv/'+id+'/'+s+'/'+e; } },
+  { id: 'vidsrcxyz',   label: 'VidSrc.xyz',
+    movie: function(id){ return 'https://vidsrc.xyz/embed/movie/'+id; },
+    tv: function(id,s,e){ return 'https://vidsrc.xyz/embed/tv/'+id+'/'+s+'/'+e; } },
+  { id: 'vidrock',     label: 'VidRock',
+    movie: function(id){ return 'https://vidrock.net/movie/'+id; },
+    tv: function(id,s,e){ return 'https://vidrock.net/tv/'+id+'/'+s+'/'+e; } },
+  { id: 'vidnest',     label: 'Vidnest',
+    movie: function(id){ return 'https://vidnest.fun/movie/'+id; },
+    tv: function(id,s,e){ return 'https://vidnest.fun/tv/'+id+'/'+s+'/'+e; } },
+  { id: 'vidking',     label: 'VidKing',
+    movie: function(id){ return 'https://www.vidking.net/embed/movie/'+id+'?color=E50914'; },
+    tv: function(id,s,e){ return 'https://www.vidking.net/embed/tv/'+id+'/'+s+'/'+e+'?color=E50914&nextEpisode=true&episodeSelector=true'; } },
+  { id: 'vidlink',     label: 'VidLink',
+    movie: function(id){ return 'https://vidlink.pro/movie/'+id; },
+    tv: function(id,s,e){ return 'https://vidlink.pro/tv/'+id+'/'+s+'/'+e; } },
+  { id: 'vidfast',     label: 'VidFast',
+    movie: function(id){ return 'https://vidfast.pro/movie/'+id; },
+    tv: function(id,s,e){ return 'https://vidfast.pro/tv/'+id+'/'+s+'/'+e; } },
+  { id: 'vidup',       label: 'VidUp',
+    movie: function(id){ return 'https://vidup.io/embed/movie/'+id; },
+    tv: function(id,s,e){ return 'https://vidup.io/embed/tv/'+id+'/'+s+'/'+e; } },
+  { id: 'movies111',   label: '111Movies',
+    movie: function(id){ return 'https://111movies.com/movie/'+id; },
+    tv: function(id,s,e){ return 'https://111movies.com/tv/'+id+'/'+s+'/'+e; } },
+  { id: '2embed',      label: '2Embed',
+    movie: function(id){ return 'https://www.2embed.cc/embed/'+id; },
+    tv: function(id,s,e){ return 'https://www.2embed.cc/embedtv/'+id+'&s='+s+'&e='+e; } },
+  { id: 'multiembed',  label: 'MultiEmbed',
+    movie: function(id){ return 'https://multiembed.mov/?video_id='+id+'&tmdb=1'; },
+    tv: function(id,s,e){ return 'https://multiembed.mov/?video_id='+id+'&tmdb=1&s='+s+'&e='+e; } },
+  { id: 'superflix',   label: 'SuperFlix',
+    movie: function(id){ return 'https://multiembed.mov/directstream.php?video_id='+id+'&tmdb=1'; },
+    tv: function(id,s,e){ return 'https://multiembed.mov/directstream.php?video_id='+id+'&tmdb=1&s='+s+'&e='+e; } },
+  { id: 'peachify',    label: 'Peachify',
+    movie: function(id){ return 'https://peachify.pro/embed/movie/'+id; },
+    tv: function(id,s,e){ return 'https://peachify.pro/embed/tv/'+id+'/'+s+'/'+e; } },
+  { id: 'embedsu',     label: 'EmbedSU',
+    movie: function(id){ return 'https://embed.su/embed/movie/'+id; },
+    tv: function(id,s,e){ return 'https://embed.su/embed/tv/'+id+'/'+s+'/'+e; } },
+  { id: 'autoembed',   label: 'AutoEmbed',
+    movie: function(id){ return 'https://player.autoembed.cc/embed/movie/'+id; },
+    tv: function(id,s,e){ return 'https://player.autoembed.cc/embed/tv/'+id+'/'+s+'/'+e; } }
+];
 
+function getPlayerSource(id) {
+  for (var i = 0; i < PLAYER_SOURCES.length; i++) {
+    if (PLAYER_SOURCES[i].id === id) return PLAYER_SOURCES[i];
+  }
+  return PLAYER_SOURCES[0];
+}
+function playerLabel(id) {
+  var p = getPlayerSource(id);
+  return p ? p.label : id;
+}
 function setPlayProvider(p) {
   PLAY_PROVIDER = p || 'videasy';
   try { localStorage.setItem('sv_provider', PLAY_PROVIDER); } catch (e) {}
   reloadPlayerFrame();
   syncPlayerChrome();
-  showToast('Source: ' + PLAY_PROVIDER);
+  showToast('Source: ' + playerLabel(PLAY_PROVIDER));
 }
-function setPlayServer(n) {
-  PLAY_SERVER = Number(n) || 1;
-  try { localStorage.setItem('sv_server', String(PLAY_SERVER)); } catch (e) {}
-  reloadPlayerFrame();
-  syncPlayerChrome();
-  showToast('Server ' + PLAY_SERVER);
-}
-function toggleSrcMenu(){
+function toggleSrcMenu() {
   var m = document.getElementById('srcMenu');
   if (m) m.classList.toggle('open');
 }
 function syncPlayerChrome() {
-  var names = { videasy: 'Videasy', vidsrc: 'VidSrc', embeds: 'EmbedSU', autoembed: 'AutoEmbed' };
   var lab = document.getElementById('srcFabLabel');
-  if (lab) lab.textContent = names[PLAY_PROVIDER] || PLAY_PROVIDER;
+  if (lab) lab.textContent = playerLabel(PLAY_PROVIDER);
   document.querySelectorAll('.src-opt').forEach(function (b) {
     b.classList.toggle('on', b.getAttribute('data-p') === PLAY_PROVIDER);
   });
   var menu = document.getElementById('srcMenu');
   if (menu) menu.classList.remove('open');
 }
-document.addEventListener('click', function(e){
+function buildSrcMenu() {
+  var menu = document.getElementById('srcMenu');
+  if (!menu) return;
+  menu.innerHTML = PLAYER_SOURCES.map(function (p) {
+    return '<button type="button" class="src-opt'+(p.id===PLAY_PROVIDER?' on':'')+'" data-p="'+p.id+'" onclick="setPlayProvider(\''+p.id+'\')">'+p.label+'</button>';
+  }).join('');
+}
+document.addEventListener('click', function (e) {
   var fab = document.getElementById('srcFab');
   if (!fab || fab.contains(e.target)) return;
   var m = document.getElementById('srcMenu');
@@ -2531,7 +2586,7 @@ function reloadPlayerFrame() {
   var e = CUR_EP && CUR_EP.e != null ? CUR_EP.e : null;
   var frame = document.getElementById('playFrame');
   if (!frame) return;
-  frame.innerHTML = '<iframe src="' + buildSrc(CUR_TYPE, CUR_ITEM, s, e) + '" frameborder="0" allowfullscreen allow="encrypted-media; autoplay; fullscreen"></iframe>';
+  frame.innerHTML = '<iframe src="'+buildSrc(CUR_TYPE,CUR_ITEM,s,e)+'" frameborder="0" allowfullscreen allow="encrypted-media; autoplay; fullscreen" referrerpolicy="origin"></iframe>';
 }
 function syncServerButtons() { syncPlayerChrome(); }
 
@@ -2539,51 +2594,14 @@ function buildSrc(type, item, s, ep) {
   var id = item.id;
   s = s || 1;
   ep = ep || 1;
-  var prov = PLAY_PROVIDER || 'videasy';
-
-  // --- Alternative embeds (often work when Videasy CDN CORS fails) ---
-  if (prov === 'vidsrc') {
-    if (type === 'movie') return 'https://vidsrc.xyz/embed/movie/' + id;
-    if (type === 'tv') return 'https://vidsrc.xyz/embed/tv/' + id + '/' + s + '/' + ep;
-    // anime often mapped as tv on vidsrc
-    if (item.isM || item.isMovie) return 'https://vidsrc.xyz/embed/movie/' + id;
-    return 'https://vidsrc.xyz/embed/tv/' + id + '/' + s + '/' + ep;
+  var isMovie = (type === 'movie') || item.isM || item.isMovie;
+  var src = getPlayerSource(PLAY_PROVIDER) || PLAYER_SOURCES[0];
+  try {
+    if (isMovie) return src.movie(id);
+    return src.tv(id, s, ep);
+  } catch (err) {
+    return PLAYER_SOURCES[0].movie(id);
   }
-  if (prov === 'embeds') {
-    if (type === 'movie' || item.isM || item.isMovie) return 'https://embed.su/embed/movie/' + id;
-    return 'https://embed.su/embed/tv/' + id + '/' + s + '/' + ep;
-  }
-  if (prov === 'autoembed') {
-    if (type === 'movie' || item.isM || item.isMovie) return 'https://player.autoembed.cc/embed/movie/' + id;
-    return 'https://player.autoembed.cc/embed/tv/' + id + '/' + s + '/' + ep;
-  }
-
-  // --- Videasy official (player.videasy.ws/embed/...) ---
-  // Docs: /embed/movie/{id} | /embed/tv/{id}/{s}/{e} | /embed/tv/{id} = episode picker
-  var base = 'https://player.videasy.ws/embed';
-  var q = [];
-  // Optional: q.push('autoplay=1');
-  q.push('ds_lang=en');
-  if (type === 'tv' || (type === 'anime' && !(item.isM || item.isMovie))) {
-    q.push('autonext=1');
-  }
-  var qs = q.length ? ('?' + q.join('&')) : '';
-
-  if (type === 'movie' || item.isM || item.isMovie) {
-    return base + '/movie/' + id + qs;
-  }
-  if (type === 'tv') {
-    // Always pass season/episode when known; Videasy episode picker if missing
-    if (s && ep) return base + '/tv/' + id + '/' + s + '/' + ep + qs;
-    return base + '/tv/' + id + qs;
-  }
-  if (type === 'anime') {
-    // Anime often works as TV embed on Videasy
-    if (s && ep) return base + '/tv/' + id + '/' + s + '/' + ep + qs;
-    if (ep) return base + '/tv/' + id + '/1/' + ep + qs;
-    return base + '/tv/' + id + qs;
-  }
-  return base + '/movie/' + id + qs;
 }
 
 
@@ -3136,6 +3154,7 @@ function loadSiteAds() {
     });
 }
 
+try{buildSrcMenu();}catch(e){}
 init();
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', function(){ try{loadSiteAds();}catch(e){} });
