@@ -1425,6 +1425,14 @@ button:focus-visible,
           </button>
         </div>
       </div>
+      <div class="srv-row" id="serverRow">
+        <span class="srv-label">Server</span>
+        <button type="button" class="srv-btn on" data-s="1" onclick="setPlayServer(1)">1</button>
+        <button type="button" class="srv-btn" data-s="2" onclick="setPlayServer(2)">2</button>
+        <button type="button" class="srv-btn" data-s="3" onclick="setPlayServer(3)">3</button>
+        <button type="button" class="srv-btn" data-s="4" onclick="setPlayServer(4)">4</button>
+        <button type="button" class="srv-btn" data-s="5" onclick="setPlayServer(5)">5</button>
+      </div>
       <div class="play-frame" id="playFrame"></div>
       <div class="play-prog-strip"><div class="play-prog-strip-fill" id="progStrip"></div></div>
     </div>
@@ -2267,12 +2275,18 @@ function startPlayer(item,type,s,ep){
   clearInterval(SLIDE_TMR);CUR_ITEM=item;CUR_TYPE=type;
   CUR_S=s||(item.seasons?item.seasons[0].s:1);
   if(s==null&&ep==null){
-    if(type==='tv'){s=item.seasons[0].s;ep=item.seasons[0].episodes[0].e;}
-    else if(type==='anime'&&!item.isM){ep=item.episodes[0].e;}
+    if(type==='tv'){
+      var ss=(item.seasons&&item.seasons.length)?item.seasons[0]:null;
+      s = ss ? (ss.s||1) : 1;
+      ep = (ss && ss.episodes && ss.episodes[0]) ? ss.episodes[0].e : 1;
+    } else if(type==='anime'&&!(item.isM||item.isMovie)){
+      ep = (item.episodes && item.episodes[0]) ? item.episodes[0].e : 1;
+    }
   }
   CUR_EP=s?{s:s,e:ep}:ep?{e:ep}:null;
   try{trackHistory(item,type,s,ep);}catch(e){}
   showPage('pg-player');
+  try{syncServerButtons();}catch(e){}
   document.getElementById('playTitle').textContent=item.title+(s&&ep?' · S'+s+'E'+ep:'');
   document.getElementById('playBackBtn').onclick=function(){
     document.getElementById('playFrame').innerHTML='';
@@ -2442,15 +2456,47 @@ function playerToggleList(){
 // ══════════════════════
 //  BUILD SRC — Hindi server (server=2) as default
 // ══════════════════════
-function buildSrc(type,item,s,ep){
-  // server=2 is the Hindi dubbing server on VIDEASY
-  var p='?color=E50914&server=2&episodeSelector=true';
-  if(type==='movie')return 'https://player.videasy.net/movie/'+item.id+p;
-  if(type==='tv')return 'https://player.videasy.net/tv/'+item.id+'/'+s+'/'+ep+p;
-  if(type==='anime'){
-    if(item.isM)return 'https://player.videasy.net/anime/'+item.id+p;
-    return 'https://player.videasy.net/anime/'+item.id+'/'+ep+p;
+var PLAY_SERVER = 2; // 1=default, 2=often Hindi, try others if stream fails
+function setPlayServer(n){
+  PLAY_SERVER = Number(n)||1;
+  try{ localStorage.setItem('sv_server', String(PLAY_SERVER)); }catch(e){}
+  // reload current iframe if playing
+  if(CUR_ITEM && document.getElementById('pg-player').classList.contains('active')){
+    var s = CUR_EP && CUR_EP.s != null ? CUR_EP.s : null;
+    var e = CUR_EP && CUR_EP.e != null ? CUR_EP.e : null;
+    var frame = document.getElementById('playFrame');
+    if(frame){
+      frame.innerHTML = '<iframe src="'+buildSrc(CUR_TYPE,CUR_ITEM,s,e)+'" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>';
+    }
+    document.querySelectorAll('.srv-btn').forEach(function(b){
+      b.classList.toggle('on', Number(b.getAttribute('data-s'))===PLAY_SERVER);
+    });
+    showToast('Switched to Server '+PLAY_SERVER);
   }
+  syncServerButtons();
+}
+function syncServerButtons(){
+  document.querySelectorAll('.srv-btn').forEach(function(b){
+    b.classList.toggle('on', Number(b.getAttribute('data-s'))===PLAY_SERVER);
+  });
+}
+try{ var _ps=localStorage.getItem('sv_server'); if(_ps) PLAY_SERVER=Number(_ps)||2; }catch(e){}
+
+function buildSrc(type,item,s,ep){
+  // Videasy embed — if one server fails (CORS/429), user can switch server
+  var p='?color=E50914&server='+PLAY_SERVER+'&episodeSelector=true';
+  var base='https://player.videasy.net';
+  if(type==='movie')return base+'/movie/'+item.id+p;
+  if(type==='tv'){
+    s = s || 1; ep = ep || 1;
+    return base+'/tv/'+item.id+'/'+s+'/'+ep+p;
+  }
+  if(type==='anime'){
+    if(item.isM || item.isMovie)return base+'/anime/'+item.id+p;
+    ep = ep || 1;
+    return base+'/anime/'+item.id+'/'+ep+p;
+  }
+  return base+'/movie/'+item.id+p;
 }
 
 function buildPipEps(){
