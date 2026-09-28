@@ -1449,7 +1449,17 @@ async function enrichTv(id, asAnime, epMode) {
               e: ep.episode_number,
               name: ep.name || ('Ep ' + ep.episode_number),
               dur: ep.runtime ? ep.runtime + 'm' : '45m',
-           async function collectResults(kind, source, pages) {
+              desc: ep.overview || ''
+            };
+          })
+        };
+      });
+    }
+  }
+  return item;
+}
+
+async function collectResults(kind, source, pages) {
   var results = [];
   var seen = {};
   // Fetch list pages in parallel
