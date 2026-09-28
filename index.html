@@ -1405,6 +1405,29 @@ button:focus-visible,
 .hist-title{font-size:.85rem;font-weight:600}
 .hist-meta{font-size:.65rem;color:#666;margin-top:3px}
 
+
+.src-fab{position:absolute;bottom:16px;right:16px;z-index:20;pointer-events:all}
+.src-fab-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(10,10,12,.88);border:1px solid rgba(255,255,255,.14);
+  color:#ddd;font-size:.72rem;font-weight:600;padding:8px 12px;border-radius:999px;
+  backdrop-filter:blur(10px);cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.45);
+}
+.src-fab-btn:hover{border-color:rgba(229,9,20,.5);color:#fff}
+.src-menu{
+  display:none;position:absolute;bottom:calc(100% + 8px);right:0;
+  min-width:140px;background:rgba(16,16,18,.96);border:1px solid rgba(255,255,255,.12);
+  border-radius:10px;padding:6px;box-shadow:0 12px 40px rgba(0,0,0,.55);
+}
+.src-menu.open{display:block}
+.src-opt{
+  display:block;width:100%;text-align:left;padding:8px 12px;border-radius:7px;
+  font-size:.75rem;font-weight:600;color:#aaa;background:transparent;border:none;cursor:pointer;
+}
+.src-opt:hover{background:rgba(255,255,255,.06);color:#fff}
+.src-opt.on{color:#E50914;background:rgba(229,9,20,.12)}
+.play-frame{position:relative}
+
 </style>
 </head>
 <body>
@@ -1425,22 +1448,19 @@ button:focus-visible,
           </button>
         </div>
       </div>
-      <div class="srv-row" id="providerRow">
-        <span class="srv-label">Source</span>
-        <button type="button" class="prov-btn on" data-p="videasy" onclick="setPlayProvider('videasy')">Videasy</button>
-        <button type="button" class="prov-btn" data-p="vidsrc" onclick="setPlayProvider('vidsrc')">VidSrc</button>
-        <button type="button" class="prov-btn" data-p="embeds" onclick="setPlayProvider('embeds')">EmbedSU</button>
-        <button type="button" class="prov-btn" data-p="autoembed" onclick="setPlayProvider('autoembed')">AutoEmbed</button>
-      </div>
-      <div class="srv-row" id="serverRow">
-        <span class="srv-label">Server</span>
-        <button type="button" class="srv-btn on" data-s="1" onclick="setPlayServer(1)">1</button>
-        <button type="button" class="srv-btn" data-s="2" onclick="setPlayServer(2)">2</button>
-        <button type="button" class="srv-btn" data-s="3" onclick="setPlayServer(3)">3</button>
-        <button type="button" class="srv-btn" data-s="4" onclick="setPlayServer(4)">4</button>
-        <button type="button" class="srv-btn" data-s="5" onclick="setPlayServer(5)">5</button>
-      </div>
       <div class="play-frame" id="playFrame"></div>
+      <div class="src-fab" id="srcFab">
+        <button type="button" class="src-fab-btn" id="srcFabBtn" onclick="toggleSrcMenu()" title="Switch player source">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          <span id="srcFabLabel">Videasy</span>
+        </button>
+        <div class="src-menu" id="srcMenu">
+          <button type="button" class="src-opt on" data-p="videasy" onclick="setPlayProvider('videasy')">Videasy</button>
+          <button type="button" class="src-opt" data-p="vidsrc" onclick="setPlayProvider('vidsrc')">VidSrc</button>
+          <button type="button" class="src-opt" data-p="embeds" onclick="setPlayProvider('embeds')">EmbedSU</button>
+          <button type="button" class="src-opt" data-p="autoembed" onclick="setPlayProvider('autoembed')">AutoEmbed</button>
+        </div>
+      </div>
       <div class="play-prog-strip"><div class="play-prog-strip-fill" id="progStrip"></div></div>
     </div>
   </div>
@@ -1668,7 +1688,7 @@ button:focus-visible,
 // ══════════════════════
 //  CONFIG
 // ══════════════════════
-var CF = 'https://streamvault.amworkmanage.workers.dev';
+var CF = 'https://raspy-butterfly-0610.amworkmanage.workers.dev';
 var IB = 'https://image.tmdb.org/t/p/w1280';
 var IP = 'https://image.tmdb.org/t/p/w500';
 var IA = 'https://image.tmdb.org/t/p/w185';
@@ -2485,16 +2505,26 @@ function setPlayServer(n) {
   syncPlayerChrome();
   showToast('Server ' + PLAY_SERVER);
 }
+function toggleSrcMenu(){
+  var m = document.getElementById('srcMenu');
+  if (m) m.classList.toggle('open');
+}
 function syncPlayerChrome() {
-  document.querySelectorAll('.prov-btn').forEach(function (b) {
+  var names = { videasy: 'Videasy', vidsrc: 'VidSrc', embeds: 'EmbedSU', autoembed: 'AutoEmbed' };
+  var lab = document.getElementById('srcFabLabel');
+  if (lab) lab.textContent = names[PLAY_PROVIDER] || PLAY_PROVIDER;
+  document.querySelectorAll('.src-opt').forEach(function (b) {
     b.classList.toggle('on', b.getAttribute('data-p') === PLAY_PROVIDER);
   });
-  document.querySelectorAll('.srv-btn').forEach(function (b) {
-    b.classList.toggle('on', Number(b.getAttribute('data-s')) === PLAY_SERVER);
-  });
-  var row = document.getElementById('serverRow');
-  if (row) row.style.display = 'none'; // official Videasy embed has no server= param
+  var menu = document.getElementById('srcMenu');
+  if (menu) menu.classList.remove('open');
 }
+document.addEventListener('click', function(e){
+  var fab = document.getElementById('srcFab');
+  if (!fab || fab.contains(e.target)) return;
+  var m = document.getElementById('srcMenu');
+  if (m) m.classList.remove('open');
+});
 function reloadPlayerFrame() {
   if (!CUR_ITEM || !document.getElementById('pg-player').classList.contains('active')) return;
   var s = CUR_EP && CUR_EP.s != null ? CUR_EP.s : null;
