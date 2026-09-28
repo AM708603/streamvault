@@ -2486,49 +2486,102 @@ function fallbackCopy(text){
 // ══════════════════════
 function injectAdHtml(html, parent) {
   if (!html || !parent) return;
-  var wrap = document.createElement('div');
-  wrap.innerHTML = html;
-  var nodes = Array.prototype.slice.call(wrap.childNodes);
+  html = String(html).trim();
+  if (!html) return;
+
+  // Parse markup safely; scripts from innerHTML are recreated so they execute
+  var tpl = document.createElement('template');
+  try {
+    tpl.innerHTML = html;
+  } catch (e) {
+    // Fallback: wrap raw script text
+    var s = document.createElement('script');
+    s.text = html.replace(/^<script[^>]*>/i, '').replace(/<\/script>$/i, '');
+    parent.appendChild(s);
+    return;
+  }
+
+  var nodes = Array.prototype.slice.call(tpl.content.childNodes);
   nodes.forEach(function(node) {
-    if (node.nodeType !== 1) {
-      parent.appendChild(node);
+    if (node.nodeType === 3) {
+      // text nodes ignore
       return;
     }
+    if (node.nodeType !== 1) return;
+
     if (node.tagName === 'SCRIPT') {
       var s = document.createElement('script');
-      for (var i = 0; i < node.attributes.length; i++) {
-        var a = node.attributes[i];
-        s.setAttribute(a.name, a.value);
+      // copy attributes (data-zone, async, data-cfasync, etc.)
+      if (node.attributes) {
+        for (var i = 0; i < node.attributes.length; i++) {
+          var a = node.attributes[i];
+          try { s.setAttribute(a.name, a.value); } catch (e) {}
+        }
       }
-      if (node.src) s.src = node.src;
-      else s.textContent = node.textContent;
+      var src = node.getAttribute('src');
+      if (src) {
+        s.src = src;
+      } else {
+        // inline script — use .text for reliable execution
+        s.text = node.textContent || node.innerText || '';
+      }
       parent.appendChild(s);
     } else {
-      parent.appendChild(node);
+      parent.appendChild(node.cloneNode(true));
     }
   });
 }
+
 function loadSiteAds() {
-  fetch(CF + '/api/ads').then(function(r){ return r.json(); }).then(function(ads) {
-    if (!ads || ads.enabled === false) return;
-    if (ads.head) injectAdHtml(ads.head, document.head);
-    if (ads.bodyTop) {
-      var top = document.createElement('div');
-      top.id = 'sv-ads-top';
-      document.body.insertBefore(top, document.body.firstChild);
-      injectAdHtml(ads.bodyTop, top);
-    }
-    if (ads.bodyBottom) {
-      var bot = document.createElement('div');
-      bot.id = 'sv-ads-bottom';
-      document.body.appendChild(bot);
-      injectAdHtml(ads.bodyBottom, bot);
-    }
-  }).catch(function(){});
+  if (!window.CF) return;
+  fetch(CF + '/api/ads', { cache: 'no-store' })
+    .then(function(r) {
+      if (!r.ok) throw new Error('ads http ' + r.status);
+      return r.json();
+    })
+    .then(function(ads) {
+      if (!ads || ads.enabled === false) {
+        console.info('[StreamVault ads] disabled or empty');
+        return;
+      }
+      // Head + body slots. Vignette scripts need document.body, so if only
+      // "head" is filled we still inject those into body as well when body exists.
+      if (ads.head) {
+        injectAdHtml(ads.head, document.head);
+        // Many Monetag vignette loaders expect to run with body present
+        if (document.body) injectAdHtml(ads.head, document.body);
+      }
+      if (ads.bodyTop && document.body) {
+        var top = document.getElementById('sv-ads-top');
+        if (!top) {
+          top = document.createElement('div');
+          top.id = 'sv-ads-top';
+          document.body.insertBefore(top, document.body.firstChild);
+        }
+        injectAdHtml(ads.bodyTop, top);
+      }
+      if (ads.bodyBottom && document.body) {
+        var bot = document.getElementById('sv-ads-bottom');
+        if (!bot) {
+          bot = document.createElement('div');
+          bot.id = 'sv-ads-bottom';
+          document.body.appendChild(bot);
+        }
+        injectAdHtml(ads.bodyBottom, bot);
+      }
+      console.info('[StreamVault ads] injected');
+    })
+    .catch(function(err) {
+      console.warn('[StreamVault ads] failed — is Worker redeployed with /api/ads?', err);
+    });
 }
 
 init();
-try{loadSiteAds();}catch(e){}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function(){ try{loadSiteAds();}catch(e){} });
+} else {
+  try{loadSiteAds();}catch(e){}
+}
 </script>
 
 <!-- ── REQUEST MODAL ── -->
