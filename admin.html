@@ -430,6 +430,64 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 
     <!-- BULK IMPORT -->
     <div class="view" id="view-bulk">
+
+      <div class="section-card" style="margin-bottom:1.5rem">
+        <div class="sc-hdr">
+          <div class="sc-title">🎬 TMDB Bulk Fetch</div>
+        </div>
+        <div style="padding:1.4rem 1.5rem">
+          <p style="font-size:.82rem;color:var(--text2);margin-bottom:1.1rem;line-height:1.7">
+            Pull popular / top-rated titles from TMDB into your library. Same TMDB id is skipped. Episodes are optional (slower).
+          </p>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.8rem;margin-bottom:1rem">
+            <div class="fg">
+              <label>Type</label>
+              <select id="bulkTmdbType" class="filter-select" style="width:100%;padding:.55rem .8rem">
+                <option value="movie">Movies</option>
+                <option value="tv">TV Shows</option>
+                <option value="anime">Anime</option>
+                <option value="all">All three</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>Source</label>
+              <select id="bulkTmdbSource" class="filter-select" style="width:100%;padding:.55rem .8rem">
+                <option value="popular">Popular</option>
+                <option value="top_rated">Top Rated</option>
+                <option value="trending">Trending (week)</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>Pages (~20 each)</label>
+              <select id="bulkTmdbPages" class="filter-select" style="width:100%;padding:.55rem .8rem">
+                <option value="1">1 page</option>
+                <option value="2">2 pages</option>
+                <option value="3" selected>3 pages</option>
+                <option value="5">5 pages</option>
+                <option value="10">10 pages</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>Episodes (TV/Anime)</label>
+              <select id="bulkTmdbEps" class="filter-select" style="width:100%;padding:.55rem .8rem">
+                <option value="none" selected>Skip (fast)</option>
+                <option value="s1">Season 1 only</option>
+                <option value="all">Up to 5 seasons</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin-bottom:.8rem">
+            <button class="btn btn-red" id="bulkTmdbBtn" onclick="startBulkTmdb()">Fetch from TMDB</button>
+            <button class="btn btn-sec" id="bulkTmdbStop" onclick="stopBulkTmdb()" style="display:none">Stop</button>
+            <span id="bulkTmdbStatus" style="font-size:.75rem;color:var(--text3)"></span>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;height:8px;overflow:hidden;margin-bottom:.5rem">
+            <div id="bulkTmdbBar" style="height:100%;width:0%;background:var(--red);transition:width .25s"></div>
+          </div>
+          <div id="bulkTmdbLog" style="font-size:.72rem;color:var(--text3);max-height:140px;overflow-y:auto;font-family:monospace;line-height:1.55"></div>
+        </div>
+      </div>
+
       <div class="section-card" style="margin-bottom:1rem">
         <div class="sc-hdr"><div class="sc-title">📥 Bulk Import / Export</div><div class="sc-actions"><button class="btn btn-green btn-sm" onclick="exportContent()"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export Current</button></div></div>
         <div style="padding:1.5rem">
@@ -1214,6 +1272,312 @@ function delItem(id, type) {
 // ═══════════════════════════════
 //  BULK IMPORT / EXPORT
 // ═══════════════════════════════
+
+// ═══════════════════════════════
+//  TMDB BULK FETCH
+// ═══════════════════════════════
+var _bulkTmdbStop = false;
+
+function bulkLog(msg) {
+  var el = document.getElementById('bulkTmdbLog');
+  if (!el) return;
+  el.innerHTML += msg + '<br>';
+  el.scrollTop = el.scrollHeight;
+}
+function bulkProgress(done, total, status) {
+  var pct = total ? Math.round((done / total) * 100) : 0;
+  var bar = document.getElementById('bulkTmdbBar');
+  if (bar) bar.style.width = pct + '%';
+  var st = document.getElementById('bulkTmdbStatus');
+  if (st) st.textContent = status || (done + ' / ' + total);
+}
+function stopBulkTmdb() {
+  _bulkTmdbStop = true;
+  var b = document.getElementById('bulkTmdbStop');
+  if (b) b.style.display = 'none';
+}
+
+async function tmdbGet(path) {
+  var sep = path.indexOf('?') >= 0 ? '&' : '?';
+  var url = TMDB_BASE + path + sep + 'api_key=' + TMDB_KEY + '&language=en-US';
+  var r = await fetch(url);
+  if (!r.ok) throw new Error('TMDB HTTP ' + r.status);
+  return r.json();
+}
+
+function bulkListUrl(kind, source, page) {
+  if (kind === 'anime') {
+    return '/discover/tv?with_genres=16&with_origin_country=JP&sort_by=popularity.desc&page=' + page;
+  }
+  if (source === 'trending') {
+    return '/trending/' + (kind === 'movie' ? 'movie' : 'tv') + '/week?page=' + page;
+  }
+  if (source === 'top_rated') {
+    return '/' + (kind === 'movie' ? 'movie' : 'tv') + '/top_rated?page=' + page;
+  }
+  return '/' + (kind === 'movie' ? 'movie' : 'tv') + '/popular?page=' + page;
+}
+
+async function enrichMovie(id) {
+  var details = await tmdbGet('/movie/' + id);
+  var credits = await tmdbGet('/movie/' + id + '/credits').catch(function(){ return { cast: [], crew: [] }; });
+  var year = (details.release_date || '').slice(0, 4);
+  var genres = (details.genres || []).map(function(g){ return g.name; });
+  var crew = credits.crew || [];
+  var dir = (crew.find(function(c){ return c.job === 'Director'; }) || {}).name || '';
+  var studio = ((details.production_companies || [])[0] || {}).name || '';
+  var cast = (credits.cast || []).slice(0, 6).map(function(c){
+    return { name: c.name, role: c.character || '', img: c.profile_path || '' };
+  });
+  var vote = details.vote_average ? Number(details.vote_average.toFixed(1)) : 0;
+  return {
+    id: details.id,
+    title: details.title || details.original_title || 'Untitled',
+    year: year,
+    genre: genres[0] || '',
+    rating: details.adult ? 'R' : 'PG-13',
+    match: Math.min(99, Math.round((vote || 7) * 10)),
+    imdb: String(vote || ''),
+    runtime: details.runtime ? details.runtime + ' min' : '',
+    director: dir,
+    studio: studio,
+    poster: details.poster_path || '',
+    backdrop: details.backdrop_path || '',
+    desc: details.overview || '',
+    tags: genres,
+    cast: cast,
+    related: []
+  };
+}
+
+async function enrichTv(id, asAnime, epMode) {
+  var details = await tmdbGet('/tv/' + id);
+  var credits = await tmdbGet('/tv/' + id + '/credits').catch(function(){ return { cast: [], crew: [] }; });
+  var year = (details.first_air_date || '').slice(0, 4);
+  var genres = (details.genres || []).map(function(g){ return g.name; });
+  var crew = credits.crew || [];
+  var dir = (crew.find(function(c){ return c.job === 'Director'; }) || {}).name
+    || ((details.created_by || [])[0] || {}).name || '';
+  var studio = ((details.networks || [])[0] || {}).name || ((details.production_companies || [])[0] || {}).name || '';
+  var cast = (credits.cast || []).slice(0, 6).map(function(c){
+    return { name: c.name, role: c.character || '', img: c.profile_path || '' };
+  });
+  var vote = details.vote_average ? Number(details.vote_average.toFixed(1)) : 0;
+  var runtime = (details.episode_run_time && details.episode_run_time[0])
+    ? details.episode_run_time[0] + ' min/ep' : '';
+
+  var item = {
+    id: details.id,
+    title: details.name || details.original_name || 'Untitled',
+    year: year,
+    genre: genres[0] || '',
+    rating: 'TV-14',
+    match: Math.min(99, Math.round((vote || 7) * 10)),
+    imdb: String(vote || ''),
+    runtime: runtime,
+    director: dir,
+    studio: studio,
+    poster: details.poster_path || '',
+    backdrop: details.backdrop_path || '',
+    desc: details.overview || '',
+    tags: genres,
+    cast: cast,
+    related: []
+  };
+
+  if (asAnime) {
+    item.isMovie = false;
+    item.episodes = [];
+  } else {
+    item.seasons = [];
+  }
+
+  if (epMode && epMode !== 'none') {
+    var seasons = (details.seasons || []).filter(function(s){ return s.season_number > 0; });
+    if (epMode === 's1') seasons = seasons.slice(0, 1);
+    else seasons = seasons.slice(0, 5);
+    var seasonData = [];
+    for (var i = 0; i < seasons.length; i++) {
+      if (_bulkTmdbStop) break;
+      try {
+        var sd = await tmdbGet('/tv/' + id + '/season/' + seasons[i].season_number);
+        seasonData.push(sd);
+      } catch (e) {
+        seasonData.push({ season_number: seasons[i].season_number, episodes: [] });
+      }
+    }
+    if (asAnime) {
+      var eps = [];
+      seasonData.forEach(function(sd) {
+        (sd.episodes || []).forEach(function(ep) {
+          eps.push({
+            e: eps.length + 1,
+            name: ep.name || ('Ep ' + (eps.length + 1)),
+            dur: ep.runtime ? ep.runtime + 'm' : '24m',
+            desc: ep.overview || ''
+          });
+        });
+      });
+      item.episodes = eps;
+    } else {
+      item.seasons = seasonData.map(function(sd) {
+        return {
+          s: sd.season_number,
+          episodes: (sd.episodes || []).map(function(ep) {
+            return {
+              e: ep.episode_number,
+              name: ep.name || ('Ep ' + ep.episode_number),
+              dur: ep.runtime ? ep.runtime + 'm' : '45m',
+              desc: ep.overview || ''
+            };
+          })
+        };
+      });
+    }
+  }
+  return item;
+}
+
+async function collectIds(kind, source, pages) {
+  var ids = [];
+  var seen = {};
+  for (var p = 1; p <= pages; p++) {
+    if (_bulkTmdbStop) break;
+    var data = await tmdbGet(bulkListUrl(kind, source, p));
+    (data.results || []).forEach(function(r) {
+      if (r && r.id && !seen[r.id]) {
+        seen[r.id] = true;
+        ids.push(r.id);
+      }
+    });
+  }
+  return ids;
+}
+
+async function startBulkTmdb() {
+  if (!TMDB_KEY) { toast('Set TMDB API key in Settings', 'err'); return; }
+  _bulkTmdbStop = false;
+  var typeSel = document.getElementById('bulkTmdbType').value;
+  var source = document.getElementById('bulkTmdbSource').value;
+  var pages = parseInt(document.getElementById('bulkTmdbPages').value, 10) || 3;
+  var epMode = document.getElementById('bulkTmdbEps').value;
+  var btn = document.getElementById('bulkTmdbBtn');
+  var stop = document.getElementById('bulkTmdbStop');
+  var log = document.getElementById('bulkTmdbLog');
+  if (log) log.innerHTML = '';
+  btn.disabled = true;
+  if (stop) stop.style.display = '';
+  bulkProgress(0, 1, 'Collecting lists...');
+
+  var kinds = typeSel === 'all' ? ['movie', 'tv', 'anime'] : [typeSel];
+  var existing = { movie: {}, tv: {}, anime: {} };
+  (DB.movies || []).forEach(function(m){ existing.movie[m.id] = true; });
+  (DB.tvshows || []).forEach(function(m){ existing.tv[m.id] = true; });
+  (DB.anime || []).forEach(function(m){ existing.anime[m.id] = true; });
+
+  var jobs = [];
+  try {
+    for (var k = 0; k < kinds.length; k++) {
+      if (_bulkTmdbStop) break;
+      var kind = kinds[k];
+      bulkLog('Listing ' + kind + ' (' + source + ', ' + pages + ' pages)...');
+      var ids = await collectIds(kind, source, pages);
+      bulkLog('Found ' + ids.length + ' ' + kind + ' ids');
+      ids.forEach(function(id) {
+        var mapKind = kind === 'anime' ? 'anime' : kind;
+        if (existing[mapKind][id]) return;
+        jobs.push({ kind: kind, id: id });
+      });
+    }
+  } catch (e) {
+    toast('TMDB list failed: ' + e.message, 'err');
+    btn.disabled = false;
+    if (stop) stop.style.display = 'none';
+    return;
+  }
+
+  if (!jobs.length) {
+    bulkLog('Nothing new to import (all already in library).');
+    bulkProgress(1, 1, 'Done — 0 added');
+    btn.disabled = false;
+    if (stop) stop.style.display = 'none';
+    toast('No new titles to add', 'info');
+    return;
+  }
+
+  bulkLog('Enriching ' + jobs.length + ' titles...');
+  var added = { movie: 0, tv: 0, anime: 0 };
+  var failed = 0;
+
+  for (var i = 0; i < jobs.length; i++) {
+    if (_bulkTmdbStop) {
+      bulkLog('Stopped by user.');
+      break;
+    }
+    var job = jobs[i];
+    bulkProgress(i, jobs.length, 'Fetching ' + (i + 1) + '/' + jobs.length);
+    try {
+      var item;
+      if (job.kind === 'movie') {
+        item = await enrichMovie(job.id);
+        DB.movies.push(item);
+        added.movie++;
+        bulkLog('✓ Movie: ' + item.title);
+      } else if (job.kind === 'tv') {
+        item = await enrichTv(job.id, false, epMode);
+        DB.tvshows.push(item);
+        added.tv++;
+        bulkLog('✓ TV: ' + item.title);
+      } else {
+        item = await enrichTv(job.id, true, epMode);
+        DB.anime.push(item);
+        added.anime++;
+        bulkLog('✓ Anime: ' + item.title);
+      }
+      await new Promise(function(r){ setTimeout(r, 120); });
+    } catch (e) {
+      failed++;
+      bulkLog('✗ id ' + job.id + ': ' + (e.message || e));
+    }
+  }
+
+  bulkProgress(jobs.length, jobs.length, 'Saving to Worker...');
+  bulkLog('Saving to Cloudflare KV...');
+  try {
+    var res = await api('POST', '/api/bulk', {
+      movies: DB.movies,
+      tvshows: DB.tvshows,
+      anime: DB.anime
+    });
+    if (res && res.success) {
+      updateCounts();
+      renderRecent();
+      renderGrid('movie');
+      renderGrid('tv');
+      renderGrid('anime');
+      renderStats();
+      populateGenreFilters();
+      setSynced();
+      var msg = 'Added ' + added.movie + ' movies, ' + added.tv + ' TV, ' + added.anime + ' anime' + (failed ? (' · ' + failed + ' failed') : '');
+      bulkLog(msg);
+      bulkProgress(1, 1, 'Done');
+      toast(msg, 'ok');
+    } else {
+      toast('Fetch OK but save failed: ' + ((res && res.error) || 'unknown'), 'err');
+      bulkLog('Save failed');
+      setSyncErr();
+    }
+  } catch (e) {
+    toast('Network error while saving', 'err');
+    bulkLog('Save error: network');
+    setSyncErr();
+  }
+
+  btn.disabled = false;
+  if (stop) stop.style.display = 'none';
+}
+
+
 function exportContent() {
   var json = JSON.stringify(DB, null, 2);
   var blob = new Blob([json], {type:'application/json'});
