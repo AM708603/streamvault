@@ -91,6 +91,21 @@ a{color:inherit;text-decoration:none}
 
 /* ── PAGES ── */
 .page{display:none;min-height:100vh}
+
+.page:not(.active){
+  display:none !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+  height:0 !important;
+  overflow:hidden !important;
+}
+#pg-player:not(.active) .play-prog-row,
+#pg-player:not(.active) .play-prog-strip,
+#pg-player:not(.active) .play-panel-mobile,
+#pg-player:not(.active) .play-panel-desktop{
+  display:none !important;
+}
+
 .page.active{display:block}
 body:has(#pg-player.active) nav,
 body:has(#pg-player.active) .drawer,
@@ -1456,7 +1471,7 @@ button:focus-visible,
               <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
               <span id="srcFabLabel">Videasy</span>
             </button>
-            <div class="src-menu" id="srcMenu"></div></div>
+            <div class="src-menu" id="srcMenu"></div>
           </div>
           <button class="play-top-btn" id="playListBtn" onclick="playerToggleList()" title="My List">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
@@ -1691,7 +1706,7 @@ button:focus-visible,
 // ══════════════════════
 //  CONFIG
 // ══════════════════════
-var CF = 'https://raspy-butterfly-0610.amworkmanage.workers.dev';
+var CF = 'https://streamvault.amworkmanage.workers.dev';
 var IB = 'https://image.tmdb.org/t/p/w1280';
 var IP = 'https://image.tmdb.org/t/p/w500';
 var IA = 'https://image.tmdb.org/t/p/w185';
@@ -1867,6 +1882,14 @@ function showPage(id){
     if(drawer){ drawer.style.display='none'; drawer.classList.remove('show'); }
   }else{
     document.body.classList.remove('player-open');
+    // Clear player so progress/iframe never leak onto other pages
+    try{
+      var pf=document.getElementById('playFrame');
+      if(pf) pf.innerHTML='';
+      var strip=document.getElementById('progStrip'); if(strip) strip.style.width='0%';
+      var fill=document.getElementById('progFill'); if(fill) fill.style.width='0%';
+      var pct=document.getElementById('progPct'); if(pct) pct.textContent='0%';
+    }catch(e){}
     window.scrollTo({top:0,behavior:'instant'});
     if(nav){
       nav.style.display='';
