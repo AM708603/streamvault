@@ -1455,6 +1455,9 @@ button:focus-visible,
   color:#666;padding:10px 12px 4px;margin-top:2px;
 }
 .src-group:first-child{padding-top:6px}
+.src-hindi-tog{border-bottom:1px solid rgba(255,255,255,.08)!important;margin-bottom:4px;border-radius:7px 7px 0 0!important}
+.src-hindi-tog.on{color:#22c55e!important;background:rgba(34,197,94,.12)!important}
+
 
 
 </style>
@@ -1888,6 +1891,7 @@ function showPage(id){
     if(drawer){ drawer.style.display='none'; drawer.classList.remove('show'); }
   }else{
     document.body.classList.remove('player-open');
+    try{clearHindiTimer();}catch(e){}
     // Clear player so progress/iframe never leak onto other pages
     try{
       var pf=document.getElementById('playFrame');
@@ -2589,12 +2593,40 @@ function playerLabel(id) {
   var p = getPlayerSource(id);
   return p ? p.label : id;
 }
-function setPlayProvider(p) {
-  PLAY_PROVIDER = p || 'videasy';
+// Hindi auto-chain: try Hindi-friendly sources in order until one works
+var HINDI_AUTO = true;
+var HINDI_CHAIN = ['multiembed','2embed','autoembed','superflix','embedsu','vidfast','vidlink','vidsrcmov','videasy'];
+var _hindiIdx = 0;
+var _hindiTimer = null;
+var _hindiGotProgress = false;
+var _hindiTrying = false;
+
+try {
+  var _ha = localStorage.getItem('sv_hindi_auto');
+  if (_ha === '0') HINDI_AUTO = false;
+  if (_ha === '1') HINDI_AUTO = true;
+} catch (e) {}
+
+function hindiChainList() {
+  return HINDI_CHAIN.filter(function(id){
+    return PLAYER_SOURCES.some(function(p){ return p.id === id; });
+  });
+}
+function setHindiAuto(on) {
+  HINDI_AUTO = !!on;
+  try { localStorage.setItem('sv_hindi_auto', HINDI_AUTO ? '1' : '0'); } catch (e) {}
+  syncPlayerChrome();
+  showToast(HINDI_AUTO ? 'Hindi auto-switch ON' : 'Hindi auto-switch OFF');
+  if (HINDI_AUTO && CUR_ITEM) startHindiAutoSeek(true);
+}
+function setPlayProvider(p, silent) {
+  clearHindiTimer();
+  PLAY_PROVIDER = p || 'multiembed';
   try { localStorage.setItem('sv_provider', PLAY_PROVIDER); } catch (e) {}
   reloadPlayerFrame();
   syncPlayerChrome();
-  showToast('Source: ' + playerLabel(PLAY_PROVIDER));
+  if (!silent) showToast('Source: ' + playerLabel(PLAY_PROVIDER));
+  if (HINDI_AUTO) scheduleHindiFailover();
 }
 function toggleSrcMenu() {
   var m = document.getElementById('srcMenu');
@@ -2602,10 +2634,14 @@ function toggleSrcMenu() {
 }
 function syncPlayerChrome() {
   var lab = document.getElementById('srcFabLabel');
-  if (lab) lab.textContent = playerLabel(PLAY_PROVIDER);
+  if (lab) {
+    lab.textContent = (HINDI_AUTO ? '🇮🇳 ' : '') + playerLabel(PLAY_PROVIDER);
+  }
   document.querySelectorAll('.src-opt').forEach(function (b) {
     b.classList.toggle('on', b.getAttribute('data-p') === PLAY_PROVIDER);
   });
+  var tog = document.getElementById('hindiAutoTog');
+  if (tog) tog.classList.toggle('on', HINDI_AUTO);
   var menu = document.getElementById('srcMenu');
   if (menu) menu.classList.remove('open');
 }
@@ -2613,7 +2649,10 @@ function buildSrcMenu() {
   var menu = document.getElementById('srcMenu');
   if (!menu) return;
   var html = '';
-  var lastGroup = '';
+  html += '<button type="button" class="src-opt src-hindi-tog'+(HINDI_AUTO?' on':'')+'" id="hindiAutoTog" onclick="setHindiAuto(!HINDI_AUTO)">🇮🇳 Hindi auto-switch '+(HINDI_AUTO?'ON':'OFF')+'</button>';
+  html += '<button type="button" class="src-opt" onclick="tryNextHindiSource(true)">⏭ Next Hindi source</button>';
+  html += '<div class="src-group">Hindi-friendly</div>';
+  var lastGroup = 'hindi';
   PLAYER_SOURCES.forEach(function (p) {
     var g = p.group || 'general';
     if (g !== lastGroup) {
@@ -2630,13 +2669,72 @@ document.addEventListener('click', function (e) {
   var m = document.getElementById('srcMenu');
   if (m) m.classList.remove('open');
 });
+function clearHindiTimer() {
+  if (_hindiTimer) { clearTimeout(_hindiTimer); _hindiTimer = null; }
+}
+function scheduleHindiFailover() {
+  clearHindiTimer();
+  if (!HINDI_AUTO) return;
+  _hindiGotProgress = false;
+  // If no playback progress signal within 12s, try next Hindi-friendly source
+  _hindiTimer = setTimeout(function(){
+    if (!HINDI_AUTO) return;
+    if (_hindiGotProgress) return;
+    if (!document.getElementById('pg-player') || !document.getElementById('pg-player').classList.contains('active')) return;
+    tryNextHindiSource(false);
+  }, 12000);
+}
+function startHindiAutoSeek(reset) {
+  var chain = hindiChainList();
+  if (!chain.length) return;
+  if (reset) _hindiIdx = 0;
+  // Prefer current if already in chain
+  var cur = chain.indexOf(PLAY_PROVIDER);
+  if (cur >= 0) _hindiIdx = cur;
+  else {
+    _hindiIdx = 0;
+    PLAY_PROVIDER = chain[0];
+    try { localStorage.setItem('sv_provider', PLAY_PROVIDER); } catch (e) {}
+  }
+  reloadPlayerFrame();
+  syncPlayerChrome();
+  scheduleHindiFailover();
+}
+function tryNextHindiSource(manual) {
+  if (_hindiTrying) return;
+  var chain = hindiChainList();
+  if (!chain.length) return;
+  _hindiTrying = true;
+  var start = _hindiIdx;
+  _hindiIdx = (_hindiIdx + 1) % chain.length;
+  // full loop on auto → stop
+  if (!manual && _hindiIdx === 0) {
+    _hindiTrying = false;
+    showToast('No Hindi source responded — try manually');
+    clearHindiTimer();
+    return;
+  }
+  PLAY_PROVIDER = chain[_hindiIdx];
+  try { localStorage.setItem('sv_provider', PLAY_PROVIDER); } catch (e) {}
+  _hindiGotProgress = false;
+  reloadPlayerFrame();
+  syncPlayerChrome();
+  showToast((manual ? 'Switched: ' : 'Auto Hindi → ') + playerLabel(PLAY_PROVIDER));
+  _hindiTrying = false;
+  if (HINDI_AUTO) scheduleHindiFailover();
+}
+function markHindiProgress() {
+  _hindiGotProgress = true;
+  clearHindiTimer();
+}
 function reloadPlayerFrame() {
   if (!CUR_ITEM || !document.getElementById('pg-player').classList.contains('active')) return;
   var s = CUR_EP && CUR_EP.s != null ? CUR_EP.s : null;
   var e = CUR_EP && CUR_EP.e != null ? CUR_EP.e : null;
   var frame = document.getElementById('playFrame');
   if (!frame) return;
-  frame.innerHTML = '<iframe src="'+buildSrc(CUR_TYPE,CUR_ITEM,s,e)+'" frameborder="0" allowfullscreen allow="encrypted-media; autoplay; fullscreen" referrerpolicy="origin"></iframe>';
+  var url = buildSrc(CUR_TYPE, CUR_ITEM, s, e);
+  frame.innerHTML = '<iframe src="'+url+'" frameborder="0" allowfullscreen allow="encrypted-media; autoplay; fullscreen" referrerpolicy="origin"></iframe>';
 }
 function syncServerButtons() { syncPlayerChrome(); }
 
@@ -3088,6 +3186,7 @@ window.addEventListener('message', function (event) {
     var progress = d.player_progress;
     var duration = d.player_duration;
     if (status === 'playing' || status === 'paused' || status === 'seeked') {
+      try{markHindiProgress();}catch(e){}
       // optional UI progress
       if (duration && progress != null) {
         var pct = Math.min(100, Math.round((progress / duration) * 100));
