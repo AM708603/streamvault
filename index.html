@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -93,11 +92,19 @@ a{color:inherit;text-decoration:none}
 /* ── PAGES ── */
 .page{display:none;min-height:100vh}
 .page.active{display:block}
+body:has(#pg-player.active) nav,
+body:has(#pg-player.active) .drawer,
+body.player-open nav,
+body.player-open .drawer{
+  display:none !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
 #pg-player.active{
   display:flex !important;flex-direction:column;
-  position:fixed;inset:0;z-index:900;
+  position:fixed;inset:0;z-index:2000;
   overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:unset;
-  background:#000;
+  background:#050505;
 }
 
 /* ── NAV ── */
@@ -553,7 +560,7 @@ nav.transparent{background:linear-gradient(to bottom,rgba(0,0,0,.75) 0%,transpar
   display:flex;align-items:center;justify-content:center;transition:all .2s;
 }
 .play-top-btn:hover{background:rgba(229,9,20,.8);border-color:var(--accent);color:#fff}
-.play-frame{position:relative;width:100%;padding-top:56.25%;background:#000}
+.play-frame{min-height:min(56vw,420px);aspect-ratio:16/9;max-height:70vh;background:#000;position:relative;width:100%;padding-top:56.25%;background:#000}
 .play-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:none}
 .play-prog-strip{height:3px;background:rgba(255,255,255,.08)}
 .play-prog-strip-fill{height:100%;background:var(--accent);width:0%;transition:width .5s linear;border-radius:0 2px 2px 0}
@@ -1684,7 +1691,7 @@ button:focus-visible,
 // ══════════════════════
 //  CONFIG
 // ══════════════════════
-var CF = 'https://streamvault.amworkmanage.workers.dev';
+var CF = 'https://raspy-butterfly-0610.amworkmanage.workers.dev';
 var IB = 'https://image.tmdb.org/t/p/w1280';
 var IP = 'https://image.tmdb.org/t/p/w500';
 var IA = 'https://image.tmdb.org/t/p/w185';
@@ -1854,15 +1861,19 @@ function showPage(id){
   var nav=document.getElementById('nav');
   var drawer=document.getElementById('drawer');
   if(id==='pg-player'){
+    document.body.classList.add('player-open');
     document.getElementById('pg-player').scrollTop=0;
-    nav.style.display='none';
-    drawer.style.display='none';
-    drawer.classList.remove('show');
+    if(nav){ nav.style.display='none'; nav.setAttribute('aria-hidden','true'); }
+    if(drawer){ drawer.style.display='none'; drawer.classList.remove('show'); }
   }else{
+    document.body.classList.remove('player-open');
     window.scrollTo({top:0,behavior:'instant'});
-    nav.style.display='';
-    drawer.style.display='';
-    nav.className=id==='pg-home'?'transparent':'solid';
+    if(nav){
+      nav.style.display='';
+      nav.removeAttribute('aria-hidden');
+      nav.className=id==='pg-home'?'transparent':'solid';
+    }
+    if(drawer) drawer.style.display='';
   }
 }
 function _goHome(){
