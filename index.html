@@ -1842,9 +1842,9 @@ function _goSection(sec,btn){
   var rw=document.getElementById('rowsWrap');
   if(sec==='home'){buildSlides();buildRows();startSlider();return;}
   var cfgMap={
-    movies:{hero:MOVIES[0],htype:'movie',label:'All <b>Movies</b>',items:MOVIES,type:'movie'},
-    tvshows:{hero:TV[0],htype:'tv',label:'All <b>TV Shows</b>',items:TV,type:'tv'},
-    anime:{hero:ANIME[0],htype:'anime',label:'All <b>Anime</b>',items:ANIME,type:'anime'},
+    movies:{hero:MOVIES[0],htype:'movie',label:'All <b>Movies</b>',items:MOVIES.slice(0,48),type:'movie'},
+    tvshows:{hero:TV[0],htype:'tv',label:'All <b>TV Shows</b>',items:TV.slice(0,48),type:'tv'},
+    anime:{hero:ANIME[0],htype:'anime',label:'All <b>Anime</b>',items:ANIME.slice(0,48),type:'anime'},
   };
   var cfg=cfgMap[sec];
   buildSingleHero(cfg.hero,cfg.htype);
@@ -1993,9 +1993,9 @@ function buildRows(){
   var rows=[
     {title:'Trending <b>Now</b>', items:trending.map(function(x){return x.item;}), types:trending.map(function(x){return x.type;}), sec:'home'},
     {title:'Latest <b>Releases</b>', items:latest.map(function(x){return x.item;}), types:latest.map(function(x){return x.type;}), sec:'home'},
-    {title:'Top <b>Movies</b>',     items:MOVIES,types:A('movie',MOVIES.length),sec:'movies'},
-    {title:'Binge-Worthy <b>Series</b>',items:TV,types:A('tv',TV.length),sec:'tvshows'},
-    {title:'Anime <b>Picks</b>',    items:ANIME,types:A('anime',ANIME.length),sec:'anime'},
+    {title:'Top <b>Movies</b>',     items:MOVIES.slice(0,24),types:A('movie',Math.min(24,MOVIES.length)),sec:'movies'},
+    {title:'Binge-Worthy <b>Series</b>',items:TV.slice(0,24),types:A('tv',Math.min(24,TV.length)),sec:'tvshows'},
+    {title:'Anime <b>Picks</b>',    items:ANIME.slice(0,24),types:A('anime',Math.min(24,ANIME.length)),sec:'anime'},
   ];
   var html='';
   var mlItems=mlGetItems();
