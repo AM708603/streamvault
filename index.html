@@ -1406,18 +1406,19 @@ button:focus-visible,
 .hist-meta{font-size:.65rem;color:#666;margin-top:3px}
 
 
-.src-fab{position:absolute;bottom:16px;right:16px;z-index:20;pointer-events:all}
-.src-fab-btn{
-  display:inline-flex;align-items:center;gap:8px;
-  background:rgba(10,10,12,.88);border:1px solid rgba(255,255,255,.14);
-  color:#ddd;font-size:.72rem;font-weight:600;padding:8px 12px;border-radius:999px;
-  backdrop-filter:blur(10px);cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.45);
+/* Source switcher lives in player top bar — never over the video controls */
+.src-wrap{position:relative;z-index:30}
+.src-top-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  height:34px;padding:0 12px;border-radius:8px;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
+  color:#ddd;font-size:.72rem;font-weight:600;cursor:pointer;white-space:nowrap;
 }
-.src-fab-btn:hover{border-color:rgba(229,9,20,.5);color:#fff}
+.src-top-btn:hover{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.22)}
 .src-menu{
-  display:none;position:absolute;bottom:calc(100% + 8px);right:0;
-  min-width:140px;background:rgba(16,16,18,.96);border:1px solid rgba(255,255,255,.12);
-  border-radius:10px;padding:6px;box-shadow:0 12px 40px rgba(0,0,0,.55);
+  display:none;position:absolute;top:calc(100% + 8px);right:0;
+  min-width:148px;background:rgba(16,16,18,.98);border:1px solid rgba(255,255,255,.12);
+  border-radius:10px;padding:6px;box-shadow:0 12px 40px rgba(0,0,0,.55);z-index:40;
 }
 .src-menu.open{display:block}
 .src-opt{
@@ -1426,7 +1427,6 @@ button:focus-visible,
 }
 .src-opt:hover{background:rgba(255,255,255,.06);color:#fff}
 .src-opt.on{color:#E50914;background:rgba(229,9,20,.12)}
-.play-frame{position:relative}
 
 </style>
 </head>
@@ -1443,24 +1443,24 @@ button:focus-visible,
         </button>
         <div class="play-title" id="playTitle"></div>
         <div class="play-top-actions">
+          <div class="src-wrap" id="srcFab">
+            <button type="button" class="src-top-btn" id="srcFabBtn" onclick="toggleSrcMenu()" title="Player source">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+              <span id="srcFabLabel">Videasy</span>
+            </button>
+            <div class="src-menu" id="srcMenu">
+              <button type="button" class="src-opt on" data-p="videasy" onclick="setPlayProvider('videasy')">Videasy</button>
+              <button type="button" class="src-opt" data-p="vidsrc" onclick="setPlayProvider('vidsrc')">VidSrc</button>
+              <button type="button" class="src-opt" data-p="embeds" onclick="setPlayProvider('embeds')">EmbedSU</button>
+              <button type="button" class="src-opt" data-p="autoembed" onclick="setPlayProvider('autoembed')">AutoEmbed</button>
+            </div>
+          </div>
           <button class="play-top-btn" id="playListBtn" onclick="playerToggleList()" title="My List">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
           </button>
         </div>
       </div>
       <div class="play-frame" id="playFrame"></div>
-      <div class="src-fab" id="srcFab">
-        <button type="button" class="src-fab-btn" id="srcFabBtn" onclick="toggleSrcMenu()" title="Switch player source">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-          <span id="srcFabLabel">Videasy</span>
-        </button>
-        <div class="src-menu" id="srcMenu">
-          <button type="button" class="src-opt on" data-p="videasy" onclick="setPlayProvider('videasy')">Videasy</button>
-          <button type="button" class="src-opt" data-p="vidsrc" onclick="setPlayProvider('vidsrc')">VidSrc</button>
-          <button type="button" class="src-opt" data-p="embeds" onclick="setPlayProvider('embeds')">EmbedSU</button>
-          <button type="button" class="src-opt" data-p="autoembed" onclick="setPlayProvider('autoembed')">AutoEmbed</button>
-        </div>
-      </div>
       <div class="play-prog-strip"><div class="play-prog-strip-fill" id="progStrip"></div></div>
     </div>
   </div>
@@ -1688,7 +1688,7 @@ button:focus-visible,
 // ══════════════════════
 //  CONFIG
 // ══════════════════════
-var CF = 'https://streamvault.amworkmanage.workers.dev';
+var CF = 'https://raspy-butterfly-0610.amworkmanage.workers.dev';
 var IB = 'https://image.tmdb.org/t/p/w1280';
 var IP = 'https://image.tmdb.org/t/p/w500';
 var IA = 'https://image.tmdb.org/t/p/w185';
