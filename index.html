@@ -1378,6 +1378,33 @@ button:focus-visible,
   outline-offset: 3px;
 }
 
+
+/* ── USER AUTH ── */
+#user-ov{position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,.94);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;padding:16px;visibility:hidden;opacity:0;transition:opacity .22s,visibility 0s .22s}
+#user-ov.show{visibility:visible;opacity:1;transition:opacity .22s,visibility 0s}
+.user-box{background:#141414;border:1px solid rgba(255,255,255,.1);border-radius:14px;width:100%;max-width:400px;box-shadow:0 32px 80px rgba(0,0,0,.7);padding:24px}
+.user-box h3{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:.05em;margin-bottom:6px}
+.user-box p.sub{font-size:.75rem;color:#666;margin-bottom:18px}
+.user-tabs{display:flex;gap:6px;margin-bottom:16px}
+.user-tab{flex:1;padding:8px;border-radius:7px;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;text-align:center;background:#1e1e1e;border:1.5px solid rgba(255,255,255,.07);color:#555;cursor:pointer}
+.user-tab.on{background:rgba(229,9,20,.12);border-color:#E50914;color:#E50914}
+.user-fg{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.user-fg label{font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#555}
+.user-input{width:100%;background:#1e1e1e;border:1px solid rgba(255,255,255,.08);border-radius:7px;color:#fff;font-family:inherit;font-size:.88rem;padding:11px 12px;outline:none}
+.user-input:focus{border-color:rgba(255,255,255,.22)}
+.user-submit{width:100%;background:#E50914;color:#fff;border:none;border-radius:8px;padding:12px;font-size:.88rem;font-weight:700;cursor:pointer;margin-top:4px}
+.user-submit:hover{background:#c8070f}
+.user-err{color:#ff6b6b;font-size:.75rem;margin-top:10px;display:none}
+.user-err.show{display:block}
+.nav-user{font-size:.65rem;font-weight:600;color:#888;padding:0 6px;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#pg-history{background:#111;min-height:100vh;padding-top:72px}
+.hist-item{display:flex;align-items:center;gap:14px;padding:12px 14px;background:#161616;border:1px solid rgba(255,255,255,.06);border-radius:10px;margin-bottom:8px;cursor:pointer;transition:background .15s}
+.hist-item:hover{background:#1e1e1e}
+.hist-thumb{width:64px;height:40px;border-radius:5px;overflow:hidden;background:#222;flex-shrink:0}
+.hist-thumb img{width:100%;height:100%;object-fit:cover}
+.hist-title{font-size:.85rem;font-weight:600}
+.hist-meta{font-size:.65rem;color:#666;margin-top:3px}
+
 </style>
 </head>
 <body>
@@ -1442,6 +1469,10 @@ button:focus-visible,
     <button class="nav-btn" id="navHeartBtn" onclick="goMyList()" title="My List">
       <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
     </button>
+    <button class="nav-btn" id="navUserBtn" onclick="openUserModal()" title="Account">
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    </button>
+    <span class="nav-user" id="navUserLabel" style="display:none"></span>
     <button class="ham" id="hamBtn" onclick="toggleDrawer()" aria-label="Menu">
       <span id="hb1"></span><span id="hb2"></span><span id="hb3"></span>
     </button>
@@ -1455,6 +1486,8 @@ button:focus-visible,
   <button id="d2" onclick="goSection('tvshows',this);closeDrawer()">TV Shows</button>
   <button id="d3" onclick="goSection('anime',this);closeDrawer()">Anime</button>
   <button id="d4" onclick="goMyList();closeDrawer()">♥ My List</button>
+  <button id="d5" onclick="goHistory();closeDrawer()">⏱ Watch History</button>
+  <button id="d6" onclick="openUserModal();closeDrawer()">Account</button>
 </div>
 
 <!-- ════ HOME ════ -->
@@ -1525,6 +1558,21 @@ button:focus-visible,
   <div id="mylistBody"></div>
 </div>
 
+
+<div id="pg-history" class="page">
+  <div class="mylist-header">
+    <div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
+        <button onclick="goHome()" style="display:flex;align-items:center;gap:5px;font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#555;padding:5px 10px;border-radius:4px;border:1px solid rgba(255,255,255,.08)">← Back</button>
+      </div>
+      <div class="mylist-title">Watch <span>History</span></div>
+      <div class="mylist-count" id="historyCount">0 items</div>
+    </div>
+    <button class="mylist-clear" onclick="clearHistory()">Clear</button>
+  </div>
+  <div id="historyBody" style="padding:0 5% 60px"></div>
+</div>
+
 <!-- ════ DETAIL ════ -->
 <div id="pg-detail" class="page">
   <div class="dp-hero">
@@ -1559,13 +1607,53 @@ button:focus-visible,
   </div>
 </div>
 
+
+<div id="user-ov">
+  <div class="user-box">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div>
+        <h3 id="userModalTitle">Account</h3>
+        <p class="sub" id="userModalSub">Sign in to sync wishlist, history & requests</p>
+      </div>
+      <button class="req-close-btn" onclick="closeUserModal()">✕</button>
+    </div>
+    <div id="userGuestPanel">
+      <div class="user-tabs">
+        <div class="user-tab on" id="utLogin" onclick="setUserTab('login')">Login</div>
+        <div class="user-tab" id="utReg" onclick="setUserTab('register')">Register</div>
+      </div>
+      <div class="user-fg" id="userNameWrap" style="display:none">
+        <label>Name</label>
+        <input class="user-input" id="userName" placeholder="Your name" maxlength="80">
+      </div>
+      <div class="user-fg">
+        <label>Email</label>
+        <input class="user-input" id="userEmail" type="email" placeholder="you@email.com" autocomplete="email">
+      </div>
+      <div class="user-fg">
+        <label>Password</label>
+        <input class="user-input" id="userPass" type="password" placeholder="Min 6 characters" autocomplete="current-password">
+      </div>
+      <button class="user-submit" id="userSubmitBtn" onclick="submitUserAuth()">Sign In</button>
+      <div class="user-err" id="userErr"></div>
+    </div>
+    <div id="userLoggedPanel" style="display:none">
+      <p style="font-size:.85rem;color:#bbb;margin-bottom:14px">Signed in as <strong id="userLoggedEmail" style="color:#fff"></strong></p>
+      <button class="user-submit" style="background:#1e1e1e;border:1px solid rgba(255,255,255,.12);margin-bottom:8px" onclick="closeUserModal();goMyList()">My Wishlist</button>
+      <button class="user-submit" style="background:#1e1e1e;border:1px solid rgba(255,255,255,.12);margin-bottom:8px" onclick="closeUserModal();goHistory()">Watch History</button>
+      <button class="user-submit" style="background:#1e1e1e;border:1px solid rgba(255,255,255,.12);margin-bottom:8px" onclick="closeUserModal();openRequest()">Request Content</button>
+      <button class="user-submit" style="background:transparent;border:1px solid rgba(255,68,68,.35);color:#ff6b6b" onclick="userLogout()">Sign Out</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
 // ══════════════════════
 //  CONFIG
 // ══════════════════════
-var CF = 'https://raspy-butterfly-0610.amworkmanage.workers.dev';
+var CF = 'https://streamvault.borntow2.workers.dev';
 var IB = 'https://image.tmdb.org/t/p/w1280';
 var IP = 'https://image.tmdb.org/t/p/w500';
 var IA = 'https://image.tmdb.org/t/p/w185';
@@ -1622,7 +1710,8 @@ var ROUTES={
   '/movies':function(){_goSection('movies',null);},
   '/tvshows':function(){_goSection('tvshows',null);},
   '/anime':function(){_goSection('anime',null);},
-  '/mylist':function(){_goMyList();}
+  '/mylist':function(){_goMyList();},
+  '/history':function(){if(USER_TOKEN){showPage('pg-history');renderHistory();}else{_goHome();}}
 };
 function slugify(title){
   return String(title||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
@@ -1647,7 +1736,7 @@ window.addEventListener('popstate',function(){handleRoute(window.location.pathna
 // ══════════════════════
 var MY_LIST=[];
 function mlLoad(){try{var s=sessionStorage.getItem('sv_mylist');if(s)MY_LIST=JSON.parse(s);}catch(e){MY_LIST=[];}}
-function mlSave(){try{sessionStorage.setItem('sv_mylist',JSON.stringify(MY_LIST));}catch(e){}}
+function mlSave(){try{sessionStorage.setItem('sv_mylist',JSON.stringify(MY_LIST));}catch(e){} try{syncWishlistToServer();}catch(e){}}
 function mlHas(item){return MY_LIST.some(function(e){return e.id===item.id;});}
 function mlAdd(item,type){if(mlHas(item))return;MY_LIST.unshift({id:item.id,type:type});mlSave();updateHeartNav();}
 function mlRemove(item){MY_LIST=MY_LIST.filter(function(e){return e.id!==item.id;});mlSave();updateHeartNav();}
@@ -1666,15 +1755,22 @@ function updateHeartNav(){
 async function init(){
   mlLoad();
   updateHeartNav();
+  try{loadUserSession();}catch(e){}
   try{
-    var res=await fetch(CF+'/api/content');
+    var res=await fetch(CF+'/api/content',{cache:'no-store'});
     if(res.ok){
       var d=await res.json();
-      if(d.movies&&d.movies.length)MOVIES=d.movies;
-      if(d.tvshows&&d.tvshows.length)TV=d.tvshows;
-      if(d.anime&&d.anime.length)ANIME=d.anime;
+      // Always use API lists when present (even if empty after admin deletes)
+      if(Array.isArray(d.movies))MOVIES=d.movies;
+      if(Array.isArray(d.tvshows))TV=d.tvshows;
+      if(Array.isArray(d.anime))ANIME=d.anime;
+      console.info('[StreamVault] content from Worker:', (MOVIES||[]).length, 'movies,', (TV||[]).length, 'TV,', (ANIME||[]).length, 'anime');
+    } else {
+      console.warn('[StreamVault] /api/content failed HTTP', res.status, '— using built-in sample titles. Deploy worker.js!');
     }
-  }catch(e){}
+  }catch(e){
+    console.warn('[StreamVault] cannot reach Worker at', CF, e);
+  }
 MOVIES=MOVIES.slice().sort(function(a,b){return b.year-a.year||MOVIES.indexOf(b)-MOVIES.indexOf(a);});
 TV=TV.slice().sort(function(a,b){return b.year-a.year||TV.indexOf(b)-TV.indexOf(a);});
 ANIME=ANIME.slice().sort(function(a,b){return b.year-a.year||ANIME.indexOf(b)-ANIME.indexOf(a);});
@@ -2111,6 +2207,7 @@ function startPlayer(item,type,s,ep){
     else if(type==='anime'&&!item.isM){ep=item.episodes[0].e;}
   }
   CUR_EP=s?{s:s,e:ep}:ep?{e:ep}:null;
+  try{trackHistory(item,type,s,ep);}catch(e){}
   showPage('pg-player');
   document.getElementById('playTitle').textContent=item.title+(s&&ep?' · S'+s+'E'+ep:'');
   document.getElementById('playBackBtn').onclick=function(){
@@ -2481,6 +2578,240 @@ function fallbackCopy(text){
 }
 
 
+
+// ══════════════════════
+//  VIEWER ACCOUNT
+// ══════════════════════
+var USER_TOKEN = '';
+var USER = null;
+var USER_TAB = 'login';
+var WATCH_HISTORY = [];
+
+function userHeaders() {
+  var h = { 'Content-Type': 'application/json' };
+  if (USER_TOKEN) h['X-User-Token'] = USER_TOKEN;
+  return h;
+}
+function loadUserSession() {
+  try {
+    USER_TOKEN = localStorage.getItem('sv_user_token') || '';
+    var u = localStorage.getItem('sv_user');
+    USER = u ? JSON.parse(u) : null;
+  } catch (e) { USER_TOKEN = ''; USER = null; }
+  updateUserNav();
+  if (USER_TOKEN) {
+    fetch(CF + '/api/user/me', { headers: userHeaders() })
+      .then(function(r){ if (!r.ok) throw new Error('bad'); return r.json(); })
+      .then(function(d){
+        USER = { email: d.email, name: d.name || '' };
+        localStorage.setItem('sv_user', JSON.stringify(USER));
+        updateUserNav();
+        return Promise.all([
+          fetch(CF + '/api/user/wishlist', { headers: userHeaders() }).then(function(r){ return r.json(); }),
+          fetch(CF + '/api/user/history', { headers: userHeaders() }).then(function(r){ return r.json(); })
+        ]);
+      })
+      .then(function(arr){
+        if (arr[0] && arr[0].wishlist) {
+          MY_LIST = arr[0].wishlist.map(function(e){ return { id: e.id, type: e.type }; });
+          mlSaveLocalOnly();
+          updateHeartNav();
+          if (document.getElementById('pg-home').classList.contains('active')) buildRows();
+        }
+        if (arr[1] && arr[1].history) {
+          WATCH_HISTORY = arr[1].history;
+          try { sessionStorage.setItem('sv_history', JSON.stringify(WATCH_HISTORY)); } catch(e){}
+        }
+      })
+      .catch(function(){ /* token expired */ USER_TOKEN=''; USER=null; localStorage.removeItem('sv_user_token'); updateUserNav(); });
+  } else {
+    try {
+      var h = sessionStorage.getItem('sv_history');
+      if (h) WATCH_HISTORY = JSON.parse(h);
+    } catch(e){}
+  }
+}
+function mlSaveLocalOnly(){
+  try{ sessionStorage.setItem('sv_mylist', JSON.stringify(MY_LIST)); }catch(e){}
+}
+function updateUserNav(){
+  var lab = document.getElementById('navUserLabel');
+  var btn = document.getElementById('navUserBtn');
+  if (USER && USER.email) {
+    if (lab) { lab.style.display = ''; lab.textContent = USER.name || USER.email.split('@')[0]; }
+    if (btn) btn.style.color = '#E50914';
+  } else {
+    if (lab) { lab.style.display = 'none'; lab.textContent = ''; }
+    if (btn) btn.style.color = '';
+  }
+}
+function openUserModal(){
+  document.getElementById('user-ov').classList.add('show');
+  document.getElementById('userErr').classList.remove('show');
+  if (USER && USER_TOKEN) {
+    document.getElementById('userGuestPanel').style.display = 'none';
+    document.getElementById('userLoggedPanel').style.display = 'block';
+    document.getElementById('userLoggedEmail').textContent = USER.email;
+    document.getElementById('userModalTitle').textContent = 'Account';
+    document.getElementById('userModalSub').textContent = 'Manage wishlist, history & requests';
+  } else {
+    document.getElementById('userGuestPanel').style.display = 'block';
+    document.getElementById('userLoggedPanel').style.display = 'none';
+    setUserTab('login');
+  }
+}
+function closeUserModal(){ document.getElementById('user-ov').classList.remove('show'); }
+function setUserTab(tab){
+  USER_TAB = tab;
+  document.getElementById('utLogin').classList.toggle('on', tab==='login');
+  document.getElementById('utReg').classList.toggle('on', tab==='register');
+  document.getElementById('userNameWrap').style.display = tab==='register' ? '' : 'none';
+  document.getElementById('userSubmitBtn').textContent = tab==='register' ? 'Create Account' : 'Sign In';
+  document.getElementById('userModalTitle').textContent = tab==='register' ? 'Register' : 'Login';
+  document.getElementById('userModalSub').textContent = tab==='register' ? 'Create an account to sync your list' : 'Sign in to sync wishlist, history & requests';
+}
+function submitUserAuth(){
+  var email = (document.getElementById('userEmail').value||'').trim().toLowerCase();
+  var pass = (document.getElementById('userPass').value||'').trim();
+  var name = (document.getElementById('userName').value||'').trim();
+  var err = document.getElementById('userErr');
+  err.classList.remove('show');
+  if (!email || !pass) { err.textContent = 'Email and password required'; err.classList.add('show'); return; }
+  if (USER_TAB==='register' && pass.length < 6) { err.textContent = 'Password min 6 characters'; err.classList.add('show'); return; }
+  var path = USER_TAB==='register' ? '/api/user/register' : '/api/user/login';
+  var body = { email: email, password: pass };
+  if (USER_TAB==='register') body.name = name;
+  document.getElementById('userSubmitBtn').disabled = true;
+  fetch(CF + path, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) })
+    .then(function(r){ return r.json().then(function(d){ return { ok:r.ok, d:d }; }); })
+    .then(function(res){
+      document.getElementById('userSubmitBtn').disabled = false;
+      if (!res.ok || !res.d.success) {
+        err.textContent = (res.d && res.d.error) || 'Failed';
+        err.classList.add('show');
+        return;
+      }
+      USER_TOKEN = res.d.token;
+      USER = res.d.user;
+      localStorage.setItem('sv_user_token', USER_TOKEN);
+      localStorage.setItem('sv_user', JSON.stringify(USER));
+      if (res.d.wishlist) {
+        MY_LIST = res.d.wishlist.map(function(e){ return { id:e.id, type:e.type }; });
+        mlSaveLocalOnly();
+      } else {
+        // push local list up
+        syncWishlistToServer();
+      }
+      if (res.d.history) {
+        WATCH_HISTORY = res.d.history;
+        try { sessionStorage.setItem('sv_history', JSON.stringify(WATCH_HISTORY)); } catch(e){}
+      }
+      updateUserNav();
+      updateHeartNav();
+      if (document.getElementById('pg-home').classList.contains('active')) buildRows();
+      showToast('Welcome' + (USER.name ? ', ' + USER.name : '') + '!');
+      closeUserModal();
+    })
+    .catch(function(){
+      document.getElementById('userSubmitBtn').disabled = false;
+      err.textContent = 'Network error — is Worker online?';
+      err.classList.add('show');
+    });
+}
+function userLogout(){
+  if (USER_TOKEN) {
+    fetch(CF + '/api/user/logout', { method:'POST', headers: userHeaders() }).catch(function(){});
+  }
+  USER_TOKEN = '';
+  USER = null;
+  localStorage.removeItem('sv_user_token');
+  localStorage.removeItem('sv_user');
+  updateUserNav();
+  showToast('Signed out');
+  closeUserModal();
+}
+function requireLogin(action){
+  if (USER_TOKEN && USER) return true;
+  showToast('Please login first');
+  openUserModal();
+  return false;
+}
+function syncWishlistToServer(){
+  if (!USER_TOKEN) return;
+  fetch(CF + '/api/user/wishlist', {
+    method: 'PUT',
+    headers: userHeaders(),
+    body: JSON.stringify({ wishlist: MY_LIST })
+  }).catch(function(){});
+}
+function trackHistory(item, type, s, ep){
+  var entry = {
+    id: item.id,
+    type: type,
+    title: item.title,
+    poster: item.poster || '',
+    s: s || null,
+    e: ep || null,
+    at: new Date().toISOString()
+  };
+  WATCH_HISTORY = (WATCH_HISTORY || []).filter(function(h){
+    return !(Number(h.id)===entry.id && h.s===entry.s && h.e===entry.e);
+  });
+  WATCH_HISTORY.unshift(entry);
+  if (WATCH_HISTORY.length > 100) WATCH_HISTORY.length = 100;
+  try { sessionStorage.setItem('sv_history', JSON.stringify(WATCH_HISTORY)); } catch(e){}
+  if (USER_TOKEN) {
+    fetch(CF + '/api/user/history', {
+      method: 'POST',
+      headers: userHeaders(),
+      body: JSON.stringify(entry)
+    }).catch(function(){});
+  }
+}
+function goHistory(){
+  if (!requireLogin()) return;
+  pushRoute('/history');
+  showPage('pg-history');
+  renderHistory();
+}
+function renderHistory(){
+  var body = document.getElementById('historyBody');
+  var count = document.getElementById('historyCount');
+  if (count) count.textContent = (WATCH_HISTORY||[]).length + ' items';
+  if (!body) return;
+  if (!WATCH_HISTORY || !WATCH_HISTORY.length) {
+    body.innerHTML = '<div class="mylist-empty"><h3>No history yet</h3><p>Start watching and your history will show up here.</p></div>';
+    return;
+  }
+  body.innerHTML = WATCH_HISTORY.map(function(h){
+    var f = findById(h.id);
+    var poster = h.poster || (f && f.item.poster) || '';
+    var sub = (h.s && h.e ? ('S'+h.s+'E'+h.e+' · ') : '') + (h.type||'') + (h.at ? ' · ' + new Date(h.at).toLocaleDateString() : '');
+    return '<div class="hist-item" onclick="historyPlay('+h.id+',\''+(h.type||'movie')+'\','+(h.s!=null?h.s:'null')+','+(h.e!=null?h.e:'null')+')">'
+      +'<div class="hist-thumb">'+(poster?'<img src="'+IP+poster+'" loading="lazy">':'')+'</div>'
+      +'<div><div class="hist-title">'+X(h.title||'Title')+'</div><div class="hist-meta">'+X(sub)+'</div></div></div>';
+  }).join('');
+}
+function historyPlay(id, type, s, ep){
+  var f = findById(id);
+  if (f) startPlayer(f.item, f.type, s, ep);
+  else showToast('Title not in library');
+}
+function clearHistory(){
+  WATCH_HISTORY = [];
+  try { sessionStorage.setItem('sv_history', '[]'); } catch(e){}
+  if (USER_TOKEN) {
+    fetch(CF + '/api/user/history', { method:'PUT', headers:userHeaders(), body: JSON.stringify({ history: [] }) }).catch(function(){});
+  }
+  renderHistory();
+  showToast('History cleared');
+}
+
+document.getElementById('user-ov') && document.getElementById('user-ov').addEventListener('click', function(e){
+  if (e.target === this) closeUserModal();
+});
+
+
 // ══════════════════════
 //  ADS (from Worker /api/ads)
 // ══════════════════════
@@ -2636,6 +2967,7 @@ if (document.readyState === 'loading') {
 <script>
 var REQ_TYPE='movie';
 function openRequest(){
+  if(!requireLogin())return;
   document.getElementById('reqTitle').value='';
   document.getElementById('reqName').value='';
   document.getElementById('reqNote').value='';
@@ -2669,7 +3001,8 @@ async function submitContentRequest(){
   btn.disabled=true;
   btn.innerHTML='<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="animation:spin .7s linear infinite"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> Sending\u2026';
   try{
-    var res=await fetch(CF+'/api/requests',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:title,type:REQ_TYPE,name:(document.getElementById('reqName').value||'').trim(),note:(document.getElementById('reqNote').value||'').trim()})});
+    var reqUrl = (USER_TOKEN ? CF+'/api/user/request' : CF+'/api/requests');
+    var res=await fetch(reqUrl,{method:'POST',headers:userHeaders(),body:JSON.stringify({title:title,type:REQ_TYPE,name:(document.getElementById('reqName').value||'').trim()||(USER&&USER.name)||'',note:(document.getElementById('reqNote').value||'').trim()})});
     var data=await res.json();
     if(data.success){document.getElementById('reqForm').style.display='none';document.getElementById('reqSuccess').classList.add('show');}
     else{btn.disabled=false;btn.innerHTML='Send Request';showToast('\u26a0 '+(data.error||'Something went wrong'));}
