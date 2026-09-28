@@ -275,8 +275,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
   <div class="login-box">
     <div class="login-logo">Stream<span>Vault</span></div>
     <div class="login-sub">Admin Portal</div>
-    <label class="login-label">Worker URL</label>
-    <input type="text" class="login-input" id="cfgUrl" placeholder="https://streamvault.yourname.workers.dev" autocomplete="off">
     <label class="login-label">Email</label>
     <input type="email" class="login-input" id="cfgEmail" placeholder="amworkmanage@gmail.com" autocomplete="email">
     <label class="login-label">Password</label>
@@ -316,6 +314,11 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
       <div class="sb-link" onclick="switchView('requests',this)">
         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
         Requests <span class="sb-count" style="background:rgba(245,197,24,.12);color:var(--gold)" id="sbReqCount">0</span>
+      </div>
+      <div class="sb-sec">Monetization</div>
+      <div class="sb-link" onclick="switchView('ads',this);loadAdsConfig()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        Ads Manager
       </div>
       <div class="sb-sec">Tools</div>
       <div class="sb-link" onclick="switchView('bulk',this)">
@@ -468,6 +471,43 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
     </div>
 
     <!-- SETTINGS -->
+    
+    <div class="view" id="view-ads">
+      <div class="section-card">
+        <div class="sc-hdr">
+          <div class="sc-title">Ads Manager · Monetag / Scripts</div>
+          <div class="sc-actions">
+            <label class="toggle" style="margin-right:8px">
+              <input type="checkbox" id="adsEnabled" checked>
+              <span class="toggle-track"></span>
+              <span class="toggle-thumb"></span>
+            </label>
+            <span style="font-size:.72rem;color:var(--text3);margin-right:10px">Enabled</span>
+            <button class="btn btn-red btn-sm" onclick="saveAdsConfig()">Save Ads</button>
+          </div>
+        </div>
+        <div style="padding:1.4rem 1.5rem">
+          <p style="font-size:.8rem;color:var(--text2);line-height:1.7;margin-bottom:1.2rem">
+            Paste ad network codes (e.g. Monetag). Stored in Cloudflare KV and injected on the public site automatically.
+          </p>
+          <div class="fg" style="margin-bottom:1rem">
+            <label>Head scripts (in &lt;head&gt;)</label>
+            <textarea id="adsHead" class="bulk-area" style="min-height:120px;font-size:.78rem" placeholder="Paste Monetag script here"></textarea>
+            <div style="font-size:.65rem;color:var(--text3);margin-top:.35rem">Best place for Monetag zone scripts</div>
+          </div>
+          <div class="fg" style="margin-bottom:1rem">
+            <label>Body top</label>
+            <textarea id="adsBodyTop" class="bulk-area" style="min-height:90px;font-size:.78rem" placeholder="Optional HTML / scripts at top of body"></textarea>
+          </div>
+          <div class="fg" style="margin-bottom:1rem">
+            <label>Body bottom</label>
+            <textarea id="adsBodyBottom" class="bulk-area" style="min-height:90px;font-size:.78rem" placeholder="Optional footer / extra scripts"></textarea>
+          </div>
+          <div id="adsMeta" style="font-size:.7rem;color:var(--text3)">Not loaded yet</div>
+        </div>
+      </div>
+    </div>
+
     <div class="view" id="view-settings">
       <div class="settings-grid">
         <div class="setting-card">
@@ -575,7 +615,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 var TMDB_KEY = '3001c6b89778ec27b78f6294a1e2538d';
 var TMDB_BASE = 'https://api.themoviedb.org/3';
 var IMG_BASE = 'https://image.tmdb.org/t/p/';
-var WORKER_URL = '';
+var DEFAULT_WORKER_URL = 'https://raspy-butterfly-0610.amworkmanage.workers.dev';
+var WORKER_URL = DEFAULT_WORKER_URL;
 var ADMIN_PASS = '';
 var ADMIN_EMAIL = '';
 var DB = { movies:[], tvshows:[], anime:[] };
@@ -588,21 +629,19 @@ var ADMIN_PASS_REQUIRED = 'streamvault2025';
 //  LOGIN
 // ═══════════════════════════════
 function doLogin() {
-  var url = (document.getElementById('cfgUrl').value||'').trim().replace(/\/$/,'');
   var email = (document.getElementById('cfgEmail').value||'').trim().toLowerCase();
   var pass = (document.getElementById('cfgPass').value||'').trim();
-  if (!url || !email || !pass) { showLoginErr('All fields are required'); return; }
+  if (!email || !pass) { showLoginErr('Email and password are required'); return; }
   if (email !== ADMIN_EMAIL_REQUIRED) { showLoginErr('Email not authorized'); return; }
   if (pass !== ADMIN_PASS_REQUIRED) { showLoginErr('Incorrect password'); return; }
-  WORKER_URL = url; ADMIN_PASS = pass; ADMIN_EMAIL = email;
+  WORKER_URL = DEFAULT_WORKER_URL; ADMIN_PASS = pass; ADMIN_EMAIL = email;
   setSyncing('Connecting...');
-  fetch(url + '/api/auth', {
+  fetch(WORKER_URL + '/api/auth', {
     method: 'POST',
     headers: {'Content-Type':'application/json', 'X-Admin-Password': pass}
   }).then(function(r) {
     if (r.ok) {
       if (document.getElementById('toggleAutoSave').checked) {
-        localStorage.setItem('sv_url', url);
         localStorage.setItem('sv_pass', pass);
         localStorage.setItem('sv_email', email);
       }
@@ -610,24 +649,42 @@ function doLogin() {
       document.getElementById('app').classList.add('visible');
       document.getElementById('sbEmail').textContent = email;
       document.getElementById('sbAvatar').textContent = email[0].toUpperCase();
-      document.getElementById('settingEmail').textContent = email;
-      document.getElementById('settingUrl').textContent = url;
+      var se=document.getElementById('settingEmail'); if(se) se.textContent = email;
+      var su=document.getElementById('settingUrl'); if(su) su.textContent = WORKER_URL;
       loadData();
-    } else { showLoginErr('Worker rejected the request — check URL and Worker password'); setSynced(); }
-  }).catch(function() { showLoginErr('Cannot reach Worker — verify the URL is correct'); setSynced(); });
+      loadAdsConfig();
+    } else { showLoginErr('Worker rejected the request — check Worker password / deployment'); setSynced(); }
+  }).catch(function() { showLoginErr('Cannot reach Worker at ' + WORKER_URL); setSynced(); });
 }
 function showLoginErr(m) {
   var e = document.getElementById('loginErr');
   e.textContent = '⚠ ' + m; e.style.display = 'block';
   setTimeout(function(){ e.style.display = 'none'; }, 5000);
 }
-function logout() { localStorage.removeItem('sv_url'); localStorage.removeItem('sv_pass'); localStorage.removeItem('sv_email'); location.reload(); }
-function reconnect() { localStorage.removeItem('sv_url'); localStorage.removeItem('sv_pass'); localStorage.removeItem('sv_email'); document.getElementById('app').classList.remove('visible'); document.getElementById('loginScreen').style.display = 'flex'; }
+function logout() { localStorage.removeItem('sv_pass'); localStorage.removeItem('sv_email'); location.reload(); }
+function reconnect() { localStorage.removeItem('sv_pass'); localStorage.removeItem('sv_email'); document.getElementById('app').classList.remove('visible'); document.getElementById('loginScreen').style.display = 'flex'; }
 function tryAutoLogin() {
-  var u = localStorage.getItem('sv_url'), p = localStorage.getItem('sv_pass'), em = localStorage.getItem('sv_email');
-  if (u) document.getElementById('cfgUrl').value = u;
+  var p = localStorage.getItem('sv_pass'), em = localStorage.getItem('sv_email');
   if (em) document.getElementById('cfgEmail').value = em;
   if (p) document.getElementById('cfgPass').value = p;
+  if (em && p) {
+    WORKER_URL = DEFAULT_WORKER_URL;
+    ADMIN_PASS = p; ADMIN_EMAIL = em;
+    fetch(WORKER_URL + '/api/auth', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json', 'X-Admin-Password': p}
+    }).then(function(r){
+      if (!r.ok) return;
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('app').classList.add('visible');
+      document.getElementById('sbEmail').textContent = em;
+      document.getElementById('sbAvatar').textContent = em[0].toUpperCase();
+      var se = document.getElementById('settingEmail'); if (se) se.textContent = em;
+      var su = document.getElementById('settingUrl'); if (su) su.textContent = WORKER_URL;
+      loadData();
+      loadAdsConfig();
+    }).catch(function(){});
+  }
 }
 
 // ═══════════════════════════════
@@ -716,7 +773,7 @@ function renderStats() {
 // ═══════════════════════════════
 //  VIEWS
 // ═══════════════════════════════
-var viewTitles = {dashboard:'Dashboard',stats:'Analytics',movies:'Movies',tvshows:'TV Shows',anime:'Anime',bulk:'Bulk Import',settings:'Settings',requests:'Content Requests'};
+var viewTitles = {dashboard:'Dashboard',stats:'Analytics',movies:'Movies',tvshows:'TV Shows',anime:'Anime',bulk:'Bulk Import',settings:'Settings',requests:'Content Requests',ads:'Ads Manager'};
 function switchView(id, el) {
   document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
   document.getElementById('view-'+id).classList.add('active');
@@ -1251,6 +1308,41 @@ function toast(msg, type) {
 // ═══════════════════════════════
 //  INIT
 // ═══════════════════════════════
+
+function loadAdsConfig() {
+  if (!WORKER_URL) return;
+  fetch(WORKER_URL + '/api/ads').then(function(r){ return r.json(); }).then(function(data) {
+    if (!data) return;
+    var en = document.getElementById('adsEnabled');
+    if (en) en.checked = data.enabled !== false;
+    var h = document.getElementById('adsHead'); if (h) h.value = data.head || '';
+    var t = document.getElementById('adsBodyTop'); if (t) t.value = data.bodyTop || '';
+    var b = document.getElementById('adsBodyBottom'); if (b) b.value = data.bodyBottom || '';
+    var m = document.getElementById('adsMeta');
+    if (m) m.textContent = data.updatedAt ? ('Last saved: ' + new Date(data.updatedAt).toLocaleString()) : 'No ads saved yet';
+  }).catch(function(){});
+}
+function saveAdsConfig() {
+  var payload = {
+    enabled: !!(document.getElementById('adsEnabled') && document.getElementById('adsEnabled').checked),
+    head: (document.getElementById('adsHead') && document.getElementById('adsHead').value) || '',
+    bodyTop: (document.getElementById('adsBodyTop') && document.getElementById('adsBodyTop').value) || '',
+    bodyBottom: (document.getElementById('adsBodyBottom') && document.getElementById('adsBodyBottom').value) || ''
+  };
+  setSyncing('Saving ads...');
+  api('PUT', '/api/ads', payload).then(function(res) {
+    if (res.success) {
+      setSynced();
+      toast('Ads config saved — live on the public site', 'ok');
+      var m = document.getElementById('adsMeta');
+      if (m && res.ads && res.ads.updatedAt) m.textContent = 'Last saved: ' + new Date(res.ads.updatedAt).toLocaleString();
+    } else {
+      setSyncErr();
+      toast('Save failed: ' + (res.error || 'unknown'), 'err');
+    }
+  }).catch(function(){ setSyncErr(); toast('Network error', 'err'); });
+}
+
 (function(){
   loadPrefs();
   tryAutoLogin();
