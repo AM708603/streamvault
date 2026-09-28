@@ -1425,21 +1425,6 @@ button:focus-visible,
           </button>
         </div>
       </div>
-      <div class="srv-row" id="providerRow">
-        <span class="srv-label">Source</span>
-        <button type="button" class="prov-btn on" data-p="videasy" onclick="setPlayProvider('videasy')">Videasy</button>
-        <button type="button" class="prov-btn" data-p="vidsrc" onclick="setPlayProvider('vidsrc')">VidSrc</button>
-        <button type="button" class="prov-btn" data-p="embeds" onclick="setPlayProvider('embeds')">EmbedSU</button>
-        <button type="button" class="prov-btn" data-p="autoembed" onclick="setPlayProvider('autoembed')">AutoEmbed</button>
-      </div>
-      <div class="srv-row" id="serverRow">
-        <span class="srv-label">Server</span>
-        <button type="button" class="srv-btn on" data-s="1" onclick="setPlayServer(1)">1</button>
-        <button type="button" class="srv-btn" data-s="2" onclick="setPlayServer(2)">2</button>
-        <button type="button" class="srv-btn" data-s="3" onclick="setPlayServer(3)">3</button>
-        <button type="button" class="srv-btn" data-s="4" onclick="setPlayServer(4)">4</button>
-        <button type="button" class="srv-btn" data-s="5" onclick="setPlayServer(5)">5</button>
-      </div>
       <div class="play-frame" id="playFrame"></div>
       <div class="play-prog-strip"><div class="play-prog-strip-fill" id="progStrip"></div></div>
     </div>
@@ -1668,7 +1653,7 @@ button:focus-visible,
 // ══════════════════════
 //  CONFIG
 // ══════════════════════
-var CF = 'https://streamvault.amworkmanage.workers.dev';
+var CF = 'https://streamvault.borntow2.workers.dev';
 var IB = 'https://image.tmdb.org/t/p/w1280';
 var IP = 'https://image.tmdb.org/t/p/w500';
 var IA = 'https://image.tmdb.org/t/p/w185';
@@ -1786,20 +1771,9 @@ async function init(){
   }catch(e){
     console.warn('[StreamVault] cannot reach Worker at', CF, e);
   }
-// Latest releases first (year desc), then higher match / rating
-  function sortLatest(arr){
-    return (arr||[]).slice().sort(function(a,b){
-      var ya=parseInt(a.year,10)||0, yb=parseInt(b.year,10)||0;
-      if(yb!==ya) return yb-ya;
-      var ma=parseFloat(a.match)||parseFloat(a.imdb)*10||0;
-      var mb=parseFloat(b.match)||parseFloat(b.imdb)*10||0;
-      if(mb!==ma) return mb-ma;
-      return String(a.title||'').localeCompare(String(b.title||''));
-    });
-  }
-  MOVIES=sortLatest(MOVIES);
-  TV=sortLatest(TV);
-  ANIME=sortLatest(ANIME);
+MOVIES=MOVIES.slice().sort(function(a,b){return b.year-a.year||MOVIES.indexOf(b)-MOVIES.indexOf(a);});
+TV=TV.slice().sort(function(a,b){return b.year-a.year||TV.indexOf(b)-TV.indexOf(a);});
+ANIME=ANIME.slice().sort(function(a,b){return b.year-a.year||ANIME.indexOf(b)-ANIME.indexOf(a);});
   buildSlides();
   buildRows();
   handleRoute(window.location.pathname);
@@ -1857,9 +1831,9 @@ function _goSection(sec,btn){
   var rw=document.getElementById('rowsWrap');
   if(sec==='home'){buildSlides();buildRows();startSlider();return;}
   var cfgMap={
-    movies:{hero:MOVIES[0],htype:'movie',label:'All <b>Movies</b>',items:MOVIES.slice(0,48),type:'movie'},
-    tvshows:{hero:TV[0],htype:'tv',label:'All <b>TV Shows</b>',items:TV.slice(0,48),type:'tv'},
-    anime:{hero:ANIME[0],htype:'anime',label:'All <b>Anime</b>',items:ANIME.slice(0,48),type:'anime'},
+    movies:{hero:MOVIES[0],htype:'movie',label:'All <b>Movies</b>',items:MOVIES,type:'movie'},
+    tvshows:{hero:TV[0],htype:'tv',label:'All <b>TV Shows</b>',items:TV,type:'tv'},
+    anime:{hero:ANIME[0],htype:'anime',label:'All <b>Anime</b>',items:ANIME,type:'anime'},
   };
   var cfg=cfgMap[sec];
   buildSingleHero(cfg.hero,cfg.htype);
@@ -1886,20 +1860,14 @@ function goMyList(){pushRoute('/mylist');_goMyList();}
 //  SLIDER
 // ══════════════════════
 function buildSlides(){
-  // Hero: latest + trending mix (newest releases first)
-  var heroPool = [];
-  if (typeof buildTrendingList === 'function') {
-    heroPool = buildTrendingList(8);
-  } else {
-    var hm=MOVIES.slice(0,4).map(function(item){return{item:item,type:'movie'};});
-    var ht=TV.slice(0,3).map(function(item){return{item:item,type:'tv'};});
-    var ha=ANIME.slice(0,2).map(function(item){return{item:item,type:'anime'};});
-    heroPool = hm.concat(ht).concat(ha);
-  }
-  // Prefer items with backdrops, still ordered by trending score
-  HERO_ITEMS = heroPool.filter(function(x){ return x.item && x.item.backdrop; }).slice(0, 6);
-  if (HERO_ITEMS.length < 3) {
-    HERO_ITEMS = heroPool.slice(0, 6);
+  var heroMovies=MOVIES.slice(0,5).map(function(item){return{item:item,type:'movie'};});
+  var heroTV=TV.slice(0,5).map(function(item){return{item:item,type:'tv'};});
+  var heroAnime=ANIME.slice(0,5).map(function(item){return{item:item,type:'anime'};});
+  HERO_ITEMS=[];
+  for(var i=0;i<5;i++){
+    if(heroMovies[i])HERO_ITEMS.push(heroMovies[i]);
+    if(heroTV[i])HERO_ITEMS.push(heroTV[i]);
+    if(heroAnime[i])HERO_ITEMS.push(heroAnime[i]);
   }
   var wrap=document.getElementById('slidesWrap');
   var dots=document.getElementById('dotsWrap');
@@ -1958,59 +1926,12 @@ function startSlider(){clearInterval(SLIDE_TMR);SLIDE_TMR=setInterval(function()
 // ══════════════════════
 //  ROWS
 // ══════════════════════
-function buildTrendingList(limit){
-  limit = limit || 12;
-  // Score: recent years + high match/imdb → "trending now"
-  function score(it){
-    var y = parseInt(it.year,10)||0;
-    var m = parseFloat(it.match)||0;
-    var im = parseFloat(it.imdb)||0;
-    var recency = Math.max(0, Math.min(40, (y - 2000) * 1.2)); // newer → higher
-    return recency + m * 0.45 + im * 4;
-  }
-  var pool = [];
-  (MOVIES||[]).forEach(function(it){ pool.push({item:it,type:'movie',sc:score(it)}); });
-  (TV||[]).forEach(function(it){ pool.push({item:it,type:'tv',sc:score(it)}); });
-  (ANIME||[]).forEach(function(it){ pool.push({item:it,type:'anime',sc:score(it)}); });
-  pool.sort(function(a,b){ return b.sc - a.sc; });
-  // de-dupe by id, keep mix of types when possible
-  var seen={}, out=[];
-  for(var i=0;i<pool.length && out.length<limit;i++){
-    var id=pool[i].item.id;
-    if(seen[id]) continue;
-    seen[id]=1;
-    out.push(pool[i]);
-  }
-  return out;
-}
-function buildLatestList(limit){
-  limit = limit || 14;
-  var pool=[];
-  (MOVIES||[]).forEach(function(it){ pool.push({item:it,type:'movie'}); });
-  (TV||[]).forEach(function(it){ pool.push({item:it,type:'tv'}); });
-  (ANIME||[]).forEach(function(it){ pool.push({item:it,type:'anime'}); });
-  pool.sort(function(a,b){
-    var ya=parseInt(a.item.year,10)||0, yb=parseInt(b.item.year,10)||0;
-    if(yb!==ya) return yb-ya;
-    return (parseFloat(b.item.match)||0)-(parseFloat(a.item.match)||0);
-  });
-  var seen={}, out=[];
-  for(var i=0;i<pool.length && out.length<limit;i++){
-    if(seen[pool[i].item.id]) continue;
-    seen[pool[i].item.id]=1;
-    out.push(pool[i]);
-  }
-  return out;
-}
 function buildRows(){
-  var trending = buildTrendingList(12);
-  var latest = buildLatestList(14);
   var rows=[
-    {title:'Trending <b>Now</b>', items:trending.map(function(x){return x.item;}), types:trending.map(function(x){return x.type;}), sec:'home'},
-    {title:'Latest <b>Releases</b>', items:latest.map(function(x){return x.item;}), types:latest.map(function(x){return x.type;}), sec:'home'},
-    {title:'Top <b>Movies</b>',     items:MOVIES.slice(0,24),types:A('movie',Math.min(24,MOVIES.length)),sec:'movies'},
-    {title:'Binge-Worthy <b>Series</b>',items:TV.slice(0,24),types:A('tv',Math.min(24,TV.length)),sec:'tvshows'},
-    {title:'Anime <b>Picks</b>',    items:ANIME.slice(0,24),types:A('anime',Math.min(24,ANIME.length)),sec:'anime'},
+    {title:'Trending <b>Now</b>',   items:MOVIES.slice(0,5).concat(TV.slice(0,2)),types:A('movie',5).concat(A('tv',2)),sec:'home'},
+    {title:'Top <b>Movies</b>',     items:MOVIES,types:A('movie',MOVIES.length),sec:'movies'},
+    {title:'Binge-Worthy <b>Series</b>',items:TV,types:A('tv',TV.length),sec:'tvshows'},
+    {title:'Anime <b>Picks</b>',    items:ANIME,types:A('anime',ANIME.length),sec:'anime'},
   ];
   var html='';
   var mlItems=mlGetItems();
@@ -2282,25 +2203,19 @@ function startPlayer(item,type,s,ep){
   clearInterval(SLIDE_TMR);CUR_ITEM=item;CUR_TYPE=type;
   CUR_S=s||(item.seasons?item.seasons[0].s:1);
   if(s==null&&ep==null){
-    if(type==='tv'){
-      var ss=(item.seasons&&item.seasons.length)?item.seasons[0]:null;
-      s = ss ? (ss.s||1) : 1;
-      ep = (ss && ss.episodes && ss.episodes[0]) ? ss.episodes[0].e : 1;
-    } else if(type==='anime'&&!(item.isM||item.isMovie)){
-      ep = (item.episodes && item.episodes[0]) ? item.episodes[0].e : 1;
-    }
+    if(type==='tv'){s=item.seasons[0].s;ep=item.seasons[0].episodes[0].e;}
+    else if(type==='anime'&&!item.isM){ep=item.episodes[0].e;}
   }
   CUR_EP=s?{s:s,e:ep}:ep?{e:ep}:null;
   try{trackHistory(item,type,s,ep);}catch(e){}
   showPage('pg-player');
-  try{syncPlayerChrome();}catch(e){}
   document.getElementById('playTitle').textContent=item.title+(s&&ep?' · S'+s+'E'+ep:'');
   document.getElementById('playBackBtn').onclick=function(){
     document.getElementById('playFrame').innerHTML='';
     window.history.back();
   };
   document.getElementById('playFrame').innerHTML=
-    '<iframe src="'+buildSrc(type,item,s,ep)+'" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="origin"></iframe>';
+    '<iframe src="'+buildSrc(type,item,s,ep)+'" frameborder="0" allowfullscreen allow="autoplay;encrypted-media;picture-in-picture;fullscreen"></iframe>';
   updatePlayerListBtn();
   buildMobilePanel(item,type,s,ep);
   var pL=document.getElementById('pipL');
@@ -2428,7 +2343,7 @@ function mobPlayEp(k,s,ep){
   var r=R[k];if(!r)return;
   CUR_EP=s?{s:s,e:ep}:{e:ep};
   pushRoute(playPath(r.item,s,ep));
-  document.getElementById('playFrame').innerHTML='<iframe src="'+buildSrc(r.type,r.item,s,ep)+'" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="origin"></iframe>';
+  document.getElementById('playFrame').innerHTML='<iframe src="'+buildSrc(r.type,r.item,s,ep)+'" frameborder="0" allowfullscreen allow="autoplay;encrypted-media;picture-in-picture;fullscreen"></iframe>';
   document.getElementById('playTitle').textContent=r.item.title+(s?' · S'+s+'E'+ep:' · Ep'+ep);
   document.getElementById('mobTitle').textContent=r.item.title;
   var list=document.getElementById('mobEpList');
@@ -2463,83 +2378,16 @@ function playerToggleList(){
 // ══════════════════════
 //  BUILD SRC — Hindi server (server=2) as default
 // ══════════════════════
-var PLAY_PROVIDER = 'videasy'; // videasy | vidsrc | embeds | autoembed
-var PLAY_SERVER = 1;
-
-try {
-  var _pp = localStorage.getItem('sv_provider'); if (_pp) PLAY_PROVIDER = _pp;
-  var _ps = localStorage.getItem('sv_server'); if (_ps) PLAY_SERVER = Number(_ps) || 1;
-} catch (e) {}
-
-function setPlayProvider(p) {
-  PLAY_PROVIDER = p || 'videasy';
-  try { localStorage.setItem('sv_provider', PLAY_PROVIDER); } catch (e) {}
-  reloadPlayerFrame();
-  syncPlayerChrome();
-  showToast('Source: ' + PLAY_PROVIDER);
-}
-function setPlayServer(n) {
-  PLAY_SERVER = Number(n) || 1;
-  try { localStorage.setItem('sv_server', String(PLAY_SERVER)); } catch (e) {}
-  reloadPlayerFrame();
-  syncPlayerChrome();
-  showToast('Server ' + PLAY_SERVER);
-}
-function syncPlayerChrome() {
-  document.querySelectorAll('.prov-btn').forEach(function (b) {
-    b.classList.toggle('on', b.getAttribute('data-p') === PLAY_PROVIDER);
-  });
-  document.querySelectorAll('.srv-btn').forEach(function (b) {
-    b.classList.toggle('on', Number(b.getAttribute('data-s')) === PLAY_SERVER);
-  });
-  var row = document.getElementById('serverRow');
-  if (row) row.style.display = (PLAY_PROVIDER === 'videasy') ? '' : 'none';
-}
-function reloadPlayerFrame() {
-  if (!CUR_ITEM || !document.getElementById('pg-player').classList.contains('active')) return;
-  var s = CUR_EP && CUR_EP.s != null ? CUR_EP.s : null;
-  var e = CUR_EP && CUR_EP.e != null ? CUR_EP.e : null;
-  var frame = document.getElementById('playFrame');
-  if (!frame) return;
-  frame.innerHTML = '<iframe src="' + buildSrc(CUR_TYPE, CUR_ITEM, s, e) + '" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="origin"></iframe>';
-}
-function syncServerButtons() { syncPlayerChrome(); }
-
-function buildSrc(type, item, s, ep) {
-  var id = item.id;
-  s = s || 1;
-  ep = ep || 1;
-  var prov = PLAY_PROVIDER || 'videasy';
-
-  // --- Alternative embeds (often work when Videasy CDN CORS fails) ---
-  if (prov === 'vidsrc') {
-    if (type === 'movie') return 'https://vidsrc.xyz/embed/movie/' + id;
-    if (type === 'tv') return 'https://vidsrc.xyz/embed/tv/' + id + '/' + s + '/' + ep;
-    // anime often mapped as tv on vidsrc
-    if (item.isM || item.isMovie) return 'https://vidsrc.xyz/embed/movie/' + id;
-    return 'https://vidsrc.xyz/embed/tv/' + id + '/' + s + '/' + ep;
+function buildSrc(type,item,s,ep){
+  // server=2 is the Hindi dubbing server on VIDEASY
+  var p='?color=E50914&server=2&episodeSelector=true';
+  if(type==='movie')return 'https://player.videasy.net/movie/'+item.id+p;
+  if(type==='tv')return 'https://player.videasy.net/tv/'+item.id+'/'+s+'/'+ep+p;
+  if(type==='anime'){
+    if(item.isM)return 'https://player.videasy.net/anime/'+item.id+p;
+    return 'https://player.videasy.net/anime/'+item.id+'/'+ep+p;
   }
-  if (prov === 'embeds') {
-    if (type === 'movie' || item.isM || item.isMovie) return 'https://embed.su/embed/movie/' + id;
-    return 'https://embed.su/embed/tv/' + id + '/' + s + '/' + ep;
-  }
-  if (prov === 'autoembed') {
-    if (type === 'movie' || item.isM || item.isMovie) return 'https://player.autoembed.cc/embed/movie/' + id;
-    return 'https://player.autoembed.cc/embed/tv/' + id + '/' + s + '/' + ep;
-  }
-
-  // --- Videasy (default) ---
-  var p = '?color=E50914&server=' + PLAY_SERVER + '&episodeSelector=true';
-  var base = 'https://player.videasy.net';
-  if (type === 'movie') return base + '/movie/' + id + p;
-  if (type === 'tv') return base + '/tv/' + id + '/' + s + '/' + ep + p;
-  if (type === 'anime') {
-    if (item.isM || item.isMovie) return base + '/anime/' + id + p;
-    return base + '/anime/' + id + '/' + ep + p;
-  }
-  return base + '/movie/' + id + p;
 }
-
 
 function buildPipEps(){
   var list=document.getElementById('pipList');
@@ -2569,7 +2417,7 @@ function pipPlay(k,s,ep){
   var r=R[k];if(!r)return;
   CUR_EP=s?{s:s,e:ep}:{e:ep};
   pushRoute(playPath(r.item,s,ep));
-  document.getElementById('playFrame').innerHTML='<iframe src="'+buildSrc(r.type,r.item,s,ep)+'" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="origin"></iframe>';
+  document.getElementById('playFrame').innerHTML='<iframe src="'+buildSrc(r.type,r.item,s,ep)+'" frameborder="0" allowfullscreen allow="autoplay;encrypted-media;picture-in-picture;fullscreen"></iframe>';
   document.getElementById('playTitle').textContent=r.item.title+(s?' · S'+s+'E'+ep:' · Ep'+ep);
   buildPipEps();resetProg();
 }
