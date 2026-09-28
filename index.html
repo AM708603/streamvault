@@ -1425,6 +1425,13 @@ button:focus-visible,
           </button>
         </div>
       </div>
+      <div class="srv-row" id="providerRow">
+        <span class="srv-label">Source</span>
+        <button type="button" class="prov-btn on" data-p="videasy" onclick="setPlayProvider('videasy')">Videasy</button>
+        <button type="button" class="prov-btn" data-p="vidsrc" onclick="setPlayProvider('vidsrc')">VidSrc</button>
+        <button type="button" class="prov-btn" data-p="embeds" onclick="setPlayProvider('embeds')">EmbedSU</button>
+        <button type="button" class="prov-btn" data-p="autoembed" onclick="setPlayProvider('autoembed')">AutoEmbed</button>
+      </div>
       <div class="srv-row" id="serverRow">
         <span class="srv-label">Server</span>
         <button type="button" class="srv-btn on" data-s="1" onclick="setPlayServer(1)">1</button>
@@ -2286,14 +2293,14 @@ function startPlayer(item,type,s,ep){
   CUR_EP=s?{s:s,e:ep}:ep?{e:ep}:null;
   try{trackHistory(item,type,s,ep);}catch(e){}
   showPage('pg-player');
-  try{syncServerButtons();}catch(e){}
+  try{syncPlayerChrome();}catch(e){}
   document.getElementById('playTitle').textContent=item.title+(s&&ep?' · S'+s+'E'+ep:'');
   document.getElementById('playBackBtn').onclick=function(){
     document.getElementById('playFrame').innerHTML='';
     window.history.back();
   };
   document.getElementById('playFrame').innerHTML=
-    '<iframe src="'+buildSrc(type,item,s,ep)+'" frameborder="0" allowfullscreen allow="autoplay;encrypted-media;picture-in-picture;fullscreen"></iframe>';
+    '<iframe src="'+buildSrc(type,item,s,ep)+'" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="origin"></iframe>';
   updatePlayerListBtn();
   buildMobilePanel(item,type,s,ep);
   var pL=document.getElementById('pipL');
@@ -2421,7 +2428,7 @@ function mobPlayEp(k,s,ep){
   var r=R[k];if(!r)return;
   CUR_EP=s?{s:s,e:ep}:{e:ep};
   pushRoute(playPath(r.item,s,ep));
-  document.getElementById('playFrame').innerHTML='<iframe src="'+buildSrc(r.type,r.item,s,ep)+'" frameborder="0" allowfullscreen allow="autoplay;encrypted-media;picture-in-picture;fullscreen"></iframe>';
+  document.getElementById('playFrame').innerHTML='<iframe src="'+buildSrc(r.type,r.item,s,ep)+'" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="origin"></iframe>';
   document.getElementById('playTitle').textContent=r.item.title+(s?' · S'+s+'E'+ep:' · Ep'+ep);
   document.getElementById('mobTitle').textContent=r.item.title;
   var list=document.getElementById('mobEpList');
@@ -2456,48 +2463,83 @@ function playerToggleList(){
 // ══════════════════════
 //  BUILD SRC — Hindi server (server=2) as default
 // ══════════════════════
-var PLAY_SERVER = 2; // 1=default, 2=often Hindi, try others if stream fails
-function setPlayServer(n){
-  PLAY_SERVER = Number(n)||1;
-  try{ localStorage.setItem('sv_server', String(PLAY_SERVER)); }catch(e){}
-  // reload current iframe if playing
-  if(CUR_ITEM && document.getElementById('pg-player').classList.contains('active')){
-    var s = CUR_EP && CUR_EP.s != null ? CUR_EP.s : null;
-    var e = CUR_EP && CUR_EP.e != null ? CUR_EP.e : null;
-    var frame = document.getElementById('playFrame');
-    if(frame){
-      frame.innerHTML = '<iframe src="'+buildSrc(CUR_TYPE,CUR_ITEM,s,e)+'" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>';
-    }
-    document.querySelectorAll('.srv-btn').forEach(function(b){
-      b.classList.toggle('on', Number(b.getAttribute('data-s'))===PLAY_SERVER);
-    });
-    showToast('Switched to Server '+PLAY_SERVER);
-  }
-  syncServerButtons();
-}
-function syncServerButtons(){
-  document.querySelectorAll('.srv-btn').forEach(function(b){
-    b.classList.toggle('on', Number(b.getAttribute('data-s'))===PLAY_SERVER);
-  });
-}
-try{ var _ps=localStorage.getItem('sv_server'); if(_ps) PLAY_SERVER=Number(_ps)||2; }catch(e){}
+var PLAY_PROVIDER = 'videasy'; // videasy | vidsrc | embeds | autoembed
+var PLAY_SERVER = 1;
 
-function buildSrc(type,item,s,ep){
-  // Videasy embed — if one server fails (CORS/429), user can switch server
-  var p='?color=E50914&server='+PLAY_SERVER+'&episodeSelector=true';
-  var base='https://player.videasy.net';
-  if(type==='movie')return base+'/movie/'+item.id+p;
-  if(type==='tv'){
-    s = s || 1; ep = ep || 1;
-    return base+'/tv/'+item.id+'/'+s+'/'+ep+p;
-  }
-  if(type==='anime'){
-    if(item.isM || item.isMovie)return base+'/anime/'+item.id+p;
-    ep = ep || 1;
-    return base+'/anime/'+item.id+'/'+ep+p;
-  }
-  return base+'/movie/'+item.id+p;
+try {
+  var _pp = localStorage.getItem('sv_provider'); if (_pp) PLAY_PROVIDER = _pp;
+  var _ps = localStorage.getItem('sv_server'); if (_ps) PLAY_SERVER = Number(_ps) || 1;
+} catch (e) {}
+
+function setPlayProvider(p) {
+  PLAY_PROVIDER = p || 'videasy';
+  try { localStorage.setItem('sv_provider', PLAY_PROVIDER); } catch (e) {}
+  reloadPlayerFrame();
+  syncPlayerChrome();
+  showToast('Source: ' + PLAY_PROVIDER);
 }
+function setPlayServer(n) {
+  PLAY_SERVER = Number(n) || 1;
+  try { localStorage.setItem('sv_server', String(PLAY_SERVER)); } catch (e) {}
+  reloadPlayerFrame();
+  syncPlayerChrome();
+  showToast('Server ' + PLAY_SERVER);
+}
+function syncPlayerChrome() {
+  document.querySelectorAll('.prov-btn').forEach(function (b) {
+    b.classList.toggle('on', b.getAttribute('data-p') === PLAY_PROVIDER);
+  });
+  document.querySelectorAll('.srv-btn').forEach(function (b) {
+    b.classList.toggle('on', Number(b.getAttribute('data-s')) === PLAY_SERVER);
+  });
+  var row = document.getElementById('serverRow');
+  if (row) row.style.display = (PLAY_PROVIDER === 'videasy') ? '' : 'none';
+}
+function reloadPlayerFrame() {
+  if (!CUR_ITEM || !document.getElementById('pg-player').classList.contains('active')) return;
+  var s = CUR_EP && CUR_EP.s != null ? CUR_EP.s : null;
+  var e = CUR_EP && CUR_EP.e != null ? CUR_EP.e : null;
+  var frame = document.getElementById('playFrame');
+  if (!frame) return;
+  frame.innerHTML = '<iframe src="' + buildSrc(CUR_TYPE, CUR_ITEM, s, e) + '" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="origin"></iframe>';
+}
+function syncServerButtons() { syncPlayerChrome(); }
+
+function buildSrc(type, item, s, ep) {
+  var id = item.id;
+  s = s || 1;
+  ep = ep || 1;
+  var prov = PLAY_PROVIDER || 'videasy';
+
+  // --- Alternative embeds (often work when Videasy CDN CORS fails) ---
+  if (prov === 'vidsrc') {
+    if (type === 'movie') return 'https://vidsrc.xyz/embed/movie/' + id;
+    if (type === 'tv') return 'https://vidsrc.xyz/embed/tv/' + id + '/' + s + '/' + ep;
+    // anime often mapped as tv on vidsrc
+    if (item.isM || item.isMovie) return 'https://vidsrc.xyz/embed/movie/' + id;
+    return 'https://vidsrc.xyz/embed/tv/' + id + '/' + s + '/' + ep;
+  }
+  if (prov === 'embeds') {
+    if (type === 'movie' || item.isM || item.isMovie) return 'https://embed.su/embed/movie/' + id;
+    return 'https://embed.su/embed/tv/' + id + '/' + s + '/' + ep;
+  }
+  if (prov === 'autoembed') {
+    if (type === 'movie' || item.isM || item.isMovie) return 'https://player.autoembed.cc/embed/movie/' + id;
+    return 'https://player.autoembed.cc/embed/tv/' + id + '/' + s + '/' + ep;
+  }
+
+  // --- Videasy (default) ---
+  var p = '?color=E50914&server=' + PLAY_SERVER + '&episodeSelector=true';
+  var base = 'https://player.videasy.net';
+  if (type === 'movie') return base + '/movie/' + id + p;
+  if (type === 'tv') return base + '/tv/' + id + '/' + s + '/' + ep + p;
+  if (type === 'anime') {
+    if (item.isM || item.isMovie) return base + '/anime/' + id + p;
+    return base + '/anime/' + id + '/' + ep + p;
+  }
+  return base + '/movie/' + id + p;
+}
+
 
 function buildPipEps(){
   var list=document.getElementById('pipList');
@@ -2527,7 +2569,7 @@ function pipPlay(k,s,ep){
   var r=R[k];if(!r)return;
   CUR_EP=s?{s:s,e:ep}:{e:ep};
   pushRoute(playPath(r.item,s,ep));
-  document.getElementById('playFrame').innerHTML='<iframe src="'+buildSrc(r.type,r.item,s,ep)+'" frameborder="0" allowfullscreen allow="autoplay;encrypted-media;picture-in-picture;fullscreen"></iframe>';
+  document.getElementById('playFrame').innerHTML='<iframe src="'+buildSrc(r.type,r.item,s,ep)+'" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="origin"></iframe>';
   document.getElementById('playTitle').textContent=r.item.title+(s?' · S'+s+'E'+ep:' · Ep'+ep);
   buildPipEps();resetProg();
 }
