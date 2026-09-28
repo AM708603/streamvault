@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -91,35 +92,12 @@ a{color:inherit;text-decoration:none}
 
 /* ── PAGES ── */
 .page{display:none;min-height:100vh}
-
-.page:not(.active){
-  display:none !important;
-  visibility:hidden !important;
-  pointer-events:none !important;
-  height:0 !important;
-  overflow:hidden !important;
-}
-#pg-player:not(.active) .play-prog-row,
-#pg-player:not(.active) .play-prog-strip,
-#pg-player:not(.active) .play-panel-mobile,
-#pg-player:not(.active) .play-panel-desktop{
-  display:none !important;
-}
-
 .page.active{display:block}
-body:has(#pg-player.active) nav,
-body:has(#pg-player.active) .drawer,
-body.player-open nav,
-body.player-open .drawer{
-  display:none !important;
-  visibility:hidden !important;
-  pointer-events:none !important;
-}
 #pg-player.active{
   display:flex !important;flex-direction:column;
-  position:fixed;inset:0;z-index:2000;
+  position:fixed;inset:0;z-index:900;
   overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:unset;
-  background:#050505;
+  background:#000;
 }
 
 /* ── NAV ── */
@@ -575,7 +553,7 @@ nav.transparent{background:linear-gradient(to bottom,rgba(0,0,0,.75) 0%,transpar
   display:flex;align-items:center;justify-content:center;transition:all .2s;
 }
 .play-top-btn:hover{background:rgba(229,9,20,.8);border-color:var(--accent);color:#fff}
-.play-frame{min-height:min(56vw,420px);aspect-ratio:16/9;max-height:70vh;background:#000;position:relative;width:100%;padding-top:56.25%;background:#000}
+.play-frame{position:relative;width:100%;padding-top:56.25%;background:#000}
 .play-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:none}
 .play-prog-strip{height:3px;background:rgba(255,255,255,.08)}
 .play-prog-strip-fill{height:100%;background:var(--accent);width:0%;transition:width .5s linear;border-radius:0 2px 2px 0}
@@ -1450,23 +1428,6 @@ button:focus-visible,
 }
 .src-opt:hover{background:rgba(255,255,255,.06);color:#fff}
 .src-opt.on{color:#E50914;background:rgba(229,9,20,.12)}
-.src-group{
-  font-size:.58rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
-  color:#666;padding:10px 12px 4px;margin-top:2px;
-}
-.src-group:first-child{padding-top:6px}
-.src-hindi-tog{border-bottom:1px solid rgba(255,255,255,.08)!important;margin-bottom:4px;border-radius:7px 7px 0 0!important}
-.src-hindi-tog.on{color:#22c55e!important;background:rgba(34,197,94,.12)!important}
-.hindi-tip{
-  margin:10px 16px 0;padding:10px 14px;border-radius:8px;
-  background:rgba(229,9,20,.08);border:1px solid rgba(229,9,20,.25);
-  font-size:.72rem;line-height:1.5;color:#bbb;
-}
-.hindi-tip strong{color:#fff}
-.hindi-tip b{color:#E50914}
-
-
-
 
 </style>
 </head>
@@ -1488,7 +1449,7 @@ button:focus-visible,
               <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
               <span id="srcFabLabel">Videasy</span>
             </button>
-            <div class="src-menu" id="srcMenu"></div>
+            <div class="src-menu" id="srcMenu"></div></div>
           </div>
           <button class="play-top-btn" id="playListBtn" onclick="playerToggleList()" title="My List">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
@@ -1496,11 +1457,6 @@ button:focus-visible,
         </div>
       </div>
       <div class="play-frame" id="playFrame"></div>
-      <div id="hindiTip" class="hindi-tip">
-        <strong>🇮🇳 Hindi audio:</strong> After the video loads, open the player <b>Settings / Audio / Server</b> menu and choose <b>Hindi</b> if listed.
-        No free embed can force Hindi on every title — only films that have a Hindi dub on that server.
-      </div>
-
       <div class="play-prog-strip"><div class="play-prog-strip-fill" id="progStrip"></div></div>
     </div>
   </div>
@@ -1728,7 +1684,7 @@ button:focus-visible,
 // ══════════════════════
 //  CONFIG
 // ══════════════════════
-var CF = 'https://raspy-butterfly-0610.amworkmanage.workers.dev';
+var CF = 'https://streamvault.amworkmanage.workers.dev';
 var IB = 'https://image.tmdb.org/t/p/w1280';
 var IP = 'https://image.tmdb.org/t/p/w500';
 var IA = 'https://image.tmdb.org/t/p/w185';
@@ -1898,28 +1854,15 @@ function showPage(id){
   var nav=document.getElementById('nav');
   var drawer=document.getElementById('drawer');
   if(id==='pg-player'){
-    document.body.classList.add('player-open');
     document.getElementById('pg-player').scrollTop=0;
-    if(nav){ nav.style.display='none'; nav.setAttribute('aria-hidden','true'); }
-    if(drawer){ drawer.style.display='none'; drawer.classList.remove('show'); }
+    nav.style.display='none';
+    drawer.style.display='none';
+    drawer.classList.remove('show');
   }else{
-    document.body.classList.remove('player-open');
-    try{clearHindiTimer();}catch(e){}
-    // Clear player so progress/iframe never leak onto other pages
-    try{
-      var pf=document.getElementById('playFrame');
-      if(pf) pf.innerHTML='';
-      var strip=document.getElementById('progStrip'); if(strip) strip.style.width='0%';
-      var fill=document.getElementById('progFill'); if(fill) fill.style.width='0%';
-      var pct=document.getElementById('progPct'); if(pct) pct.textContent='0%';
-    }catch(e){}
     window.scrollTo({top:0,behavior:'instant'});
-    if(nav){
-      nav.style.display='';
-      nav.removeAttribute('aria-hidden');
-      nav.className=id==='pg-home'?'transparent':'solid';
-    }
-    if(drawer) drawer.style.display='';
+    nav.style.display='';
+    drawer.style.display='';
+    nav.className=id==='pg-home'?'transparent':'solid';
   }
 }
 function _goHome(){
@@ -2536,58 +2479,62 @@ function playerToggleList(){
 // ══════════════════════
 //  BUILD SRC — Hindi server (server=2) as default
 // ══════════════════════
-var PLAY_PROVIDER = 'filmu';
+var PLAY_PROVIDER = 'videasy';
 try { var _pp = localStorage.getItem('sv_provider'); if (_pp) PLAY_PROVIDER = _pp; } catch (e) {}
 
 // All embed sources (TMDB id). Domains change often — switch if one fails.
 var PLAYER_SOURCES = [
-  // Hindi / multi-audio oriented (still not guaranteed for every title)
-  { id: 'filmu', label: 'FilmU', group: 'hindi',
-    movie: function(id){ return 'https://embed.filmu.in/movie/'+id; },
-    tv: function(id,s,e){ return 'https://embed.filmu.in/tv/'+id+'/'+s+'/'+e; } },
-  { id: 'moviesapi', label: 'MoviesAPI', group: 'hindi',
-    movie: function(id){ return 'https://moviesapi.to/movie/'+id; },
-    tv: function(id,s,e){ return 'https://moviesapi.to/tv/'+id+'-'+s+'-'+e; } },
-  { id: 'letsembed', label: 'LetsEmbed', group: 'hindi',
-    movie: function(id){ return 'https://letsembed.cc/embed/movie/?id='+id; },
-    tv: function(id,s,e){ return 'https://letsembed.cc/embed/tv/?id='+id+'/'+s+'/'+e; } },
-  { id: 'vidspark', label: 'VidSpark', group: 'hindi',
-    movie: function(id){ return 'https://vidspark.to/movie/'+id; },
-    tv: function(id,s,e){ return 'https://vidspark.to/tv/'+id+'/'+s+'/'+e; } },
-  { id: 'multiembed', label: 'MultiEmbed', group: 'hindi',
-    movie: function(id){ return 'https://multiembed.mov/?video_id='+id+'&tmdb=1'; },
-    tv: function(id,s,e){ return 'https://multiembed.mov/?video_id='+id+'&tmdb=1&s='+s+'&e='+e; } },
-  { id: '2embed', label: '2Embed', group: 'hindi',
-    movie: function(id){ return 'https://www.2embed.cc/embed/'+id; },
-    tv: function(id,s,e){ return 'https://www.2embed.cc/embedtv/'+id+'&s='+s+'&e='+e; } },
-  { id: 'autoembed', label: 'AutoEmbed', group: 'hindi',
-    movie: function(id){ return 'https://autoembed.co/movie/tmdb/'+id; },
-    tv: function(id,s,e){ return 'https://autoembed.co/tv/tmdb/'+id+'-'+s+'-'+e; } },
-  { id: 'nontongo', label: 'NontonGo', group: 'hindi',
-    movie: function(id){ return 'https://www.nontongo.win/embed/movie/'+id; },
-    tv: function(id,s,e){ return 'https://www.nontongo.win/embed/tv/'+id+'/'+s+'/'+e; } },
-  // General English-first
-  { id: 'videasy', label: 'Videasy', group: 'general',
-    movie: function(id){ return 'https://player.videasy.ws/embed/movie/'+id+'?ds_lang=hi'; },
-    tv: function(id,s,e){ return 'https://player.videasy.ws/embed/tv/'+id+'/'+s+'/'+e+'?ds_lang=hi&autonext=1'; } },
-  { id: 'vidfast', label: 'VidFast', group: 'general',
-    movie: function(id){ return 'https://vidfast.pro/movie/'+id; },
-    tv: function(id,s,e){ return 'https://vidfast.pro/tv/'+id+'/'+s+'/'+e; } },
-  { id: 'vidlink', label: 'VidLink', group: 'general',
-    movie: function(id){ return 'https://vidlink.pro/movie/'+id; },
-    tv: function(id,s,e){ return 'https://vidlink.pro/tv/'+id+'/'+s+'/'+e; } },
-  { id: 'vidking', label: 'VidKing', group: 'general',
-    movie: function(id){ return 'https://www.vidking.net/embed/movie/'+id+'?color=E50914'; },
-    tv: function(id,s,e){ return 'https://www.vidking.net/embed/tv/'+id+'/'+s+'/'+e+'?color=E50914&nextEpisode=true&episodeSelector=true'; } },
-  { id: 'vidsrcxyz', label: 'VidSrc.xyz', group: 'general',
-    movie: function(id){ return 'https://vidsrc.xyz/embed/movie/'+id; },
-    tv: function(id,s,e){ return 'https://vidsrc.xyz/embed/tv/'+id+'/'+s+'/'+e; } },
-  { id: 'vidsrcmov', label: 'VidSrc.mov', group: 'general',
+  { id: 'videasy',     label: 'Videasy',
+    movie: function(id){ return 'https://player.videasy.ws/embed/movie/'+id+'?ds_lang=en'; },
+    tv: function(id,s,e){ return 'https://player.videasy.ws/embed/tv/'+id+'/'+s+'/'+e+'?ds_lang=en&autonext=1'; } },
+  { id: 'vidsrcmov',   label: 'VidSrc.mov',
     movie: function(id){ return 'https://vidsrc.mov/embed/movie/'+id; },
     tv: function(id,s,e){ return 'https://vidsrc.mov/embed/tv/'+id+'/'+s+'/'+e; } },
-  { id: 'embedsu', label: 'EmbedSU', group: 'general',
+  { id: 'vidsrcfyi',   label: 'VidSrc.fyi',
+    movie: function(id){ return 'https://vidsrc.fyi/embed/movie/'+id; },
+    tv: function(id,s,e){ return 'https://vidsrc.fyi/embed/tv/'+id+'/'+s+'/'+e; } },
+  { id: 'vidsrcxyz',   label: 'VidSrc.xyz',
+    movie: function(id){ return 'https://vidsrc.xyz/embed/movie/'+id; },
+    tv: function(id,s,e){ return 'https://vidsrc.xyz/embed/tv/'+id+'/'+s+'/'+e; } },
+  { id: 'vidrock',     label: 'VidRock',
+    movie: function(id){ return 'https://vidrock.net/movie/'+id; },
+    tv: function(id,s,e){ return 'https://vidrock.net/tv/'+id+'/'+s+'/'+e; } },
+  { id: 'vidnest',     label: 'Vidnest',
+    movie: function(id){ return 'https://vidnest.fun/movie/'+id; },
+    tv: function(id,s,e){ return 'https://vidnest.fun/tv/'+id+'/'+s+'/'+e; } },
+  { id: 'vidking',     label: 'VidKing',
+    movie: function(id){ return 'https://www.vidking.net/embed/movie/'+id+'?color=E50914'; },
+    tv: function(id,s,e){ return 'https://www.vidking.net/embed/tv/'+id+'/'+s+'/'+e+'?color=E50914&nextEpisode=true&episodeSelector=true'; } },
+  { id: 'vidlink',     label: 'VidLink',
+    movie: function(id){ return 'https://vidlink.pro/movie/'+id; },
+    tv: function(id,s,e){ return 'https://vidlink.pro/tv/'+id+'/'+s+'/'+e; } },
+  { id: 'vidfast',     label: 'VidFast',
+    movie: function(id){ return 'https://vidfast.pro/movie/'+id; },
+    tv: function(id,s,e){ return 'https://vidfast.pro/tv/'+id+'/'+s+'/'+e; } },
+  { id: 'vidup',       label: 'VidUp',
+    movie: function(id){ return 'https://vidup.io/embed/movie/'+id; },
+    tv: function(id,s,e){ return 'https://vidup.io/embed/tv/'+id+'/'+s+'/'+e; } },
+  { id: 'movies111',   label: '111Movies',
+    movie: function(id){ return 'https://111movies.com/movie/'+id; },
+    tv: function(id,s,e){ return 'https://111movies.com/tv/'+id+'/'+s+'/'+e; } },
+  { id: '2embed',      label: '2Embed',
+    movie: function(id){ return 'https://www.2embed.cc/embed/'+id; },
+    tv: function(id,s,e){ return 'https://www.2embed.cc/embedtv/'+id+'&s='+s+'&e='+e; } },
+  { id: 'multiembed',  label: 'MultiEmbed',
+    movie: function(id){ return 'https://multiembed.mov/?video_id='+id+'&tmdb=1'; },
+    tv: function(id,s,e){ return 'https://multiembed.mov/?video_id='+id+'&tmdb=1&s='+s+'&e='+e; } },
+  { id: 'superflix',   label: 'SuperFlix',
+    movie: function(id){ return 'https://multiembed.mov/directstream.php?video_id='+id+'&tmdb=1'; },
+    tv: function(id,s,e){ return 'https://multiembed.mov/directstream.php?video_id='+id+'&tmdb=1&s='+s+'&e='+e; } },
+  { id: 'peachify',    label: 'Peachify',
+    movie: function(id){ return 'https://peachify.pro/embed/movie/'+id; },
+    tv: function(id,s,e){ return 'https://peachify.pro/embed/tv/'+id+'/'+s+'/'+e; } },
+  { id: 'embedsu',     label: 'EmbedSU',
     movie: function(id){ return 'https://embed.su/embed/movie/'+id; },
-    tv: function(id,s,e){ return 'https://embed.su/embed/tv/'+id+'/'+s+'/'+e; } }
+    tv: function(id,s,e){ return 'https://embed.su/embed/tv/'+id+'/'+s+'/'+e; } },
+  { id: 'autoembed',   label: 'AutoEmbed',
+    movie: function(id){ return 'https://player.autoembed.cc/embed/movie/'+id; },
+    tv: function(id,s,e){ return 'https://player.autoembed.cc/embed/tv/'+id+'/'+s+'/'+e; } }
 ];
 
 function getPlayerSource(id) {
@@ -2600,40 +2547,12 @@ function playerLabel(id) {
   var p = getPlayerSource(id);
   return p ? p.label : id;
 }
-// Hindi auto-chain: try Hindi-friendly sources in order until one works
-var HINDI_AUTO = true;
-var HINDI_CHAIN = ['filmu','moviesapi','letsembed','vidspark','multiembed','2embed','autoembed','nontongo','vidfast','vidlink'];
-var _hindiIdx = 0;
-var _hindiTimer = null;
-var _hindiGotProgress = false;
-var _hindiTrying = false;
-
-try {
-  var _ha = localStorage.getItem('sv_hindi_auto');
-  if (_ha === '0') HINDI_AUTO = false;
-  if (_ha === '1') HINDI_AUTO = true;
-} catch (e) {}
-
-function hindiChainList() {
-  return HINDI_CHAIN.filter(function(id){
-    return PLAYER_SOURCES.some(function(p){ return p.id === id; });
-  });
-}
-function setHindiAuto(on) {
-  HINDI_AUTO = !!on;
-  try { localStorage.setItem('sv_hindi_auto', HINDI_AUTO ? '1' : '0'); } catch (e) {}
-  syncPlayerChrome();
-  showToast(HINDI_AUTO ? 'Hindi auto-switch ON' : 'Hindi auto-switch OFF');
-  if (HINDI_AUTO && CUR_ITEM) startHindiAutoSeek(true);
-}
-function setPlayProvider(p, silent) {
-  clearHindiTimer();
-  PLAY_PROVIDER = p || 'multiembed';
+function setPlayProvider(p) {
+  PLAY_PROVIDER = p || 'videasy';
   try { localStorage.setItem('sv_provider', PLAY_PROVIDER); } catch (e) {}
   reloadPlayerFrame();
   syncPlayerChrome();
-  if (!silent) showToast('Source: ' + playerLabel(PLAY_PROVIDER));
-  if (HINDI_AUTO) scheduleHindiFailover();
+  showToast('Source: ' + playerLabel(PLAY_PROVIDER));
 }
 function toggleSrcMenu() {
   var m = document.getElementById('srcMenu');
@@ -2641,34 +2560,19 @@ function toggleSrcMenu() {
 }
 function syncPlayerChrome() {
   var lab = document.getElementById('srcFabLabel');
-  if (lab) {
-    lab.textContent = (HINDI_AUTO ? '🇮🇳 ' : '') + playerLabel(PLAY_PROVIDER);
-  }
+  if (lab) lab.textContent = playerLabel(PLAY_PROVIDER);
   document.querySelectorAll('.src-opt').forEach(function (b) {
     b.classList.toggle('on', b.getAttribute('data-p') === PLAY_PROVIDER);
   });
-  var tog = document.getElementById('hindiAutoTog');
-  if (tog) tog.classList.toggle('on', HINDI_AUTO);
   var menu = document.getElementById('srcMenu');
   if (menu) menu.classList.remove('open');
 }
 function buildSrcMenu() {
   var menu = document.getElementById('srcMenu');
   if (!menu) return;
-  var html = '';
-  html += '<button type="button" class="src-opt src-hindi-tog'+(HINDI_AUTO?' on':'')+'" id="hindiAutoTog" onclick="setHindiAuto(!HINDI_AUTO)">🇮🇳 Hindi auto-switch '+(HINDI_AUTO?'ON':'OFF')+'</button>';
-  html += '<button type="button" class="src-opt" onclick="tryNextHindiSource(true)">⏭ Next Hindi source</button>';
-  html += '<div class="src-group">Hindi-friendly</div>';
-  var lastGroup = 'hindi';
-  PLAYER_SOURCES.forEach(function (p) {
-    var g = p.group || 'general';
-    if (g !== lastGroup) {
-      lastGroup = g;
-      html += '<div class="src-group">'+(g==='hindi'?'Hindi-friendly':'More sources')+'</div>';
-    }
-    html += '<button type="button" class="src-opt'+(p.id===PLAY_PROVIDER?' on':'')+'" data-p="'+p.id+'" onclick="setPlayProvider(\''+p.id+'\')">'+p.label+'</button>';
-  });
-  menu.innerHTML = html;
+  menu.innerHTML = PLAYER_SOURCES.map(function (p) {
+    return '<button type="button" class="src-opt'+(p.id===PLAY_PROVIDER?' on':'')+'" data-p="'+p.id+'" onclick="setPlayProvider(\''+p.id+'\')">'+p.label+'</button>';
+  }).join('');
 }
 document.addEventListener('click', function (e) {
   var fab = document.getElementById('srcFab');
@@ -2676,72 +2580,13 @@ document.addEventListener('click', function (e) {
   var m = document.getElementById('srcMenu');
   if (m) m.classList.remove('open');
 });
-function clearHindiTimer() {
-  if (_hindiTimer) { clearTimeout(_hindiTimer); _hindiTimer = null; }
-}
-function scheduleHindiFailover() {
-  clearHindiTimer();
-  if (!HINDI_AUTO) return;
-  _hindiGotProgress = false;
-  // If no playback progress signal within 12s, try next Hindi-friendly source
-  _hindiTimer = setTimeout(function(){
-    if (!HINDI_AUTO) return;
-    if (_hindiGotProgress) return;
-    if (!document.getElementById('pg-player') || !document.getElementById('pg-player').classList.contains('active')) return;
-    tryNextHindiSource(false);
-  }, 12000);
-}
-function startHindiAutoSeek(reset) {
-  var chain = hindiChainList();
-  if (!chain.length) return;
-  if (reset) _hindiIdx = 0;
-  // Prefer current if already in chain
-  var cur = chain.indexOf(PLAY_PROVIDER);
-  if (cur >= 0) _hindiIdx = cur;
-  else {
-    _hindiIdx = 0;
-    PLAY_PROVIDER = chain[0];
-    try { localStorage.setItem('sv_provider', PLAY_PROVIDER); } catch (e) {}
-  }
-  reloadPlayerFrame();
-  syncPlayerChrome();
-  scheduleHindiFailover();
-}
-function tryNextHindiSource(manual) {
-  if (_hindiTrying) return;
-  var chain = hindiChainList();
-  if (!chain.length) return;
-  _hindiTrying = true;
-  var start = _hindiIdx;
-  _hindiIdx = (_hindiIdx + 1) % chain.length;
-  // full loop on auto → stop
-  if (!manual && _hindiIdx === 0) {
-    _hindiTrying = false;
-    showToast('No Hindi source responded — try manually');
-    clearHindiTimer();
-    return;
-  }
-  PLAY_PROVIDER = chain[_hindiIdx];
-  try { localStorage.setItem('sv_provider', PLAY_PROVIDER); } catch (e) {}
-  _hindiGotProgress = false;
-  reloadPlayerFrame();
-  syncPlayerChrome();
-  showToast((manual ? 'Switched: ' : 'Auto Hindi → ') + playerLabel(PLAY_PROVIDER));
-  _hindiTrying = false;
-  if (HINDI_AUTO) scheduleHindiFailover();
-}
-function markHindiProgress() {
-  _hindiGotProgress = true;
-  clearHindiTimer();
-}
 function reloadPlayerFrame() {
   if (!CUR_ITEM || !document.getElementById('pg-player').classList.contains('active')) return;
   var s = CUR_EP && CUR_EP.s != null ? CUR_EP.s : null;
   var e = CUR_EP && CUR_EP.e != null ? CUR_EP.e : null;
   var frame = document.getElementById('playFrame');
   if (!frame) return;
-  var url = buildSrc(CUR_TYPE, CUR_ITEM, s, e);
-  frame.innerHTML = '<iframe src="'+url+'" frameborder="0" allowfullscreen allow="encrypted-media; autoplay; fullscreen" referrerpolicy="origin"></iframe>';
+  frame.innerHTML = '<iframe src="'+buildSrc(CUR_TYPE,CUR_ITEM,s,e)+'" frameborder="0" allowfullscreen allow="encrypted-media; autoplay; fullscreen" referrerpolicy="origin"></iframe>';
 }
 function syncServerButtons() { syncPlayerChrome(); }
 
@@ -3193,7 +3038,6 @@ window.addEventListener('message', function (event) {
     var progress = d.player_progress;
     var duration = d.player_duration;
     if (status === 'playing' || status === 'paused' || status === 'seeked') {
-      try{markHindiProgress();}catch(e){}
       // optional UI progress
       if (duration && progress != null) {
         var pct = Math.min(100, Math.round((progress / duration) * 100));
@@ -3371,7 +3215,7 @@ if (document.readyState === 'loading') {
 <script>
 var REQ_TYPE='movie';
 function openRequest(){
-  if(typeof requireLogin==='function' && !requireLogin())return;
+  if(!requireLogin())return;
   document.getElementById('reqTitle').value='';
   document.getElementById('reqName').value='';
   document.getElementById('reqNote').value='';
