@@ -673,7 +673,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 var TMDB_KEY = '3001c6b89778ec27b78f6294a1e2538d';
 var TMDB_BASE = 'https://api.themoviedb.org/3';
 var IMG_BASE = 'https://image.tmdb.org/t/p/';
-var DEFAULT_WORKER_URL = 'https://raspy-butterfly-0610.amworkmanage.workers.dev';
+var DEFAULT_WORKER_URL = 'https://streamvault.borntow2.workers.dev';
 var WORKER_URL = DEFAULT_WORKER_URL;
 var ADMIN_PASS = '';
 var ADMIN_EMAIL = '';
@@ -915,7 +915,7 @@ function renderRecentFromList(list) {
       '<td><span style="color:var(--text3)">'+(it.genre||'—')+'</span></td>'+
       '<td><div style="display:flex;gap:.35rem">'+
         '<button class="btn btn-sec btn-xs" onclick="editItem('+it.id+',\''+tp+'\')">Edit</button>'+
-        '<button class="btn btn-danger btn-xs" onclick="handleDelete('+it.id+',\''+tp+'\',\''+esc(it.title||'')+'\')">Del</button>'+
+        '<button class="btn btn-danger btn-xs" onclick="handleDelete('+it.id+',\''+tp+'\')">Del</button>'+
       '</div></td>'+
     '</tr>';
   }).join('');
@@ -960,7 +960,7 @@ function renderGrid(type, filter, genreFilter, sortMode) {
         '<div class="cc-meta">'+(it.year||'')+((it.year&&it.genre)?' · ':'')+esc(it.genre||'')+'</div>'+
         '<div class="cc-actions">'+
           '<button class="btn btn-sec btn-xs" onclick="event.stopPropagation();editItem('+it.id+',\''+type+'\')" style="flex:1">Edit</button>'+
-          '<button class="btn btn-danger btn-xs" onclick="event.stopPropagation();handleDelete('+it.id+',\''+type+'\',\''+esc(it.title||'')+'\')">✕</button>'+
+          '<button class="btn btn-danger btn-xs" onclick="event.stopPropagation();handleDelete('+it.id+',\''+type+'\')">✕</button>'+
         '</div>'+
       '</div>'+
     '</div>';
@@ -1221,11 +1221,17 @@ function saveItem() {
 var _pendingDel = null;
 
 function handleDelete(id, type, title) {
+  // Resolve title from DB if missing (avoids broken onclick with apostrophes in titles)
+  if (!title) {
+    var key = type==='movie' ? 'movies' : type==='tv' ? 'tvshows' : 'anime';
+    var found = (DB[key]||[]).find(function(x){ return Number(x.id) === Number(id); });
+    title = found ? (found.title || 'this title') : 'this title';
+  }
   var useConfirm = document.getElementById('toggleConfirmDel') ? document.getElementById('toggleConfirmDel').checked : true;
   if (!useConfirm) { delItem(id, type); return; }
   _pendingDel = { id: id, type: type };
   document.getElementById('confirmIcon').textContent = '🗑️';
-  document.getElementById('confirmTitle').textContent = 'Delete "'+title+'"?';
+  document.getElementById('confirmTitle').textContent = 'Delete "'+String(title).replace(/"/g,'')+'"?';
   document.getElementById('confirmMsg').textContent = 'This title will be permanently removed from your Cloudflare KV database. This cannot be undone.';
   document.getElementById('confirmOkBtn').textContent = 'Delete';
   // ✅ FIX: capture id and type in closure — don't rely on _pendingDel being intact
@@ -1670,7 +1676,7 @@ function editApiKey() {
 // ═══════════════════════════════
 //  UTILS
 // ═══════════════════════════════
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 var _tt;
 function toast(msg, type) {
   var t = document.getElementById('toast');
