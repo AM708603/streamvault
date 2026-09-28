@@ -1457,6 +1457,14 @@ button:focus-visible,
 .src-group:first-child{padding-top:6px}
 .src-hindi-tog{border-bottom:1px solid rgba(255,255,255,.08)!important;margin-bottom:4px;border-radius:7px 7px 0 0!important}
 .src-hindi-tog.on{color:#22c55e!important;background:rgba(34,197,94,.12)!important}
+.hindi-tip{
+  margin:10px 16px 0;padding:10px 14px;border-radius:8px;
+  background:rgba(229,9,20,.08);border:1px solid rgba(229,9,20,.25);
+  font-size:.72rem;line-height:1.5;color:#bbb;
+}
+.hindi-tip strong{color:#fff}
+.hindi-tip b{color:#E50914}
+
 
 
 
@@ -1488,6 +1496,11 @@ button:focus-visible,
         </div>
       </div>
       <div class="play-frame" id="playFrame"></div>
+      <div id="hindiTip" class="hindi-tip">
+        <strong>🇮🇳 Hindi audio:</strong> After the video loads, open the player <b>Settings / Audio / Server</b> menu and choose <b>Hindi</b> if listed.
+        No free embed can force Hindi on every title — only films that have a Hindi dub on that server.
+      </div>
+
       <div class="play-prog-strip"><div class="play-prog-strip-fill" id="progStrip"></div></div>
     </div>
   </div>
@@ -2523,69 +2536,59 @@ function playerToggleList(){
 // ══════════════════════
 //  BUILD SRC — Hindi server (server=2) as default
 // ══════════════════════
-var PLAY_PROVIDER = 'multiembed';
+var PLAY_PROVIDER = 'filmu';
 try { var _pp = localStorage.getItem('sv_provider'); if (_pp) PLAY_PROVIDER = _pp; } catch (e) {}
 
 // All embed sources (TMDB id). Domains change often — switch if one fails.
 var PLAYER_SOURCES = [
-  // —— Hindi-friendly first (try these for dubbed audio) ——
-  { id: 'multiembed',  label: 'MultiEmbed', group: 'hindi',
+  // Hindi / multi-audio oriented (still not guaranteed for every title)
+  { id: 'filmu', label: 'FilmU', group: 'hindi',
+    movie: function(id){ return 'https://embed.filmu.in/movie/'+id; },
+    tv: function(id,s,e){ return 'https://embed.filmu.in/tv/'+id+'/'+s+'/'+e; } },
+  { id: 'moviesapi', label: 'MoviesAPI', group: 'hindi',
+    movie: function(id){ return 'https://moviesapi.to/movie/'+id; },
+    tv: function(id,s,e){ return 'https://moviesapi.to/tv/'+id+'-'+s+'-'+e; } },
+  { id: 'letsembed', label: 'LetsEmbed', group: 'hindi',
+    movie: function(id){ return 'https://letsembed.cc/embed/movie/?id='+id; },
+    tv: function(id,s,e){ return 'https://letsembed.cc/embed/tv/?id='+id+'/'+s+'/'+e; } },
+  { id: 'vidspark', label: 'VidSpark', group: 'hindi',
+    movie: function(id){ return 'https://vidspark.to/movie/'+id; },
+    tv: function(id,s,e){ return 'https://vidspark.to/tv/'+id+'/'+s+'/'+e; } },
+  { id: 'multiembed', label: 'MultiEmbed', group: 'hindi',
     movie: function(id){ return 'https://multiembed.mov/?video_id='+id+'&tmdb=1'; },
     tv: function(id,s,e){ return 'https://multiembed.mov/?video_id='+id+'&tmdb=1&s='+s+'&e='+e; } },
-  { id: '2embed',      label: '2Embed', group: 'hindi',
+  { id: '2embed', label: '2Embed', group: 'hindi',
     movie: function(id){ return 'https://www.2embed.cc/embed/'+id; },
     tv: function(id,s,e){ return 'https://www.2embed.cc/embedtv/'+id+'&s='+s+'&e='+e; } },
-  { id: 'autoembed',   label: 'AutoEmbed', group: 'hindi',
-    movie: function(id){ return 'https://player.autoembed.cc/embed/movie/'+id; },
-    tv: function(id,s,e){ return 'https://player.autoembed.cc/embed/tv/'+id+'/'+s+'/'+e; } },
-  { id: 'superflix',   label: 'SuperFlix', group: 'hindi',
-    movie: function(id){ return 'https://multiembed.mov/directstream.php?video_id='+id+'&tmdb=1'; },
-    tv: function(id,s,e){ return 'https://multiembed.mov/directstream.php?video_id='+id+'&tmdb=1&s='+s+'&e='+e; } },
-  { id: 'embedsu',     label: 'EmbedSU', group: 'hindi',
-    movie: function(id){ return 'https://embed.su/embed/movie/'+id; },
-    tv: function(id,s,e){ return 'https://embed.su/embed/tv/'+id+'/'+s+'/'+e; } },
-  // —— General ——
-  { id: 'videasy',     label: 'Videasy', group: 'general',
-    movie: function(id){ return 'https://player.videasy.ws/embed/movie/'+id+'?ds_lang=en'; },
-    tv: function(id,s,e){ return 'https://player.videasy.ws/embed/tv/'+id+'/'+s+'/'+e+'?ds_lang=en&autonext=1'; } },
-  { id: 'vidsrcmov',   label: 'VidSrc.mov', group: 'general',
-    movie: function(id){ return 'https://vidsrc.mov/embed/movie/'+id; },
-    tv: function(id,s,e){ return 'https://vidsrc.mov/embed/tv/'+id+'/'+s+'/'+e; } },
-  { id: 'vidsrcfyi',   label: 'VidSrc.fyi', group: 'general',
-    movie: function(id){ return 'https://vidsrc.fyi/embed/movie/'+id; },
-    tv: function(id,s,e){ return 'https://vidsrc.fyi/embed/tv/'+id+'/'+s+'/'+e; } },
-  { id: 'vidsrcxyz',   label: 'VidSrc.xyz', group: 'general',
-    movie: function(id){ return 'https://vidsrc.xyz/embed/movie/'+id; },
-    tv: function(id,s,e){ return 'https://vidsrc.xyz/embed/tv/'+id+'/'+s+'/'+e; } },
-  { id: 'vidrock',     label: 'VidRock', group: 'general',
-    movie: function(id){ return 'https://vidrock.net/movie/'+id; },
-    tv: function(id,s,e){ return 'https://vidrock.net/tv/'+id+'/'+s+'/'+e; } },
-  { id: 'vidnest',     label: 'Vidnest', group: 'general',
-    movie: function(id){ return 'https://vidnest.fun/movie/'+id; },
-    tv: function(id,s,e){ return 'https://vidnest.fun/tv/'+id+'/'+s+'/'+e; } },
-  { id: 'vidking',     label: 'VidKing', group: 'general',
-    movie: function(id){ return 'https://www.vidking.net/embed/movie/'+id+'?color=E50914'; },
-    tv: function(id,s,e){ return 'https://www.vidking.net/embed/tv/'+id+'/'+s+'/'+e+'?color=E50914&nextEpisode=true&episodeSelector=true'; } },
-  { id: 'vidlink',     label: 'VidLink', group: 'general',
-    movie: function(id){ return 'https://vidlink.pro/movie/'+id; },
-    tv: function(id,s,e){ return 'https://vidlink.pro/tv/'+id+'/'+s+'/'+e; } },
-  { id: 'vidfast',     label: 'VidFast', group: 'general',
+  { id: 'autoembed', label: 'AutoEmbed', group: 'hindi',
+    movie: function(id){ return 'https://autoembed.co/movie/tmdb/'+id; },
+    tv: function(id,s,e){ return 'https://autoembed.co/tv/tmdb/'+id+'-'+s+'-'+e; } },
+  { id: 'nontongo', label: 'NontonGo', group: 'hindi',
+    movie: function(id){ return 'https://www.nontongo.win/embed/movie/'+id; },
+    tv: function(id,s,e){ return 'https://www.nontongo.win/embed/tv/'+id+'/'+s+'/'+e; } },
+  // General English-first
+  { id: 'videasy', label: 'Videasy', group: 'general',
+    movie: function(id){ return 'https://player.videasy.ws/embed/movie/'+id+'?ds_lang=hi'; },
+    tv: function(id,s,e){ return 'https://player.videasy.ws/embed/tv/'+id+'/'+s+'/'+e+'?ds_lang=hi&autonext=1'; } },
+  { id: 'vidfast', label: 'VidFast', group: 'general',
     movie: function(id){ return 'https://vidfast.pro/movie/'+id; },
     tv: function(id,s,e){ return 'https://vidfast.pro/tv/'+id+'/'+s+'/'+e; } },
-  { id: 'vidup',       label: 'VidUp', group: 'general',
-    movie: function(id){ return 'https://vidup.io/embed/movie/'+id; },
-    tv: function(id,s,e){ return 'https://vidup.io/embed/tv/'+id+'/'+s+'/'+e; } },
-  { id: 'movies111',   label: '111Movies', group: 'general',
-    movie: function(id){ return 'https://111movies.com/movie/'+id; },
-    tv: function(id,s,e){ return 'https://111movies.com/tv/'+id+'/'+s+'/'+e; } },
-  { id: 'peachify',    label: 'Peachify', group: 'general',
-    movie: function(id){ return 'https://peachify.pro/embed/movie/'+id; },
-    tv: function(id,s,e){ return 'https://peachify.pro/embed/tv/'+id+'/'+s+'/'+e; } }
+  { id: 'vidlink', label: 'VidLink', group: 'general',
+    movie: function(id){ return 'https://vidlink.pro/movie/'+id; },
+    tv: function(id,s,e){ return 'https://vidlink.pro/tv/'+id+'/'+s+'/'+e; } },
+  { id: 'vidking', label: 'VidKing', group: 'general',
+    movie: function(id){ return 'https://www.vidking.net/embed/movie/'+id+'?color=E50914'; },
+    tv: function(id,s,e){ return 'https://www.vidking.net/embed/tv/'+id+'/'+s+'/'+e+'?color=E50914&nextEpisode=true&episodeSelector=true'; } },
+  { id: 'vidsrcxyz', label: 'VidSrc.xyz', group: 'general',
+    movie: function(id){ return 'https://vidsrc.xyz/embed/movie/'+id; },
+    tv: function(id,s,e){ return 'https://vidsrc.xyz/embed/tv/'+id+'/'+s+'/'+e; } },
+  { id: 'vidsrcmov', label: 'VidSrc.mov', group: 'general',
+    movie: function(id){ return 'https://vidsrc.mov/embed/movie/'+id; },
+    tv: function(id,s,e){ return 'https://vidsrc.mov/embed/tv/'+id+'/'+s+'/'+e; } },
+  { id: 'embedsu', label: 'EmbedSU', group: 'general',
+    movie: function(id){ return 'https://embed.su/embed/movie/'+id; },
+    tv: function(id,s,e){ return 'https://embed.su/embed/tv/'+id+'/'+s+'/'+e; } }
 ]
-
-function getPlayerSource(id) {
-  for (var i = 0; i < PLAYER_SOURCES.length; i++) {
-    if (PLAYER_SOURCES[i].id === id) return PLAYER_SOURCES[i];
   }
   return PLAYER_SOURCES[0];
 }
@@ -2595,7 +2598,7 @@ function playerLabel(id) {
 }
 // Hindi auto-chain: try Hindi-friendly sources in order until one works
 var HINDI_AUTO = true;
-var HINDI_CHAIN = ['multiembed','2embed','autoembed','superflix','embedsu','vidfast','vidlink','vidsrcmov','videasy'];
+var HINDI_CHAIN = ['filmu','moviesapi','letsembed','vidspark','multiembed','2embed','autoembed','nontongo','vidfast','vidlink'];
 var _hindiIdx = 0;
 var _hindiTimer = null;
 var _hindiGotProgress = false;
