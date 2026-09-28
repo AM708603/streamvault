@@ -1771,9 +1771,20 @@ async function init(){
   }catch(e){
     console.warn('[StreamVault] cannot reach Worker at', CF, e);
   }
-MOVIES=MOVIES.slice().sort(function(a,b){return b.year-a.year||MOVIES.indexOf(b)-MOVIES.indexOf(a);});
-TV=TV.slice().sort(function(a,b){return b.year-a.year||TV.indexOf(b)-TV.indexOf(a);});
-ANIME=ANIME.slice().sort(function(a,b){return b.year-a.year||ANIME.indexOf(b)-ANIME.indexOf(a);});
+// Latest releases first (year desc), then higher match / rating
+  function sortLatest(arr){
+    return (arr||[]).slice().sort(function(a,b){
+      var ya=parseInt(a.year,10)||0, yb=parseInt(b.year,10)||0;
+      if(yb!==ya) return yb-ya;
+      var ma=parseFloat(a.match)||parseFloat(a.imdb)*10||0;
+      var mb=parseFloat(b.match)||parseFloat(b.imdb)*10||0;
+      if(mb!==ma) return mb-ma;
+      return String(a.title||'').localeCompare(String(b.title||''));
+    });
+  }
+  MOVIES=sortLatest(MOVIES);
+  TV=sortLatest(TV);
+  ANIME=sortLatest(ANIME);
   buildSlides();
   buildRows();
   handleRoute(window.location.pathname);
@@ -1860,14 +1871,20 @@ function goMyList(){pushRoute('/mylist');_goMyList();}
 //  SLIDER
 // ══════════════════════
 function buildSlides(){
-  var heroMovies=MOVIES.slice(0,5).map(function(item){return{item:item,type:'movie'};});
-  var heroTV=TV.slice(0,5).map(function(item){return{item:item,type:'tv'};});
-  var heroAnime=ANIME.slice(0,5).map(function(item){return{item:item,type:'anime'};});
-  HERO_ITEMS=[];
-  for(var i=0;i<5;i++){
-    if(heroMovies[i])HERO_ITEMS.push(heroMovies[i]);
-    if(heroTV[i])HERO_ITEMS.push(heroTV[i]);
-    if(heroAnime[i])HERO_ITEMS.push(heroAnime[i]);
+  // Hero: latest + trending mix (newest releases first)
+  var heroPool = [];
+  if (typeof buildTrendingList === 'function') {
+    heroPool = buildTrendingList(8);
+  } else {
+    var hm=MOVIES.slice(0,4).map(function(item){return{item:item,type:'movie'};});
+    var ht=TV.slice(0,3).map(function(item){return{item:item,type:'tv'};});
+    var ha=ANIME.slice(0,2).map(function(item){return{item:item,type:'anime'};});
+    heroPool = hm.concat(ht).concat(ha);
+  }
+  // Prefer items with backdrops, still ordered by trending score
+  HERO_ITEMS = heroPool.filter(function(x){ return x.item && x.item.backdrop; }).slice(0, 6);
+  if (HERO_ITEMS.length < 3) {
+    HERO_ITEMS = heroPool.slice(0, 6);
   }
   var wrap=document.getElementById('slidesWrap');
   var dots=document.getElementById('dotsWrap');
@@ -1926,9 +1943,56 @@ function startSlider(){clearInterval(SLIDE_TMR);SLIDE_TMR=setInterval(function()
 // ══════════════════════
 //  ROWS
 // ══════════════════════
+function buildTrendingList(limit){
+  limit = limit || 12;
+  // Score: recent years + high match/imdb → "trending now"
+  function score(it){
+    var y = parseInt(it.year,10)||0;
+    var m = parseFloat(it.match)||0;
+    var im = parseFloat(it.imdb)||0;
+    var recency = Math.max(0, Math.min(40, (y - 2000) * 1.2)); // newer → higher
+    return recency + m * 0.45 + im * 4;
+  }
+  var pool = [];
+  (MOVIES||[]).forEach(function(it){ pool.push({item:it,type:'movie',sc:score(it)}); });
+  (TV||[]).forEach(function(it){ pool.push({item:it,type:'tv',sc:score(it)}); });
+  (ANIME||[]).forEach(function(it){ pool.push({item:it,type:'anime',sc:score(it)}); });
+  pool.sort(function(a,b){ return b.sc - a.sc; });
+  // de-dupe by id, keep mix of types when possible
+  var seen={}, out=[];
+  for(var i=0;i<pool.length && out.length<limit;i++){
+    var id=pool[i].item.id;
+    if(seen[id]) continue;
+    seen[id]=1;
+    out.push(pool[i]);
+  }
+  return out;
+}
+function buildLatestList(limit){
+  limit = limit || 14;
+  var pool=[];
+  (MOVIES||[]).forEach(function(it){ pool.push({item:it,type:'movie'}); });
+  (TV||[]).forEach(function(it){ pool.push({item:it,type:'tv'}); });
+  (ANIME||[]).forEach(function(it){ pool.push({item:it,type:'anime'}); });
+  pool.sort(function(a,b){
+    var ya=parseInt(a.item.year,10)||0, yb=parseInt(b.item.year,10)||0;
+    if(yb!==ya) return yb-ya;
+    return (parseFloat(b.item.match)||0)-(parseFloat(a.item.match)||0);
+  });
+  var seen={}, out=[];
+  for(var i=0;i<pool.length && out.length<limit;i++){
+    if(seen[pool[i].item.id]) continue;
+    seen[pool[i].item.id]=1;
+    out.push(pool[i]);
+  }
+  return out;
+}
 function buildRows(){
+  var trending = buildTrendingList(12);
+  var latest = buildLatestList(14);
   var rows=[
-    {title:'Trending <b>Now</b>',   items:MOVIES.slice(0,5).concat(TV.slice(0,2)),types:A('movie',5).concat(A('tv',2)),sec:'home'},
+    {title:'Trending <b>Now</b>', items:trending.map(function(x){return x.item;}), types:trending.map(function(x){return x.type;}), sec:'home'},
+    {title:'Latest <b>Releases</b>', items:latest.map(function(x){return x.item;}), types:latest.map(function(x){return x.type;}), sec:'home'},
     {title:'Top <b>Movies</b>',     items:MOVIES,types:A('movie',MOVIES.length),sec:'movies'},
     {title:'Binge-Worthy <b>Series</b>',items:TV,types:A('tv',TV.length),sec:'tvshows'},
     {title:'Anime <b>Picks</b>',    items:ANIME,types:A('anime',ANIME.length),sec:'anime'},
