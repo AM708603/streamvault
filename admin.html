@@ -437,7 +437,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
         </div>
         <div style="padding:1.4rem 1.5rem">
           <p style="font-size:.82rem;color:var(--text2);margin-bottom:1.1rem;line-height:1.7">
-            Pull popular / top-rated titles from TMDB into your library. Same TMDB id is skipped. Episodes are optional (slower).
+            Pull popular / top-rated titles from TMDB. <strong style="color:var(--green)">Fast mode is near-instant</strong> (recommended). Full mode loads cast/details per title and is slower. Episodes are slowest — leave on Skip unless needed. Duplicates (same id) are skipped.
           </p>
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.8rem;margin-bottom:1rem">
             <div class="fg">
@@ -468,11 +468,18 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
               </select>
             </div>
             <div class="fg">
+              <label>Detail level</label>
+              <select id="bulkTmdbDepth" class="filter-select" style="width:100%;padding:.55rem .8rem">
+                <option value="fast" selected>Fast (list data only)</option>
+                <option value="full">Full (cast, runtime…)</option>
+              </select>
+            </div>
+            <div class="fg">
               <label>Episodes (TV/Anime)</label>
               <select id="bulkTmdbEps" class="filter-select" style="width:100%;padding:.55rem .8rem">
-                <option value="none" selected>Skip (fast)</option>
-                <option value="s1">Season 1 only</option>
-                <option value="all">Up to 5 seasons</option>
+                <option value="none" selected>Skip episodes</option>
+                <option value="s1">Season 1 only (slow)</option>
+                <option value="all">Up to 5 seasons (very slow)</option>
               </select>
             </div>
           </div>
@@ -1325,8 +1332,12 @@ function bulkListUrl(kind, source, page) {
 }
 
 async function enrichMovie(id) {
-  var details = await tmdbGet('/movie/' + id);
-  var credits = await tmdbGet('/movie/' + id + '/credits').catch(function(){ return { cast: [], crew: [] }; });
+  var pair = await Promise.all([
+    tmdbGet('/movie/' + id),
+    tmdbGet('/movie/' + id + '/credits').catch(function(){ return { cast: [], crew: [] }; })
+  ]);
+  var details = pair[0];
+  var credits = pair[1];
   var year = (details.release_date || '').slice(0, 4);
   var genres = (details.genres || []).map(function(g){ return g.name; });
   var crew = credits.crew || [];
@@ -1357,8 +1368,12 @@ async function enrichMovie(id) {
 }
 
 async function enrichTv(id, asAnime, epMode) {
-  var details = await tmdbGet('/tv/' + id);
-  var credits = await tmdbGet('/tv/' + id + '/credits').catch(function(){ return { cast: [], crew: [] }; });
+  var pair = await Promise.all([
+    tmdbGet('/tv/' + id),
+    tmdbGet('/tv/' + id + '/credits').catch(function(){ return { cast: [], crew: [] }; })
+  ]);
+  var details = pair[0];
+  var credits = pair[1];
   var year = (details.first_air_date || '').slice(0, 4);
   var genres = (details.genres || []).map(function(g){ return g.name; });
   var crew = credits.crew || [];
@@ -1434,30 +1449,83 @@ async function enrichTv(id, asAnime, epMode) {
               e: ep.episode_number,
               name: ep.name || ('Ep ' + ep.episode_number),
               dur: ep.runtime ? ep.runtime + 'm' : '45m',
-              desc: ep.overview || ''
-            };
-          })
-        };
-      });
-    }
+           async function collectResults(kind, source, pages) {
+  var results = [];
+  var seen = {};
+  // Fetch list pages in parallel
+  var pageNums = [];
+  for (var p = 1; p <= pages; p++) pageNums.push(p);
+  var pagesData = await Promise.all(pageNums.map(function(p) {
+    return tmdbGet(bulkListUrl(kind, source, p)).catch(function(){ return { results: [] }; });
+  }));
+  pagesData.forEach(function(data) {
+    (data.results || []).forEach(function(r) {
+      if (r && r.id && !seen[r.id]) {
+        seen[r.id] = true;
+        results.push(r);
+      }
+    });
+  });
+  return results;
+}
+
+/** Build item from TMDB list card only (no extra API calls) */
+function mapFromList(r, kind) {
+  var isMovie = kind === 'movie';
+  var title = isMovie ? (r.title || r.original_title) : (r.name || r.original_name);
+  var date = isMovie ? (r.release_date || '') : (r.first_air_date || '');
+  var year = date.slice(0, 4);
+  var vote = r.vote_average ? Number(Number(r.vote_average).toFixed(1)) : 0;
+  var item = {
+    id: r.id,
+    title: title || 'Untitled',
+    year: year,
+    genre: '',
+    rating: isMovie ? (r.adult ? 'R' : 'PG-13') : 'TV-14',
+    match: Math.min(99, Math.round((vote || 7) * 10)),
+    imdb: String(vote || ''),
+    runtime: '',
+    director: '',
+    studio: '',
+    poster: r.poster_path || '',
+    backdrop: r.backdrop_path || '',
+    desc: r.overview || '',
+    tags: [],
+    cast: [],
+    related: []
+  };
+  if (kind === 'anime') {
+    item.isMovie = false;
+    item.episodes = [];
+  } else if (kind === 'tv') {
+    item.seasons = [];
   }
   return item;
 }
 
-async function collectIds(kind, source, pages) {
-  var ids = [];
-  var seen = {};
-  for (var p = 1; p <= pages; p++) {
-    if (_bulkTmdbStop) break;
-    var data = await tmdbGet(bulkListUrl(kind, source, p));
-    (data.results || []).forEach(function(r) {
-      if (r && r.id && !seen[r.id]) {
-        seen[r.id] = true;
-        ids.push(r.id);
+/** Run async tasks with limited concurrency */
+async function runPool(items, concurrency, worker) {
+  var i = 0;
+  var done = 0;
+  var results = new Array(items.length);
+  async function next() {
+    while (i < items.length) {
+      if (_bulkTmdbStop) return;
+      var idx = i++;
+      try {
+        results[idx] = await worker(items[idx], idx);
+      } catch (e) {
+        results[idx] = { error: e };
       }
-    });
+      done++;
+      bulkProgress(done, items.length, 'Fetching ' + done + '/' + items.length);
+    }
   }
-  return ids;
+  var runners = [];
+  var n = Math.min(concurrency, items.length || 1);
+  for (var r = 0; r < n; r++) runners.push(next());
+  await Promise.all(runners);
+  return results;
 }
 
 async function startBulkTmdb() {
@@ -1467,13 +1535,18 @@ async function startBulkTmdb() {
   var source = document.getElementById('bulkTmdbSource').value;
   var pages = parseInt(document.getElementById('bulkTmdbPages').value, 10) || 3;
   var epMode = document.getElementById('bulkTmdbEps').value;
+  var depthEl = document.getElementById('bulkTmdbDepth');
+  var depth = depthEl ? depthEl.value : 'fast';
+  // Episodes force full depth
+  if (epMode !== 'none') depth = 'full';
+
   var btn = document.getElementById('bulkTmdbBtn');
   var stop = document.getElementById('bulkTmdbStop');
   var log = document.getElementById('bulkTmdbLog');
   if (log) log.innerHTML = '';
   btn.disabled = true;
   if (stop) stop.style.display = '';
-  bulkProgress(0, 1, 'Collecting lists...');
+  bulkProgress(0, 1, 'Loading lists...');
 
   var kinds = typeSel === 'all' ? ['movie', 'tv', 'anime'] : [typeSel];
   var existing = { movie: {}, tv: {}, anime: {} };
@@ -1481,18 +1554,18 @@ async function startBulkTmdb() {
   (DB.tvshows || []).forEach(function(m){ existing.tv[m.id] = true; });
   (DB.anime || []).forEach(function(m){ existing.anime[m.id] = true; });
 
-  var jobs = [];
+  var jobs = []; // {kind, raw}
   try {
     for (var k = 0; k < kinds.length; k++) {
       if (_bulkTmdbStop) break;
       var kind = kinds[k];
-      bulkLog('Listing ' + kind + ' (' + source + ', ' + pages + ' pages)...');
-      var ids = await collectIds(kind, source, pages);
-      bulkLog('Found ' + ids.length + ' ' + kind + ' ids');
-      ids.forEach(function(id) {
+      bulkLog('Listing ' + kind + '…');
+      var list = await collectResults(kind, source, pages);
+      bulkLog(kind + ': ' + list.length + ' from TMDB');
+      list.forEach(function(r) {
         var mapKind = kind === 'anime' ? 'anime' : kind;
-        if (existing[mapKind][id]) return;
-        jobs.push({ kind: kind, id: id });
+        if (existing[mapKind][r.id]) return;
+        jobs.push({ kind: kind, raw: r });
       });
     }
   } catch (e) {
@@ -1503,7 +1576,7 @@ async function startBulkTmdb() {
   }
 
   if (!jobs.length) {
-    bulkLog('Nothing new to import (all already in library).');
+    bulkLog('Nothing new — all already in library.');
     bulkProgress(1, 1, 'Done — 0 added');
     btn.disabled = false;
     if (stop) stop.style.display = 'none';
@@ -1511,44 +1584,56 @@ async function startBulkTmdb() {
     return;
   }
 
-  bulkLog('Enriching ' + jobs.length + ' titles...');
+  bulkLog((depth === 'fast' ? 'Fast mode: ' : 'Full mode: ') + jobs.length + ' titles…');
   var added = { movie: 0, tv: 0, anime: 0 };
   var failed = 0;
+  var t0 = Date.now();
 
-  for (var i = 0; i < jobs.length; i++) {
-    if (_bulkTmdbStop) {
-      bulkLog('Stopped by user.');
-      break;
-    }
-    var job = jobs[i];
-    bulkProgress(i, jobs.length, 'Fetching ' + (i + 1) + '/' + jobs.length);
-    try {
+  if (depth === 'fast') {
+    // Instant: map list cards only
+    jobs.forEach(function(job, idx) {
+      if (_bulkTmdbStop) return;
+      try {
+        var item = mapFromList(job.raw, job.kind);
+        if (job.kind === 'movie') { DB.movies.push(item); added.movie++; }
+        else if (job.kind === 'tv') { DB.tvshows.push(item); added.tv++; }
+        else { DB.anime.push(item); added.anime++; }
+      } catch (e) { failed++; }
+      if ((idx + 1) % 20 === 0 || idx === jobs.length - 1) {
+        bulkProgress(idx + 1, jobs.length, 'Mapped ' + (idx + 1) + '/' + jobs.length);
+      }
+    });
+    bulkLog('Mapped in ' + ((Date.now() - t0) / 1000).toFixed(1) + 's');
+  } else {
+    // Full: parallel detail+credits (6 at a time)
+    var CONCURRENCY = 10;
+    await runPool(jobs, CONCURRENCY, async function(job) {
+      if (_bulkTmdbStop) return null;
       var item;
       if (job.kind === 'movie') {
-        item = await enrichMovie(job.id);
+        item = await enrichMovie(job.raw.id);
         DB.movies.push(item);
         added.movie++;
-        bulkLog('✓ Movie: ' + item.title);
       } else if (job.kind === 'tv') {
-        item = await enrichTv(job.id, false, epMode);
+        item = await enrichTv(job.raw.id, false, epMode);
         DB.tvshows.push(item);
         added.tv++;
-        bulkLog('✓ TV: ' + item.title);
       } else {
-        item = await enrichTv(job.id, true, epMode);
+        item = await enrichTv(job.raw.id, true, epMode);
         DB.anime.push(item);
         added.anime++;
-        bulkLog('✓ Anime: ' + item.title);
       }
-      await new Promise(function(r){ setTimeout(r, 120); });
-    } catch (e) {
-      failed++;
-      bulkLog('✗ id ' + job.id + ': ' + (e.message || e));
-    }
+      return item;
+    });
+    bulkLog('Enriched in ' + ((Date.now() - t0) / 1000).toFixed(1) + 's');
   }
 
-  bulkProgress(jobs.length, jobs.length, 'Saving to Worker...');
-  bulkLog('Saving to Cloudflare KV...');
+  if (_bulkTmdbStop) {
+    bulkLog('Stopped — saving what we have…');
+  }
+
+  bulkProgress(1, 1, 'Saving to Worker…');
+  bulkLog('Saving to Cloudflare KV…');
   try {
     var res = await api('POST', '/api/bulk', {
       movies: DB.movies,
@@ -1564,7 +1649,9 @@ async function startBulkTmdb() {
       renderStats();
       populateGenreFilters();
       setSynced();
-      var msg = 'Added ' + added.movie + ' movies, ' + added.tv + ' TV, ' + added.anime + ' anime' + (failed ? (' · ' + failed + ' failed') : '');
+      var msg = 'Added ' + added.movie + ' movies, ' + added.tv + ' TV, ' + added.anime + ' anime'
+        + (failed ? (' · ' + failed + ' failed') : '')
+        + ' · ' + ((Date.now() - t0) / 1000).toFixed(1) + 's';
       bulkLog(msg);
       bulkProgress(1, 1, 'Done');
       toast(msg, 'ok');
