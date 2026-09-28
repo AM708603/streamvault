@@ -2588,7 +2588,11 @@ var PLAYER_SOURCES = [
   { id: 'embedsu', label: 'EmbedSU', group: 'general',
     movie: function(id){ return 'https://embed.su/embed/movie/'+id; },
     tv: function(id,s,e){ return 'https://embed.su/embed/tv/'+id+'/'+s+'/'+e; } }
-]
+];
+
+function getPlayerSource(id) {
+  for (var i = 0; i < PLAYER_SOURCES.length; i++) {
+    if (PLAYER_SOURCES[i].id === id) return PLAYER_SOURCES[i];
   }
   return PLAYER_SOURCES[0];
 }
@@ -3367,7 +3371,7 @@ if (document.readyState === 'loading') {
 <script>
 var REQ_TYPE='movie';
 function openRequest(){
-  if(!requireLogin())return;
+  if(typeof requireLogin==='function' && !requireLogin())return;
   document.getElementById('reqTitle').value='';
   document.getElementById('reqName').value='';
   document.getElementById('reqNote').value='';
