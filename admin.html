@@ -615,7 +615,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 var TMDB_KEY = '3001c6b89778ec27b78f6294a1e2538d';
 var TMDB_BASE = 'https://api.themoviedb.org/3';
 var IMG_BASE = 'https://image.tmdb.org/t/p/';
-var DEFAULT_WORKER_URL = 'https://raspy-butterfly-0610.amworkmanage.workers.dev';
+var DEFAULT_WORKER_URL = 'https://streamvault.borntow2.workers.dev';
 var WORKER_URL = DEFAULT_WORKER_URL;
 var ADMIN_PASS = '';
 var ADMIN_EMAIL = '';
@@ -632,16 +632,22 @@ function doLogin() {
   var email = (document.getElementById('cfgEmail').value||'').trim().toLowerCase();
   var pass = (document.getElementById('cfgPass').value||'').trim();
   if (!email || !pass) { showLoginErr('Email and password are required'); return; }
-  if (email !== ADMIN_EMAIL_REQUIRED) { showLoginErr('Email not authorized'); return; }
-  if (pass !== ADMIN_PASS_REQUIRED) { showLoginErr('Incorrect password'); return; }
+  // Email/password verified by Worker (ADMIN_EMAILS + ADMIN_PASSWORD)
   WORKER_URL = DEFAULT_WORKER_URL; ADMIN_PASS = pass; ADMIN_EMAIL = email;
   setSyncing('Connecting...');
   fetch(WORKER_URL + '/api/auth', {
     method: 'POST',
-    headers: {'Content-Type':'application/json', 'X-Admin-Password': pass}
+    headers: {
+      'Content-Type':'application/json',
+      'X-Admin-Password': pass,
+      'X-Admin-Email': email
+    }
   }).then(function(r) {
-    if (r.ok) {
-      if (document.getElementById('toggleAutoSave').checked) {
+    return r.json().then(function(data){ return { ok: r.ok, data: data }; }).catch(function(){ return { ok: r.ok, data: {} }; });
+  }).then(function(res) {
+    if (res.ok && res.data && res.data.success) {
+      var tog = document.getElementById('toggleAutoSave');
+      if (!tog || tog.checked) {
         localStorage.setItem('sv_pass', pass);
         localStorage.setItem('sv_email', email);
       }
@@ -653,7 +659,10 @@ function doLogin() {
       var su=document.getElementById('settingUrl'); if(su) su.textContent = WORKER_URL;
       loadData();
       loadAdsConfig();
-    } else { showLoginErr('Worker rejected the request — check Worker password / deployment'); setSynced(); }
+    } else {
+      showLoginErr((res.data && (res.data.message || res.data.error)) || 'Invalid admin email or password');
+      setSynced();
+    }
   }).catch(function() { showLoginErr('Cannot reach Worker at ' + WORKER_URL); setSynced(); });
 }
 function showLoginErr(m) {
@@ -672,7 +681,7 @@ function tryAutoLogin() {
     ADMIN_PASS = p; ADMIN_EMAIL = em;
     fetch(WORKER_URL + '/api/auth', {
       method: 'POST',
-      headers: {'Content-Type':'application/json', 'X-Admin-Password': p}
+      headers: {'Content-Type':'application/json', 'X-Admin-Password': p, 'X-Admin-Email': em}
     }).then(function(r){
       if (!r.ok) return;
       document.getElementById('loginScreen').style.display = 'none';
@@ -717,7 +726,7 @@ function setSyncErr() { document.getElementById('syncDot').className = 'sync-dot
 //  API
 // ═══════════════════════════════
 function api(method, path, body) {
-  var opts = { method:method, headers:{'Content-Type':'application/json','X-Admin-Password':ADMIN_PASS} };
+  var opts = { method:method, headers:{'Content-Type':'application/json','X-Admin-Password':ADMIN_PASS,'X-Admin-Email':ADMIN_EMAIL||''} };
   if (body !== undefined) opts.body = JSON.stringify(body);
   return fetch(WORKER_URL + path, opts).then(function(r){ return r.json(); });
 }
