@@ -310,13 +310,13 @@ nav.transparent{background:linear-gradient(to bottom,rgba(0,0,0,.75) 0%,transpar
 
 /* ── CARD ── */
 .card{
-  flex:0 0 148px;width:148px;cursor:pointer;
+  flex:0 0 168px;width:168px;cursor:pointer;
   border-radius:var(--radius);overflow:visible;
   transition:transform .35s var(--ease),z-index 0s .35s;z-index:1;
 }
-.card:hover{transform:scale(1.18);z-index:100;transition:transform .35s var(--ease),z-index 0s}
-.card:first-child:hover{transform:scale(1.18) translateX(8%)}
-.card:last-child:hover{transform:scale(1.18) translateX(-8%)}
+.card:hover{transform:scale(1.08);z-index:100;transition:transform .35s var(--ease),z-index 0s}
+.card:first-child:hover{transform:scale(1.08) translateX(4%)}
+.card:last-child:hover{transform:scale(1.08) translateX(-4%)}
 .card-inner{
   border-radius:var(--radius);overflow:hidden;background:var(--bg-card);
   box-shadow:0 6px 24px rgba(0,0,0,.5);transition:box-shadow .3s;
@@ -772,7 +772,7 @@ nav.transparent{background:linear-gradient(to bottom,rgba(0,0,0,.75) 0%,transpar
 .mylist-empty h3{font-family:var(--font-display);font-size:1.9rem;letter-spacing:.05em;color:#333}
 .mylist-empty p{font-size:.85rem;color:#444;max-width:320px;line-height:1.7}
 .mylist-grid{
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
   gap:14px;padding:0 5% 70px;
 }
 
@@ -945,7 +945,7 @@ footer{
   .dp-acts{gap:8px}
   .dp-btn{padding:10px 16px;font-size:.78rem}
   .dp-btn.share{display:none}
-  .mylist-grid{grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:12px;padding:0 4% 70px}
+  .mylist-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;padding:0 3% 70px}
   footer{padding:40px 5% 28px}
   .ft-grid{grid-template-columns:1fr 1fr;gap:28px}
   .ft-col:nth-child(3),.ft-col:nth-child(4){display:none}
@@ -1455,7 +1455,104 @@ button:focus-visible,
   color:#666;padding:10px 12px 4px;margin-top:2px;
 }
 .src-group:first-child{padding-top:6px}
+.src-hindi-tog{border-bottom:1px solid rgba(255,255,255,.08)!important;margin-bottom:4px;border-radius:7px 7px 0 0!important}
+.src-hindi-tog.on{color:#22c55e!important;background:rgba(34,197,94,.12)!important}
+.hindi-tip{
+  margin:10px 16px 0;padding:10px 14px;border-radius:8px;
+  background:rgba(229,9,20,.08);border:1px solid rgba(229,9,20,.25);
+  font-size:.72rem;line-height:1.5;color:#bbb;
+}
+.hindi-tip strong{color:#fff}
+.hindi-tip b{color:#E50914}
 
+
+
+
+
+/* ── GENRE CHIPS ── */
+.genre-bar{
+  display:flex;gap:8px;flex-wrap:wrap;padding:12px 4.5% 4px;
+  position:relative;z-index:6;
+}
+.genre-chip{
+  font-size:.68rem;font-weight:600;letter-spacing:.04em;
+  padding:7px 14px;border-radius:999px;border:1px solid var(--border);
+  background:rgba(255,255,255,.04);color:var(--text-secondary);
+  cursor:pointer;transition:all .2s;white-space:nowrap;
+}
+.genre-chip:hover,.genre-chip.on{
+  background:var(--accent-soft);border-color:var(--accent);color:#fff;
+}
+.genre-page-header{
+  padding:calc(var(--nav-h) + 24px) 4.5% 12px;
+}
+.genre-page-header h1{
+  font-family:var(--font-display);font-size:clamp(1.6rem,5vw,2.4rem);
+  letter-spacing:.06em;margin-bottom:8px;
+}
+.genre-page-header p{color:var(--text-muted);font-size:.85rem}
+.genre-results{padding:8px 4.5% 80px}
+
+/* ── MOBILE / RESPONSIVE ── */
+@media (max-width:1024px){
+  .card{flex:0 0 150px;width:150px}
+  .track{gap:10px}
+}
+@media (max-width:768px){
+  :root{--nav-h:56px}
+  nav{padding:0 12px}
+  .nav-logo{font-size:1.25rem}
+  .card{
+    flex:0 0 42vw;width:42vw;max-width:160px;
+  }
+  .card:hover,.card:first-child:hover,.card:last-child:hover{
+    transform:none;z-index:1;
+  }
+  .card-info{display:none !important}
+  .card-label{padding:8px 6px 9px}
+  .card-label-title{font-size:.68rem;line-height:1.25}
+  .row{margin-bottom:28px}
+  .row-title{font-size:1.05rem}
+  .rows{margin-top:-40px;padding-bottom:70px}
+  .track-outer,.row-top{padding-left:3%;padding-right:3%}
+  .track{gap:8px;padding-bottom:6px}
+  .s-arr{display:none}
+  .hero{min-height:72vw;max-height:520px}
+  .hero-content{padding:0 4% 18% !important}
+  .hero-title{font-size:clamp(1.8rem,9vw,2.8rem)!important}
+  .hero-desc{font-size:.8rem;max-width:100%;-webkit-line-clamp:3}
+  .hero-actions{flex-wrap:wrap;gap:8px}
+  .hero-actions .btn-play,.hero-actions .btn-info{padding:10px 16px;font-size:.78rem}
+  .play-frame{
+    min-height:0 !important;
+    max-height:none !important;
+    padding-top:56.25% !important;
+    aspect-ratio:auto !important;
+  }
+  .play-top{height:48px;padding:0 10px}
+  .play-title{font-size:.78rem;max-width:42%}
+  .src-top-btn{height:30px;padding:0 8px;font-size:.65rem}
+  .src-top-btn span{max-width:72px;overflow:hidden;text-overflow:ellipsis}
+  .play-panel-mobile{padding-bottom:24px}
+  .play-info-title{font-size:1.25rem}
+  .hindi-tip{margin:8px 12px;font-size:.68rem;padding:8px 10px}
+  .genre-bar{padding:10px 3% 2px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .genre-bar::-webkit-scrollbar{display:none}
+  .ft-badge{display:none}
+  .mylist-grid{grid-template-columns:repeat(auto-fill,minmax(42vw,1fr));gap:10px}
+  .play-detail-grid{grid-template-columns:1fr}
+  .play-rel-grid{grid-template-columns:1fr 1fr}
+  .dp-cols{grid-template-columns:1fr;gap:20px}
+  .dp-poster{max-width:180px;margin:0 auto}
+}
+@media (max-width:400px){
+  .card{flex:0 0 44vw;width:44vw}
+  .nav-btn svg{width:15px;height:15px}
+}
+@media (hover:none){
+  .card:hover{transform:none}
+  .card-info{display:none !important}
+}
 
 </style>
 </head>
@@ -1485,6 +1582,11 @@ button:focus-visible,
         </div>
       </div>
       <div class="play-frame" id="playFrame"></div>
+      <div id="hindiTip" class="hindi-tip">
+        <strong>🇮🇳 Hindi audio:</strong> After the video loads, open the player <b>Settings / Audio / Server</b> menu and choose <b>Hindi</b> if listed.
+        No free embed can force Hindi on every title — only films that have a Hindi dub on that server.
+      </div>
+
       <div class="play-prog-strip"><div class="play-prog-strip-fill" id="progStrip"></div></div>
     </div>
   </div>
@@ -1517,6 +1619,7 @@ button:focus-visible,
     <button onclick="goSection('movies',this)">Movies</button>
     <button onclick="goSection('tvshows',this)">TV Shows</button>
     <button onclick="goSection('anime',this)">Anime</button>
+    <button onclick="goGenresPage()">Genres</button>
   </div>
   <div class="nav-right">
     <button class="nav-btn" onclick="openRequest()" title="Request Content">
@@ -1544,6 +1647,7 @@ button:focus-visible,
   <button id="d1" onclick="goSection('movies',this);closeDrawer()">Movies</button>
   <button id="d2" onclick="goSection('tvshows',this);closeDrawer()">TV Shows</button>
   <button id="d3" onclick="goSection('anime',this);closeDrawer()">Anime</button>
+  <button id="d3b" onclick="goGenresPage();closeDrawer()">Genres</button>
   <button id="d4" onclick="goMyList();closeDrawer()">♥ My List</button>
   <button id="d5" onclick="goHistory();closeDrawer()">⏱ Watch History</button>
   <button id="d6" onclick="openUserModal();closeDrawer()">Account</button>
@@ -1561,7 +1665,8 @@ button:focus-visible,
     <div id="slidesWrap"></div>
     <div class="dots" id="dotsWrap"></div>
   </div>
-  <div class="rows" id="rowsWrap"></div>
+  <div class="genre-bar" id="genreBarHome"></div>
+    <div class="rows" id="rowsWrap"></div>
   <footer>
     <div class="ft-grid">
       <div>
@@ -1585,7 +1690,7 @@ button:focus-visible,
       </div>
       <div class="ft-col">
         <h5>Genres</h5>
-        <ul><li><a>Action</a></li><li><a>Drama</a></li><li><a>Sci-Fi</a></li><li><a>Thriller</a></li><li><a>Fantasy</a></li></ul>
+        <ul><li><a onclick="goGenre('Action')">Action</a></li><li><a onclick="goGenre('Adventure')">Adventure</a></li><li><a onclick="goGenre('Animation')">Animation</a></li><li><a onclick="goGenre('Comedy')">Comedy</a></li><li><a onclick="goGenre('Crime')">Crime</a></li><li><a onclick="goGenre('Drama')">Drama</a></li></ul>
       </div>
       <div class="ft-col">
         <h5>Info</h5>
@@ -1595,9 +1700,25 @@ button:focus-visible,
     <div class="ft-bottom">
       <div class="ft-copy">© 2025 StreamVault. All rights reserved.</div>
       <div class="ft-links"><a onclick="openInfoModal('privacy')">Privacy</a><a onclick="openInfoModal('terms')">Terms</a><a onclick="openInfoModal('cookies')">Cookies</a></div>
-      <div class="ft-badge">Powered by VIDEASY</div>
+      
     </div>
   </footer>
+</div>
+
+
+<!-- ════ GENRES ════ -->
+<div id="pg-genres" class="page">
+  <div class="genre-page-header">
+    <button onclick="goHome()" style="display:inline-flex;align-items:center;gap:5px;font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#555;padding:5px 10px;border-radius:4px;border:1px solid rgba(255,255,255,.08);margin-bottom:12px">
+      <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>Back
+    </button>
+    <h1 id="genrePageTitle">Genres</h1>
+    <p id="genrePageSub">Browse by category</p>
+    <div class="genre-bar" id="genreBarPage" style="padding-left:0;padding-right:0;margin-top:14px"></div>
+  </div>
+  <div class="genre-results">
+    <div class="mylist-grid" id="genreGrid"></div>
+  </div>
 </div>
 
 <!-- ════ MY LIST ════ -->
@@ -1712,7 +1833,7 @@ button:focus-visible,
 // ══════════════════════
 //  CONFIG
 // ══════════════════════
-var CF = 'https://streamvault.amworkmanage.workers.dev';
+var CF = 'https://raspy-butterfly-0610.amworkmanage.workers.dev';
 var IB = 'https://image.tmdb.org/t/p/w1280';
 var IP = 'https://image.tmdb.org/t/p/w500';
 var IA = 'https://image.tmdb.org/t/p/w185';
@@ -1782,6 +1903,16 @@ function pushRoute(path){
     window.history.pushState({path:path},'',path);
 }
 function handleRoute(path){
+  try{
+    var pth = (path||location.hash||'').replace(/^#/,'').split('?')[0];
+    if(pth.indexOf('/genres/')===0){
+      var g = decodeURIComponent(pth.split('/')[2]||'');
+      if(g){ goGenre(g); return; }
+      goGenresPage(); return;
+    }
+    if(pth==='/genres'){ goGenresPage(); return; }
+  }catch(e){}
+
   var dm=path.match(/^\/title\/(\d+)/);
   if(dm){var f=findById(parseInt(dm[1]));if(f){showDetail(f.item,f.type);return;}}
   var pm=path.match(/^\/play\/(\d+)[^/]*(?:\/(\d+)\/(\d+))?$/);
@@ -1888,6 +2019,7 @@ function showPage(id){
     if(drawer){ drawer.style.display='none'; drawer.classList.remove('show'); }
   }else{
     document.body.classList.remove('player-open');
+    try{clearHindiTimer();}catch(e){}
     // Clear player so progress/iframe never leak onto other pages
     try{
       var pf=document.getElementById('playFrame');
@@ -2059,6 +2191,8 @@ function buildLatestList(limit){
   return out;
 }
 function buildRows(){
+  try{buildGenreBar('genreBarHome', CUR_GENRE||'');}catch(e){}
+
   var trending = buildTrendingList(12);
   var latest = buildLatestList(14);
   var rows=[
@@ -2516,68 +2650,119 @@ function playerToggleList(){
   showToast(added?'♥ Added to My List':'Removed from My List');
 }
 
+
+// ══════════════════════
+//  GENRES
+// ══════════════════════
+var ALL_GENRES = ['Action','Adventure','Animation','Comedy','Crime','Drama','Fantasy','Horror','Mystery','Romance','Sci-Fi','Thriller','Music','Family','War','History'];
+var CUR_GENRE = '';
+
+function itemMatchesGenre(item, genre){
+  if(!item || !genre) return false;
+  var g = (item.genre||'') + ' ' + ((item.tags||[]).join(' '));
+  return g.toLowerCase().indexOf(genre.toLowerCase()) !== -1;
+}
+function allCatalog(){
+  var out = [];
+  (MOVIES||[]).forEach(function(it){ out.push({item:it,type:'movie'}); });
+  (TV||[]).forEach(function(it){ out.push({item:it,type:'tv'}); });
+  (ANIME||[]).forEach(function(it){ out.push({item:it,type:'anime'}); });
+  return out;
+}
+function buildGenreBar(elId, active){
+  var el = document.getElementById(elId);
+  if(!el) return;
+  el.innerHTML = ALL_GENRES.map(function(g){
+    return '<button type="button" class="genre-chip'+(active===g?' on':'')+'" onclick="goGenre(\''+g+'\')">'+g+'</button>';
+  }).join('');
+}
+function goGenresPage(){
+  CUR_GENRE = '';
+  pushRoute('/genres');
+  showPage('pg-genres');
+  document.getElementById('genrePageTitle').textContent = 'Genres';
+  document.getElementById('genrePageSub').textContent = 'Pick a category to browse';
+  buildGenreBar('genreBarPage', '');
+  document.getElementById('genreGrid').innerHTML =
+    '<div class="mylist-empty" style="grid-column:1/-1;padding:40px 20px;text-align:center;color:#71717a"><p>Select a genre above</p></div>';
+  setNavActive(null);
+}
+function goGenre(genre){
+  CUR_GENRE = genre;
+  pushRoute('/genres/'+encodeURIComponent(genre));
+  showPage('pg-genres');
+  document.getElementById('genrePageTitle').textContent = genre;
+  var hits = allCatalog().filter(function(x){ return itemMatchesGenre(x.item, genre); });
+  document.getElementById('genrePageSub').textContent = hits.length + ' title'+(hits.length===1?'':'s');
+  buildGenreBar('genreBarPage', genre);
+  var grid = document.getElementById('genreGrid');
+  if(!hits.length){
+    grid.innerHTML = '<div class="mylist-empty" style="grid-column:1/-1;padding:40px 20px;text-align:center;color:#71717a"><p>No titles found for '+X(genre)+'</p></div>';
+  } else {
+    grid.innerHTML = hits.slice(0, 120).map(function(x){ return cardHTML(x.item, x.type); }).join('');
+    grid.querySelectorAll('.card').forEach(function(c){
+      c.onclick = function(){ openDetail(c.getAttribute('data-k')); };
+    });
+  }
+  setNavActive(null);
+}
+
 // ══════════════════════
 //  BUILD SRC — Hindi server (server=2) as default
 // ══════════════════════
-var PLAY_PROVIDER = 'multiembed';
+var PLAY_PROVIDER = 'filmu';
 try { var _pp = localStorage.getItem('sv_provider'); if (_pp) PLAY_PROVIDER = _pp; } catch (e) {}
 
 // All embed sources (TMDB id). Domains change often — switch if one fails.
 var PLAYER_SOURCES = [
-  // —— Hindi-friendly first (try these for dubbed audio) ——
-  { id: 'multiembed',  label: 'MultiEmbed', group: 'hindi',
+  // Hindi / multi-audio oriented (still not guaranteed for every title)
+  { id: 'filmu', label: 'FilmU', group: 'hindi',
+    movie: function(id){ return 'https://embed.filmu.in/movie/'+id; },
+    tv: function(id,s,e){ return 'https://embed.filmu.in/tv/'+id+'/'+s+'/'+e; } },
+  { id: 'moviesapi', label: 'MoviesAPI', group: 'hindi',
+    movie: function(id){ return 'https://moviesapi.to/movie/'+id; },
+    tv: function(id,s,e){ return 'https://moviesapi.to/tv/'+id+'-'+s+'-'+e; } },
+  { id: 'letsembed', label: 'LetsEmbed', group: 'hindi',
+    movie: function(id){ return 'https://letsembed.cc/embed/movie/?id='+id; },
+    tv: function(id,s,e){ return 'https://letsembed.cc/embed/tv/?id='+id+'/'+s+'/'+e; } },
+  { id: 'vidspark', label: 'VidSpark', group: 'hindi',
+    movie: function(id){ return 'https://vidspark.to/movie/'+id; },
+    tv: function(id,s,e){ return 'https://vidspark.to/tv/'+id+'/'+s+'/'+e; } },
+  { id: 'multiembed', label: 'MultiEmbed', group: 'hindi',
     movie: function(id){ return 'https://multiembed.mov/?video_id='+id+'&tmdb=1'; },
     tv: function(id,s,e){ return 'https://multiembed.mov/?video_id='+id+'&tmdb=1&s='+s+'&e='+e; } },
-  { id: '2embed',      label: '2Embed', group: 'hindi',
+  { id: '2embed', label: '2Embed', group: 'hindi',
     movie: function(id){ return 'https://www.2embed.cc/embed/'+id; },
     tv: function(id,s,e){ return 'https://www.2embed.cc/embedtv/'+id+'&s='+s+'&e='+e; } },
-  { id: 'autoembed',   label: 'AutoEmbed', group: 'hindi',
-    movie: function(id){ return 'https://player.autoembed.cc/embed/movie/'+id; },
-    tv: function(id,s,e){ return 'https://player.autoembed.cc/embed/tv/'+id+'/'+s+'/'+e; } },
-  { id: 'superflix',   label: 'SuperFlix', group: 'hindi',
-    movie: function(id){ return 'https://multiembed.mov/directstream.php?video_id='+id+'&tmdb=1'; },
-    tv: function(id,s,e){ return 'https://multiembed.mov/directstream.php?video_id='+id+'&tmdb=1&s='+s+'&e='+e; } },
-  { id: 'embedsu',     label: 'EmbedSU', group: 'hindi',
-    movie: function(id){ return 'https://embed.su/embed/movie/'+id; },
-    tv: function(id,s,e){ return 'https://embed.su/embed/tv/'+id+'/'+s+'/'+e; } },
-  // —— General ——
-  { id: 'videasy',     label: 'Videasy', group: 'general',
-    movie: function(id){ return 'https://player.videasy.ws/embed/movie/'+id+'?ds_lang=en'; },
-    tv: function(id,s,e){ return 'https://player.videasy.ws/embed/tv/'+id+'/'+s+'/'+e+'?ds_lang=en&autonext=1'; } },
-  { id: 'vidsrcmov',   label: 'VidSrc.mov', group: 'general',
-    movie: function(id){ return 'https://vidsrc.mov/embed/movie/'+id; },
-    tv: function(id,s,e){ return 'https://vidsrc.mov/embed/tv/'+id+'/'+s+'/'+e; } },
-  { id: 'vidsrcfyi',   label: 'VidSrc.fyi', group: 'general',
-    movie: function(id){ return 'https://vidsrc.fyi/embed/movie/'+id; },
-    tv: function(id,s,e){ return 'https://vidsrc.fyi/embed/tv/'+id+'/'+s+'/'+e; } },
-  { id: 'vidsrcxyz',   label: 'VidSrc.xyz', group: 'general',
-    movie: function(id){ return 'https://vidsrc.xyz/embed/movie/'+id; },
-    tv: function(id,s,e){ return 'https://vidsrc.xyz/embed/tv/'+id+'/'+s+'/'+e; } },
-  { id: 'vidrock',     label: 'VidRock', group: 'general',
-    movie: function(id){ return 'https://vidrock.net/movie/'+id; },
-    tv: function(id,s,e){ return 'https://vidrock.net/tv/'+id+'/'+s+'/'+e; } },
-  { id: 'vidnest',     label: 'Vidnest', group: 'general',
-    movie: function(id){ return 'https://vidnest.fun/movie/'+id; },
-    tv: function(id,s,e){ return 'https://vidnest.fun/tv/'+id+'/'+s+'/'+e; } },
-  { id: 'vidking',     label: 'VidKing', group: 'general',
-    movie: function(id){ return 'https://www.vidking.net/embed/movie/'+id+'?color=E50914'; },
-    tv: function(id,s,e){ return 'https://www.vidking.net/embed/tv/'+id+'/'+s+'/'+e+'?color=E50914&nextEpisode=true&episodeSelector=true'; } },
-  { id: 'vidlink',     label: 'VidLink', group: 'general',
-    movie: function(id){ return 'https://vidlink.pro/movie/'+id; },
-    tv: function(id,s,e){ return 'https://vidlink.pro/tv/'+id+'/'+s+'/'+e; } },
-  { id: 'vidfast',     label: 'VidFast', group: 'general',
+  { id: 'autoembed', label: 'AutoEmbed', group: 'hindi',
+    movie: function(id){ return 'https://autoembed.co/movie/tmdb/'+id; },
+    tv: function(id,s,e){ return 'https://autoembed.co/tv/tmdb/'+id+'-'+s+'-'+e; } },
+  { id: 'nontongo', label: 'NontonGo', group: 'hindi',
+    movie: function(id){ return 'https://www.nontongo.win/embed/movie/'+id; },
+    tv: function(id,s,e){ return 'https://www.nontongo.win/embed/tv/'+id+'/'+s+'/'+e; } },
+  // General English-first
+  { id: 'videasy', label: 'Videasy', group: 'general',
+    movie: function(id){ return 'https://player.videasy.ws/embed/movie/'+id+'?ds_lang=hi'; },
+    tv: function(id,s,e){ return 'https://player.videasy.ws/embed/tv/'+id+'/'+s+'/'+e+'?ds_lang=hi&autonext=1'; } },
+  { id: 'vidfast', label: 'VidFast', group: 'general',
     movie: function(id){ return 'https://vidfast.pro/movie/'+id; },
     tv: function(id,s,e){ return 'https://vidfast.pro/tv/'+id+'/'+s+'/'+e; } },
-  { id: 'vidup',       label: 'VidUp', group: 'general',
-    movie: function(id){ return 'https://vidup.io/embed/movie/'+id; },
-    tv: function(id,s,e){ return 'https://vidup.io/embed/tv/'+id+'/'+s+'/'+e; } },
-  { id: 'movies111',   label: '111Movies', group: 'general',
-    movie: function(id){ return 'https://111movies.com/movie/'+id; },
-    tv: function(id,s,e){ return 'https://111movies.com/tv/'+id+'/'+s+'/'+e; } },
-  { id: 'peachify',    label: 'Peachify', group: 'general',
-    movie: function(id){ return 'https://peachify.pro/embed/movie/'+id; },
-    tv: function(id,s,e){ return 'https://peachify.pro/embed/tv/'+id+'/'+s+'/'+e; } }
-]
+  { id: 'vidlink', label: 'VidLink', group: 'general',
+    movie: function(id){ return 'https://vidlink.pro/movie/'+id; },
+    tv: function(id,s,e){ return 'https://vidlink.pro/tv/'+id+'/'+s+'/'+e; } },
+  { id: 'vidking', label: 'VidKing', group: 'general',
+    movie: function(id){ return 'https://www.vidking.net/embed/movie/'+id+'?color=E50914'; },
+    tv: function(id,s,e){ return 'https://www.vidking.net/embed/tv/'+id+'/'+s+'/'+e+'?color=E50914&nextEpisode=true&episodeSelector=true'; } },
+  { id: 'vidsrcxyz', label: 'VidSrc.xyz', group: 'general',
+    movie: function(id){ return 'https://vidsrc.xyz/embed/movie/'+id; },
+    tv: function(id,s,e){ return 'https://vidsrc.xyz/embed/tv/'+id+'/'+s+'/'+e; } },
+  { id: 'vidsrcmov', label: 'VidSrc.mov', group: 'general',
+    movie: function(id){ return 'https://vidsrc.mov/embed/movie/'+id; },
+    tv: function(id,s,e){ return 'https://vidsrc.mov/embed/tv/'+id+'/'+s+'/'+e; } },
+  { id: 'embedsu', label: 'EmbedSU', group: 'general',
+    movie: function(id){ return 'https://embed.su/embed/movie/'+id; },
+    tv: function(id,s,e){ return 'https://embed.su/embed/tv/'+id+'/'+s+'/'+e; } }
+];
 
 function getPlayerSource(id) {
   for (var i = 0; i < PLAYER_SOURCES.length; i++) {
@@ -2589,12 +2774,40 @@ function playerLabel(id) {
   var p = getPlayerSource(id);
   return p ? p.label : id;
 }
-function setPlayProvider(p) {
-  PLAY_PROVIDER = p || 'videasy';
+// Hindi auto-chain: try Hindi-friendly sources in order until one works
+var HINDI_AUTO = true;
+var HINDI_CHAIN = ['filmu','moviesapi','letsembed','vidspark','multiembed','2embed','autoembed','nontongo','vidfast','vidlink'];
+var _hindiIdx = 0;
+var _hindiTimer = null;
+var _hindiGotProgress = false;
+var _hindiTrying = false;
+
+try {
+  var _ha = localStorage.getItem('sv_hindi_auto');
+  if (_ha === '0') HINDI_AUTO = false;
+  if (_ha === '1') HINDI_AUTO = true;
+} catch (e) {}
+
+function hindiChainList() {
+  return HINDI_CHAIN.filter(function(id){
+    return PLAYER_SOURCES.some(function(p){ return p.id === id; });
+  });
+}
+function setHindiAuto(on) {
+  HINDI_AUTO = !!on;
+  try { localStorage.setItem('sv_hindi_auto', HINDI_AUTO ? '1' : '0'); } catch (e) {}
+  syncPlayerChrome();
+  showToast(HINDI_AUTO ? 'Hindi auto-switch ON' : 'Hindi auto-switch OFF');
+  if (HINDI_AUTO && CUR_ITEM) startHindiAutoSeek(true);
+}
+function setPlayProvider(p, silent) {
+  clearHindiTimer();
+  PLAY_PROVIDER = p || 'multiembed';
   try { localStorage.setItem('sv_provider', PLAY_PROVIDER); } catch (e) {}
   reloadPlayerFrame();
   syncPlayerChrome();
-  showToast('Source: ' + playerLabel(PLAY_PROVIDER));
+  if (!silent) showToast('Source: ' + playerLabel(PLAY_PROVIDER));
+  if (HINDI_AUTO) scheduleHindiFailover();
 }
 function toggleSrcMenu() {
   var m = document.getElementById('srcMenu');
@@ -2602,10 +2815,14 @@ function toggleSrcMenu() {
 }
 function syncPlayerChrome() {
   var lab = document.getElementById('srcFabLabel');
-  if (lab) lab.textContent = playerLabel(PLAY_PROVIDER);
+  if (lab) {
+    lab.textContent = (HINDI_AUTO ? '🇮🇳 ' : '') + playerLabel(PLAY_PROVIDER);
+  }
   document.querySelectorAll('.src-opt').forEach(function (b) {
     b.classList.toggle('on', b.getAttribute('data-p') === PLAY_PROVIDER);
   });
+  var tog = document.getElementById('hindiAutoTog');
+  if (tog) tog.classList.toggle('on', HINDI_AUTO);
   var menu = document.getElementById('srcMenu');
   if (menu) menu.classList.remove('open');
 }
@@ -2613,7 +2830,10 @@ function buildSrcMenu() {
   var menu = document.getElementById('srcMenu');
   if (!menu) return;
   var html = '';
-  var lastGroup = '';
+  html += '<button type="button" class="src-opt src-hindi-tog'+(HINDI_AUTO?' on':'')+'" id="hindiAutoTog" onclick="setHindiAuto(!HINDI_AUTO)">🇮🇳 Hindi auto-switch '+(HINDI_AUTO?'ON':'OFF')+'</button>';
+  html += '<button type="button" class="src-opt" onclick="tryNextHindiSource(true)">⏭ Next Hindi source</button>';
+  html += '<div class="src-group">Hindi-friendly</div>';
+  var lastGroup = 'hindi';
   PLAYER_SOURCES.forEach(function (p) {
     var g = p.group || 'general';
     if (g !== lastGroup) {
@@ -2630,13 +2850,72 @@ document.addEventListener('click', function (e) {
   var m = document.getElementById('srcMenu');
   if (m) m.classList.remove('open');
 });
+function clearHindiTimer() {
+  if (_hindiTimer) { clearTimeout(_hindiTimer); _hindiTimer = null; }
+}
+function scheduleHindiFailover() {
+  clearHindiTimer();
+  if (!HINDI_AUTO) return;
+  _hindiGotProgress = false;
+  // If no playback progress signal within 12s, try next Hindi-friendly source
+  _hindiTimer = setTimeout(function(){
+    if (!HINDI_AUTO) return;
+    if (_hindiGotProgress) return;
+    if (!document.getElementById('pg-player') || !document.getElementById('pg-player').classList.contains('active')) return;
+    tryNextHindiSource(false);
+  }, 12000);
+}
+function startHindiAutoSeek(reset) {
+  var chain = hindiChainList();
+  if (!chain.length) return;
+  if (reset) _hindiIdx = 0;
+  // Prefer current if already in chain
+  var cur = chain.indexOf(PLAY_PROVIDER);
+  if (cur >= 0) _hindiIdx = cur;
+  else {
+    _hindiIdx = 0;
+    PLAY_PROVIDER = chain[0];
+    try { localStorage.setItem('sv_provider', PLAY_PROVIDER); } catch (e) {}
+  }
+  reloadPlayerFrame();
+  syncPlayerChrome();
+  scheduleHindiFailover();
+}
+function tryNextHindiSource(manual) {
+  if (_hindiTrying) return;
+  var chain = hindiChainList();
+  if (!chain.length) return;
+  _hindiTrying = true;
+  var start = _hindiIdx;
+  _hindiIdx = (_hindiIdx + 1) % chain.length;
+  // full loop on auto → stop
+  if (!manual && _hindiIdx === 0) {
+    _hindiTrying = false;
+    showToast('No Hindi source responded — try manually');
+    clearHindiTimer();
+    return;
+  }
+  PLAY_PROVIDER = chain[_hindiIdx];
+  try { localStorage.setItem('sv_provider', PLAY_PROVIDER); } catch (e) {}
+  _hindiGotProgress = false;
+  reloadPlayerFrame();
+  syncPlayerChrome();
+  showToast((manual ? 'Switched: ' : 'Auto Hindi → ') + playerLabel(PLAY_PROVIDER));
+  _hindiTrying = false;
+  if (HINDI_AUTO) scheduleHindiFailover();
+}
+function markHindiProgress() {
+  _hindiGotProgress = true;
+  clearHindiTimer();
+}
 function reloadPlayerFrame() {
   if (!CUR_ITEM || !document.getElementById('pg-player').classList.contains('active')) return;
   var s = CUR_EP && CUR_EP.s != null ? CUR_EP.s : null;
   var e = CUR_EP && CUR_EP.e != null ? CUR_EP.e : null;
   var frame = document.getElementById('playFrame');
   if (!frame) return;
-  frame.innerHTML = '<iframe src="'+buildSrc(CUR_TYPE,CUR_ITEM,s,e)+'" frameborder="0" allowfullscreen allow="encrypted-media; autoplay; fullscreen" referrerpolicy="origin"></iframe>';
+  var url = buildSrc(CUR_TYPE, CUR_ITEM, s, e);
+  frame.innerHTML = '<iframe src="'+url+'" frameborder="0" allowfullscreen allow="encrypted-media; autoplay; fullscreen" referrerpolicy="origin"></iframe>';
 }
 function syncServerButtons() { syncPlayerChrome(); }
 
@@ -3088,6 +3367,7 @@ window.addEventListener('message', function (event) {
     var progress = d.player_progress;
     var duration = d.player_duration;
     if (status === 'playing' || status === 'paused' || status === 'seeked') {
+      try{markHindiProgress();}catch(e){}
       // optional UI progress
       if (duration && progress != null) {
         var pct = Math.min(100, Math.round((progress / duration) * 100));
@@ -3265,7 +3545,7 @@ if (document.readyState === 'loading') {
 <script>
 var REQ_TYPE='movie';
 function openRequest(){
-  if(!requireLogin())return;
+  if(typeof requireLogin==='function' && !requireLogin())return;
   document.getElementById('reqTitle').value='';
   document.getElementById('reqName').value='';
   document.getElementById('reqNote').value='';
@@ -3326,11 +3606,11 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeRequest
 
 <script>
 var INFO_CONTENT={
-  about:{title:'About StreamVault',html:'<h3>What is StreamVault?</h3><p>StreamVault is a free online streaming platform where you can watch movies, TV shows and anime — all in one place, with no sign-up or subscription required.</p><h3>Our Mission</h3><p>We believe great entertainment should be accessible to everyone. StreamVault is built to give you a premium streaming experience without the premium price tag.</p><h3>Content Library</h3><p>Our library includes thousands of titles across movies, TV series and anime. New content is added regularly. Use the <strong style="color:#fff">Request Content</strong> feature and we will do our best to add it.</p><h3>Powered by VIDEASY</h3><p>StreamVault uses VIDEASY streaming technology to deliver fast, reliable video playback directly in your browser — no app downloads needed.</p>'},
+  about:{title:'About StreamVault',html:'<h3>What is StreamVault?</h3><p>StreamVault is a free online streaming platform where you can watch movies, TV shows and anime — all in one place, with no sign-up or subscription required.</p><h3>Our Mission</h3><p>We believe great entertainment should be accessible to everyone. StreamVault is built to give you a premium streaming experience without the premium price tag.</p><h3>Content Library</h3><p>Our library includes thousands of titles across movies, TV series and anime. New content is added regularly. Use the <strong style="color:#fff">Request Content</strong> feature and we will do our best to add it.</p><h3>Streaming</h3><p>StreamVault delivers fast, reliable video playback directly in your browser — no app downloads needed. Multiple player sources are available so you can switch if one fails.</p>'},
   contact:{title:'Contact Us',html:'<h3>Get in Touch</h3><p>We would love to hear from you! Whether you have a question, suggestion, bug report or just want to say hello — reach out anytime.</p><h3>Request Content</h3><p>Cannot find a movie, show or anime? Use the <strong style="color:#fff">Request Content</strong> button in the navigation bar and we will review your request.</p><h3>Report an Issue</h3><p>If a video is not playing or you have found a bug, please describe the issue (title, browser, device) and send us a message.</p><h3>Email</h3><p><a href="mailto:amworkmanage@gmail.com">amworkmanage@gmail.com</a></p><h3>Response Time</h3><p>We typically respond within 24-48 hours. Thank you for your patience!</p>'},
-  privacy:{title:'Privacy Policy',html:'<p><em style="color:#555;font-size:.75rem">Last updated: January 2025</em></p><h3>Information We Collect</h3><p>StreamVault does not require you to create an account or provide personal information to use our service.</p><ul><li><strong style="color:#ccc">My List</strong> — saved locally in your browser session storage. Never sent to our servers.</li><li><strong style="color:#ccc">Content Requests</strong> — if you submit a request, we store the title, type and optional name you provide.</li><li><strong style="color:#ccc">Usage Data</strong> — we may collect anonymous analytics data to improve the service.</li></ul><h3>Cookies</h3><p>StreamVault uses minimal cookies necessary for the site to function. We do not use tracking or advertising cookies.</p><h3>Third-Party Services</h3><p>Our video player is provided by VIDEASY. Movie data and images are sourced from TMDB. These services have their own privacy policies.</p><h3>Data Sharing</h3><p>We do not sell, trade or share your personal information with third parties for marketing purposes.</p><h3>Changes</h3><p>We may update this policy occasionally. Changes will be posted on this page with an updated date.</p>'},
+  privacy:{title:'Privacy Policy',html:'<p><em style="color:#555;font-size:.75rem">Last updated: January 2025</em></p><h3>Information We Collect</h3><p>StreamVault does not require you to create an account or provide personal information to use our service.</p><ul><li><strong style="color:#ccc">My List</strong> — saved locally in your browser session storage. Never sent to our servers.</li><li><strong style="color:#ccc">Content Requests</strong> — if you submit a request, we store the title, type and optional name you provide.</li><li><strong style="color:#ccc">Usage Data</strong> — we may collect anonymous analytics data to improve the service.</li></ul><h3>Cookies</h3><p>StreamVault uses minimal cookies necessary for the site to function. We do not use tracking or advertising cookies.</p><h3>Third-Party Services</h3><p>Movie data and images are sourced from TMDB. Third-party video players may be used for playback and have their own privacy policies.</p><h3>Data Sharing</h3><p>We do not sell, trade or share your personal information with third parties for marketing purposes.</p><h3>Changes</h3><p>We may update this policy occasionally. Changes will be posted on this page with an updated date.</p>'},
   terms:{title:'Terms of Service',html:'<p><em style="color:#555;font-size:.75rem">Last updated: January 2025</em></p><h3>Acceptance of Terms</h3><p>By using StreamVault, you agree to these Terms of Service. If you do not agree, please do not use the service.</p><h3>Use of Service</h3><p>StreamVault is provided for personal, non-commercial use only. You agree not to:</p><ul><li>Use the service for any unlawful purpose</li><li>Attempt to bypass or circumvent any security measures</li><li>Scrape, crawl or automate access to the platform</li><li>Redistribute or resell any content from StreamVault</li></ul><h3>Content</h3><p>StreamVault provides access to streaming content via third-party providers. We do not host any video files directly and are not responsible for third-party content availability.</p><h3>Disclaimer</h3><p>StreamVault is provided as-is without warranties of any kind. We do not guarantee uninterrupted or error-free service.</p><h3>Changes</h3><p>We reserve the right to modify these terms at any time. Continued use constitutes acceptance.</p>'},
-  cookies:{title:'Cookie Policy',html:'<p><em style="color:#555;font-size:.75rem">Last updated: January 2025</em></p><h3>What Are Cookies?</h3><p>Cookies are small text files stored in your browser when you visit a website. They help the site remember your preferences and improve your experience.</p><h3>How We Use Cookies</h3><p>We use only essential cookies necessary for the site to function. We do not use advertising or tracking cookies.</p><h3>Session Storage</h3><p>Your My List is stored in your browser session storage — local to your device and cleared when you close the browser. Never sent to our servers.</p><h3>Third-Party Cookies</h3><p>The VIDEASY video player and TMDB image service may set their own cookies. Please refer to their privacy policies for details.</p><h3>Managing Cookies</h3><p>You can control cookies through your browser settings at any time.</p>'}
+  cookies:{title:'Cookie Policy',html:'<p><em style="color:#555;font-size:.75rem">Last updated: January 2025</em></p><h3>What Are Cookies?</h3><p>Cookies are small text files stored in your browser when you visit a website. They help the site remember your preferences and improve your experience.</p><h3>How We Use Cookies</h3><p>We use only essential cookies necessary for the site to function. We do not use advertising or tracking cookies.</p><h3>Session Storage</h3><p>Your My List is stored in your browser session storage — local to your device and cleared when you close the browser. Never sent to our servers.</p><h3>Third-Party Cookies</h3><p>Third-party video players and the TMDB image service may set their own cookies. Please refer to their privacy policies for details.</p><h3>Managing Cookies</h3><p>You can control cookies through your browser settings at any time.</p>'}
 };
 function openInfoModal(page){
   var content=INFO_CONTENT[page];if(!content)return;
