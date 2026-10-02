@@ -1,5 +1,5 @@
 // Netlify Edge Function — Dynamic SEO for StreamVault title pages
-// Path: netlify/edge-functions/og.js
+// File: netlify/edge-functions/og.js
 
 export default async function handler(request, context) {
   const url = new URL(request.url);
@@ -14,7 +14,7 @@ export default async function handler(request, context) {
   const tmdbId = match[2];
   const isPlay = match[1] === "play";
 
-  const TMDB_KEY = "3001c6b89778ec27b78f6294a1e2538d"; // keep your key
+  const TMDB_KEY = "3001c6b89778ec27b78f6294a1e2538d";
   const IMG_BASE = "https://image.tmdb.org/t/p/w1280";
   const IMG_POSTER = "https://image.tmdb.org/t/p/w780";
   const SITE_URL = "https://streamzvault.netlify.app";
@@ -55,7 +55,7 @@ export default async function handler(request, context) {
       overview = data.overview || "";
 
       description = [
-        overview.slice(0, 160),
+        overview.slice(0, 155),
         [year, rating ? `★ ${rating}` : "", genres[0] || ""].filter(Boolean).join(" · ")
       ].filter(Boolean).join(" — ");
 
@@ -67,17 +67,27 @@ export default async function handler(request, context) {
       }
     }
   } catch (e) {
-    // fallback
+    // fallback to defaults
   }
 
   // Fetch original HTML
   const response = await context.next();
   let html = await response.text();
 
-  // ── 1. Dynamic <title> + meta tags ─────────────────────────────
-  const metaBlock = `
-    <title>${esc(title)} (${year || "Watch Online"}) — StreamVault</title>
-    <meta name="description" content="${esc(description.slice(0, 160))}">
+  // ── 1. Update <title> ──────────────────────────────────────────
+  html = html.replace(
+    /<title>[\s\S]*?<\/title>/i,
+    `<title>${esc(title)}${year ? ` (${year})` : ""} — StreamVault</title>`
+  );
+
+  // ── 2. Update meta description ─────────────────────────────────
+  html = html.replace(
+    /<meta\s+name=["']description["'][^>]*>/i,
+    `<meta name="description" content="${esc(description.slice(0, 160))}">`
+  );
+
+  // ── 3. Inject Open Graph + Twitter tags ────────────────────────
+  const metaTags = `
     <link rel="canonical" href="${SITE_URL}/title/${tmdbId}">
     <meta property="og:type" content="${pageType}">
     <meta property="og:site_name" content="StreamVault">
@@ -87,32 +97,19 @@ export default async function handler(request, context) {
     <meta property="og:image" content="${image}">
     <meta property="og:image:width" content="780">
     <meta property="og:image:height" content="1170">
+    <meta property="og:image:alt" content="${esc(title)}">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="${esc(title)} — StreamVault">
     <meta name="twitter:description" content="${esc(description.slice(0, 160))}">
     <meta name="twitter:image" content="${image}">
   `;
 
-  // Replace the static title + description
-  html = html.replace(
-    /<title>.*?<\/title>/i,
-    `<title>${esc(title)} (${year || ""}) — StreamVault</title>`
-  );
-  html = html.replace(
-    /<meta name="description"[^>]*>/i,
-    `<meta name="description" content="${esc(description.slice(0, 160))}">`
-  );
+  // Insert right after <head>
+  html = html.replace(/<head[^>]*>/i, (m) => `${m}\n${metaTags}`);
 
-  // Inject the rest of the meta tags right after <head>
-  html = html.replace(
-    /<head[^>]*>/i,
-    (match) => `${match}\n${metaBlock}`
-  );
-
-  // ── 2. Inject visible content for Google (very important) ──────
-  // This content is what Google actually indexes
+  // ── 4. Inject visible content for Google ───────────────────────
   const visibleContent = `
-    <div id="seo-content" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;">
+    <div id="seo-content" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">
       <h1>${esc(title)}${year ? ` (${year})` : ""}</h1>
       <p>${esc(overview || description)}</p>
       ${rating ? `<p>Rating: ${rating}/10</p>` : ""}
@@ -122,13 +119,9 @@ export default async function handler(request, context) {
     </div>
   `;
 
-  // Insert right after <body>
-  html = html.replace(
-    /<body[^>]*>/i,
-    (match) => `${match}\n${visibleContent}`
-  );
+  html = html.replace(/<body[^>]*>/i, (m) => `${m}\n${visibleContent}`);
 
-  // ── 3. JSON-LD Schema ──────────────────────────────────────────
+  // ── 5. Add JSON-LD Schema ──────────────────────────────────────
   const schema = {
     "@context": "https://schema.org",
     "@type": isTV ? "TVSeries" : "Movie",
@@ -148,19 +141,13 @@ export default async function handler(request, context) {
     "genre": genres
   };
 
-  const schemaScript = `
-    <script type="application/ld+json">${JSON.stringify(schema)}</script>
-  `;
-
-  html = html.replace(
-    /<\/head>/i,
-    `${schemaScript}\n</head>`
-  );
+  const schemaScript = `<script type="application/ld+json">${JSON.stringify(schema)}</script>`;
+  html = html.replace(/<\/head>/i, `${schemaScript}\n</head>`);
 
   return new Response(html, {
     headers: {
       "content-type": "text/html; charset=UTF-8",
-      "cache-control": "public, max-age=3600, stale-while-revalidate=86400",
+      "cache-control": "public, max-age=1800, stale-while-revalidate=86400",
     },
   });
 }
