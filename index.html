@@ -1456,7 +1456,39 @@ button:focus-visible,
 }
 .src-group:first-child{padding-top:6px}
 
+/* ── SECTION GRID (Movies / TV / Anime pages) ── */
+.section-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:18px;
+  padding:4px 4.5% 0;
+}
+.section-grid .card{flex:none;width:auto;min-width:0}
+.section-grid .card:hover,
+.section-grid .card:first-child:hover,
+.section-grid .card:last-child:hover{transform:scale(1.05)}
+.section-grid .card-info{display:none!important} /* keeps rows from jumping on hover */
 
+/* ── PAGINATION ── */
+.pager{display:flex;justify-content:center;align-items:center;gap:6px;flex-wrap:wrap;padding:40px 4.5% 0}
+.pg-btn{
+  min-width:38px;height:38px;padding:0 12px;border-radius:var(--radius-sm);
+  border:1px solid var(--border);background:var(--bg-card);color:var(--text-secondary);
+  font-size:.78rem;font-weight:600;transition:background .2s,border-color .2s,color .2s;
+}
+.pg-btn:hover:not(:disabled):not(.on){background:var(--bg-hover);border-color:var(--border-strong);color:#fff}
+.pg-btn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.pg-btn:disabled{opacity:.35;cursor:not-allowed}
+.pg-gap{color:var(--text-muted);padding:0 4px}
+.pager-info{text-align:center;font-size:.7rem;letter-spacing:.06em;color:var(--text-muted);margin-top:14px}
+
+@media(max-width:768px){
+  .section-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px}
+  .pg-btn{min-width:34px;height:34px;padding:0 9px}
+}
+@media(max-width:480px){
+  .section-grid{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px}
+}
 </style>
 </head>
 <body>
@@ -1766,9 +1798,9 @@ var DRAWER_OPEN=false,CUR_SEC='home';
 // ══════════════════════
 var ROUTES={
   '/':function(){_goHome();},
-  '/movies':function(){_goSection('movies',null);},
-  '/tvshows':function(){_goSection('tvshows',null);},
-  '/anime':function(){_goSection('anime',null);},
+ '/movies':function(){_goSection('movies',null,pageFromURL());},
+'/tvshows':function(){_goSection('tvshows',null,pageFromURL());},
+'/anime':function(){_goSection('anime',null,pageFromURL());},
   '/mylist':function(){_goMyList();},
   '/history':function(){if(USER_TOKEN){showPage('pg-history');renderHistory();}else{_goHome();}}
 };
@@ -1908,27 +1940,81 @@ function showPage(id){
 function _goHome(){
   CUR_SEC='home';showPage('pg-home');setNavActive(null);buildSlides();buildRows();startSlider();
 }
-function _goSection(sec,btn){
+var PAGE_SIZE = 24;   // titles per page, change as you like
+var SEC_PAGE  = 1;
+
+function secCfg(sec){
+  return {
+    movies:  {hero:MOVIES[0],htype:'movie',label:'All <b>Movies</b>',   items:MOVIES,type:'movie'},
+    tvshows: {hero:TV[0],    htype:'tv',   label:'All <b>TV Shows</b>', items:TV,    type:'tv'},
+    anime:   {hero:ANIME[0], htype:'anime',label:'All <b>Anime</b>',    items:ANIME, type:'anime'}
+  }[sec];
+}
+function pageFromURL(){
+  var m=window.location.search.match(/[?&]page=(\d+)/);
+  return m?parseInt(m[1],10):1;
+}
+function _goSection(sec,btn,page){
   CUR_SEC=sec;setNavActive(btn);showPage('pg-home');clearInterval(SLIDE_TMR);
-  var rw=document.getElementById('rowsWrap');
   if(sec==='home'){buildSlides();buildRows();startSlider();return;}
-  var cfgMap={
-    movies:{hero:MOVIES[0],htype:'movie',label:'All <b>Movies</b>',items:MOVIES.slice(0,48),type:'movie'},
-    tvshows:{hero:TV[0],htype:'tv',label:'All <b>TV Shows</b>',items:TV.slice(0,48),type:'tv'},
-    anime:{hero:ANIME[0],htype:'anime',label:'All <b>Anime</b>',items:ANIME.slice(0,48),type:'anime'},
-  };
-  var cfg=cfgMap[sec];
+  var cfg=secCfg(sec);
   buildSingleHero(cfg.hero,cfg.htype);
-  rw.innerHTML=
-    '<div style="padding:16px 4% 8px;display:flex;align-items:center;justify-content:space-between">'+
-      '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.4rem;letter-spacing:.08em;color:#bbb">'+cfg.label+'</div>'+
-      '<button onclick="goHome()" style="font-size:.65rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#888;padding:5px 12px;border-radius:4px;border:1px solid rgba(255,255,255,.1);transition:color .15s,border-color .15s">← Home</button>'+
+  SEC_PAGE=page||1;
+  renderSection();
+}
+function pageList(cur,total){
+  var out=[],i;
+  if(total<=7){for(i=1;i<=total;i++)out.push(i);return out;}
+  var s=Math.max(2,cur-1),e=Math.min(total-1,cur+1);
+  if(cur<=3){s=2;e=4;}
+  if(cur>=total-2){s=total-3;e=total-1;}
+  out.push(1);
+  if(s>2)out.push('…');
+  for(i=s;i<=e;i++)out.push(i);
+  if(e<total-1)out.push('…');
+  out.push(total);
+  return out;
+}
+function renderSection(){
+  var cfg=secCfg(CUR_SEC);if(!cfg)return;
+  var total=cfg.items.length;
+  var pages=Math.max(1,Math.ceil(total/PAGE_SIZE));
+  SEC_PAGE=Math.min(Math.max(1,SEC_PAGE),pages);
+  var start=(SEC_PAGE-1)*PAGE_SIZE;
+  var slice=cfg.items.slice(start,start+PAGE_SIZE);
+
+  var pager='';
+  if(pages>1){
+    pager='<div class="pager">'+
+      '<button class="pg-btn" onclick="goPage('+(SEC_PAGE-1)+')"'+(SEC_PAGE===1?' disabled':'')+'>‹ Prev</button>'+
+      pageList(SEC_PAGE,pages).map(function(p){
+        return p==='…'?'<span class="pg-gap">…</span>'
+          :'<button class="pg-btn'+(p===SEC_PAGE?' on':'')+'" onclick="goPage('+p+')">'+p+'</button>';
+      }).join('')+
+      '<button class="pg-btn" onclick="goPage('+(SEC_PAGE+1)+')"'+(SEC_PAGE===pages?' disabled':'')+'>Next ›</button>'+
     '</div>'+
-    '<div class="row"><div class="track-outer">'+
-      '<div class="track" style="flex-wrap:wrap;gap:10px;overflow:visible;padding:4px 0">'+
-        cfg.items.map(function(item){return cardHTML(item,cfg.type);}).join('')+
-      '</div>'+
-    '</div></div>';
+    '<div class="pager-info">Showing '+(start+1)+'–'+(start+slice.length)+' of '+total+'</div>';
+  }
+
+  document.getElementById('rowsWrap').innerHTML=
+    '<div id="secTop" style="padding:16px 4.5% 14px;display:flex;align-items:center;justify-content:space-between">'+
+      '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.4rem;letter-spacing:.08em;color:#bbb">'+cfg.label+
+        ' <span style="font-family:var(--font);font-size:.7rem;letter-spacing:.08em;color:var(--text-muted)">('+total+')</span></div>'+
+      '<button onclick="goHome()" style="font-size:.65rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#888;padding:5px 12px;border-radius:4px;border:1px solid rgba(255,255,255,.1)">← Home</button>'+
+    '</div>'+
+    '<div class="row"><div class="section-grid">'+
+      slice.map(function(item){return cardHTML(item,cfg.type);}).join('')+
+    '</div>'+pager+'</div>';
+
+  // keep page number in the URL so Back from a detail page returns to the same page
+  var base={movies:'/movies',tvshows:'/tvshows',anime:'/anime'}[CUR_SEC];
+  try{window.history.replaceState(window.history.state,'',base+(SEC_PAGE>1?'?page='+SEC_PAGE:''));}catch(e){}
+}
+function goPage(n){
+  SEC_PAGE=n;
+  renderSection();
+  var el=document.getElementById('secTop');
+  if(el)window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-80,behavior:'smooth'});
 }
 function _goMyList(){
   PREV_PG=document.querySelector('.page.active').id;
