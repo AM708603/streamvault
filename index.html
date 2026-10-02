@@ -1513,6 +1513,23 @@ button:focus-visible,
 @media(max-width:480px){
   .section-grid{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px}
 }
+  /* ── ROW SLIDER ARROWS ── */
+.row-arr{
+  position:absolute;top:calc(var(--card-w) * 0.75 + 6px);transform:translateY(-50%);
+  z-index:20;width:44px;height:44px;border-radius:50%;
+  background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.18);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  transition:opacity .25s,background .2s,transform .2s;
+}
+.row-arr:hover{background:var(--accent);border-color:var(--accent);transform:translateY(-50%) scale(1.08)}
+.row-arr:active{transform:translateY(-50%) scale(.94)}
+.row-arr.left{left:1%}
+.row-arr.right{right:1%}
+.row-arr.hide{opacity:0;pointer-events:none}
+
+/* phones scroll by swipe, so hide the arrows there */
+@media(max-width:768px){.row-arr{display:none}}
 </style>
 </head>
 <body>
@@ -1651,7 +1668,7 @@ button:focus-visible,
     <div class="ft-bottom">
       <div class="ft-copy">© 2025 StreamVault. All rights reserved.</div>
       <div class="ft-links"><a onclick="openInfoModal('privacy')">Privacy</a><a onclick="openInfoModal('terms')">Terms</a><a onclick="openInfoModal('cookies')">Cookies</a></div>
-      <div class="ft-badge">Powered by VIDEASY</div>
+  
     </div>
   </footer>
 </div>
@@ -2199,8 +2216,34 @@ function buildRows(){
     '</div>';
   }).join('');
   document.getElementById('rowsWrap').innerHTML=html;
+  initRowArrows();
 }
 function A(v,n){var a=[];for(var i=0;i<n;i++)a.push(v);return a;}
+  function initRowArrows(){
+  var chevL='<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>';
+  var chevR='<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9,6 15,12 9,18"/></svg>';
+  document.querySelectorAll('#rowsWrap .track-outer').forEach(function(outer){
+    var track=outer.querySelector('.track');
+    if(!track||outer.querySelector('.row-arr'))return;
+    var l=document.createElement('button');
+    l.className='row-arr left';l.setAttribute('aria-label','Scroll left');l.innerHTML=chevL;
+    var r=document.createElement('button');
+    r.className='row-arr right';r.setAttribute('aria-label','Scroll right');r.innerHTML=chevR;
+    l.onclick=function(e){e.stopPropagation();track.scrollBy({left:-track.clientWidth*0.85,behavior:'smooth'});};
+    r.onclick=function(e){e.stopPropagation();track.scrollBy({left:track.clientWidth*0.85,behavior:'smooth'});};
+    function upd(){
+      l.classList.toggle('hide',track.scrollLeft<=4);
+      r.classList.toggle('hide',track.scrollLeft+track.clientWidth>=track.scrollWidth-4);
+    }
+    track.addEventListener('scroll',upd,{passive:true});
+    outer.appendChild(l);outer.appendChild(r);
+    setTimeout(upd,60);
+  });
+}
+window.addEventListener('resize',function(){
+  document.querySelectorAll('#rowsWrap .track').forEach(function(t){t.dispatchEvent(new Event('scroll'));});
+});
+  
 
 // ══════════════════════
 //  CARD
