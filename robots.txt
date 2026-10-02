@@ -3,3 +3,4 @@ Allow: /
 Disallow: /admin.html
 
 Sitemap: https://streamvault.amworkmanage.workers.dev/sitemap.xml
+Sitemap: https://streamzvault.netlify.app/sitemap.xml
