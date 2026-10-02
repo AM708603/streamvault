@@ -1530,6 +1530,38 @@ button:focus-visible,
 
 /* phones scroll by swipe, so hide the arrows there */
 @media(max-width:768px){.row-arr{display:none}}
+
+  /* ── WEBSITE TOUR ── */
+#tour{position:fixed;inset:0;z-index:10050;display:none}
+#tour.show{display:block}
+#tour.center{background:rgba(0,0,0,.84);backdrop-filter:blur(3px)}
+.tour-spot{
+  position:fixed;border-radius:12px;pointer-events:none;
+  border:2px solid var(--accent);
+  box-shadow:0 0 0 9999px rgba(0,0,0,.82),0 0 24px rgba(229,9,20,.45);
+  transition:top .35s var(--ease),left .35s var(--ease),width .35s var(--ease),height .35s var(--ease);
+}
+#tour.center .tour-spot{display:none}
+.tour-tip{
+  position:fixed;width:min(340px,calc(100vw - 24px));
+  background:var(--bg-elevated);border:1px solid var(--border-strong);
+  border-radius:var(--radius-lg);padding:20px 20px 16px;box-shadow:var(--shadow-lg);
+  transition:top .35s var(--ease),left .35s var(--ease);
+}
+.tour-step{font-size:.6rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+.tour-title{font-family:var(--font-display);font-size:1.5rem;letter-spacing:.04em;line-height:1.05;margin-bottom:8px}
+.tour-text{font-size:.82rem;line-height:1.7;color:var(--text-secondary);margin-bottom:16px}
+.tour-bar{display:flex;align-items:center;gap:8px}
+.tour-skip{font-size:.68rem;font-weight:600;color:var(--text-muted);padding:8px 4px;margin-right:auto}
+.tour-skip:hover{color:#fff}
+.tour-btn{padding:9px 16px;border-radius:var(--radius-sm);font-size:.78rem;font-weight:700;transition:background .2s}
+.tour-btn.ghost{background:rgba(255,255,255,.08);color:#ddd}
+.tour-btn.ghost:hover{background:rgba(255,255,255,.15)}
+.tour-btn.next{background:var(--accent);color:#fff}
+.tour-btn.next:hover{background:var(--accent-hover)}
+.tour-prog{display:flex;gap:4px;margin-bottom:14px}
+.tour-prog i{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.1)}
+.tour-prog i.on{background:var(--accent)}
 </style>
 </head>
 <body>
@@ -1662,7 +1694,7 @@ button:focus-visible,
       </div>
       <div class="ft-col">
         <h5>Info</h5>
-        <ul><li><a onclick="openInfoModal('about')">About</a></li><li><a onclick="openInfoModal('contact')">Contact</a></li><li><a onclick="openInfoModal('privacy')">Privacy</a></li><li><a onclick="openInfoModal('terms')">Terms</a></li></ul>
+       <ul><li><a onclick="openInfoModal('about')">About</a></li><li><a onclick="openInfoModal('contact')">Contact</a></li><li><a onclick="openInfoModal('privacy')">Privacy</a></li><li><a onclick="openInfoModal('terms')">Terms</a></li><li><a onclick="startTour()">Take a Tour</a></li></ul>
       </div>
     </div>
     <div class="ft-bottom">
@@ -3364,6 +3396,126 @@ if (document.readyState === 'loading') {
 } else {
   try{loadSiteAds();}catch(e){}
 }
+  // ══════════════════════
+//  WEBSITE TOUR
+// ══════════════════════
+var TOUR_STEPS=[
+  {title:'Welcome to StreamVault 👋',text:'Take a quick 30-second tour to see how everything works. You can skip it any time.'},
+  {sel:['#slider'],sc:'top',title:'Featured Titles',text:'Top picks rotate here. Use the arrows or dots to browse, press Play Now to start watching, or More Info for details.'},
+  {sel:['.nav-desktop','#hamBtn'],title:'Browse Categories',text:'Jump between Home, Movies, TV Shows and Anime. On phones, open the menu icon.'},
+  {sel:['.nav-btn[title="Search"]'],title:'Search',text:'Looking for something specific? Search any movie, show or anime by name or genre.'},
+  {sel:['.nav-btn[title="Request Content"]'],title:'Request Content',text:"Can't find a title? Send us a request and we'll try to add it."},
+  {sel:['#navHeartBtn'],title:'My List',text:'All the titles you save with the ♡ button are collected here.'},
+  {sel:['#navUserBtn'],title:'Your Account',text:'Sign in to sync your list and watch history across devices.'},
+  {sel:['#rowsWrap .row'],sc:'mid',title:'Browse in Rows',text:'Each row is a collection, such as Trending Now or Top Movies. Use the side arrows or swipe to see more.'},
+  {sel:['#rowsWrap .card-remove'],sc:'mid',title:'Save for Later',text:'Tap the ♡ on any poster to add it to My List. Tap the poster itself to open the details page.'},
+  {title:"You're all set! 🍿",text:'Enjoy StreamVault. You can replay this tour any time from "Take a Tour" in the footer or menu.'}
+];
+var TOUR_LIST=[],TOUR_I=0;
+
+function tourFind(sels){
+  if(!sels)return null;
+  for(var i=0;i<sels.length;i++){
+    var el=document.querySelector(sels[i]);
+    if(el){var r=el.getBoundingClientRect();if(r.width>0&&r.height>0)return el;}
+  }
+  return null;
+}
+function tourBuild(){
+  if(document.getElementById('tour'))return;
+  var t=document.createElement('div');
+  t.id='tour';
+  t.innerHTML='<div class="tour-spot" id="tourSpot"></div><div class="tour-tip" id="tourTip"></div>';
+  document.body.appendChild(t);
+}
+function startTour(){
+  var home=document.getElementById('pg-home');
+  if(!home.classList.contains('active')){goHome();setTimeout(startTour,500);return;}
+  try{closeDrawer();}catch(e){}
+  tourBuild();
+  window.scrollTo({top:0,behavior:'instant'});
+  TOUR_LIST=TOUR_STEPS.filter(function(s){return !s.sel||tourFind(s.sel);});
+  TOUR_I=0;
+  document.getElementById('tour').classList.add('show');
+  tourRender();
+}
+function tourRender(){
+  var st=TOUR_LIST[TOUR_I];if(!st)return;
+  var el=tourFind(st.sel);
+  if(el&&st.sc==='top')window.scrollTo({top:0,behavior:'instant'});
+  else if(el&&st.sc==='mid')el.scrollIntoView({block:'center',behavior:'instant'});
+  var last=TOUR_I===TOUR_LIST.length-1;
+  var prog='';
+  for(var i=0;i<TOUR_LIST.length;i++)prog+='<i'+(i<=TOUR_I?' class="on"':'')+'></i>';
+  document.getElementById('tourTip').innerHTML=
+    '<div class="tour-prog">'+prog+'</div>'+
+    '<div class="tour-step">Step '+(TOUR_I+1)+' of '+TOUR_LIST.length+'</div>'+
+    '<div class="tour-title">'+st.title+'</div>'+
+    '<div class="tour-text">'+st.text+'</div>'+
+    '<div class="tour-bar">'+
+      (last?'<span style="margin-right:auto"></span>':'<button class="tour-skip" onclick="endTour()">Skip tour</button>')+
+      (TOUR_I>0?'<button class="tour-btn ghost" onclick="tourGo(-1)">Back</button>':'')+
+      '<button class="tour-btn next" onclick="tourGo(1)">'+(last?'Start Watching':TOUR_I===0?"Let's Go":'Next')+'</button>'+
+    '</div>';
+  setTimeout(tourPlace,60);
+}
+function tourPlace(){
+  var tour=document.getElementById('tour');
+  if(!tour||!tour.classList.contains('show'))return;
+  var st=TOUR_LIST[TOUR_I];if(!st)return;
+  var el=tourFind(st.sel),spot=document.getElementById('tourSpot'),tip=document.getElementById('tourTip');
+  var vw=window.innerWidth,vh=window.innerHeight,tw=tip.offsetWidth,th=tip.offsetHeight;
+  if(!el){
+    tour.classList.add('center');
+    tip.style.left=Math.max(12,(vw-tw)/2)+'px';
+    tip.style.top=Math.max(12,(vh-th)/2)+'px';
+    return;
+  }
+  tour.classList.remove('center');
+  var r=el.getBoundingClientRect(),pad=6;
+  var top=Math.max(0,r.top-pad),left=Math.max(0,r.left-pad);
+  var w=Math.min(vw-left,r.width+pad*2),h=Math.min(vh-top,r.height+pad*2);
+  spot.style.top=top+'px';spot.style.left=left+'px';spot.style.width=w+'px';spot.style.height=h+'px';
+  var x=Math.min(Math.max(12,r.left+r.width/2-tw/2),vw-tw-12),y;
+  if(r.height>vh*0.5){y=(vh-th)/2;}                       // big target (hero): tip in the middle
+  else if(r.bottom+th+20<vh){y=r.bottom+16;}              // room below
+  else{y=Math.max(12,r.top-th-16);}                       // otherwise above
+  tip.style.left=x+'px';tip.style.top=y+'px';
+}
+function tourGo(d){
+  var n=TOUR_I+d;
+  if(n>=TOUR_LIST.length){endTour();return;}
+  if(n<0)return;
+  TOUR_I=n;tourRender();
+}
+function endTour(){
+  var t=document.getElementById('tour');
+  if(t)t.classList.remove('show','center');
+  try{localStorage.setItem('sv_tour_done','1');}catch(e){}
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+window.addEventListener('resize',tourPlace);
+window.addEventListener('scroll',tourPlace,{passive:true});
+document.addEventListener('keydown',function(e){
+  var t=document.getElementById('tour');
+  if(!t||!t.classList.contains('show'))return;
+  if(e.key==='Escape')endTour();
+  if(e.key==='ArrowRight'||e.key==='Enter')tourGo(1);
+  if(e.key==='ArrowLeft')tourGo(-1);
+});
+
+// auto-start once for first-time visitors (waits until the cards have loaded)
+(function autoTour(){
+  var tries=0;
+  (function wait(){
+    tries++;
+    var ready=document.querySelector('#rowsWrap .card');
+    var onHome=document.getElementById('pg-home').classList.contains('active');
+    if(ready&&onHome){
+      try{if(!localStorage.getItem('sv_tour_done'))setTimeout(startTour,800);}catch(e){}
+    }else if(tries<24){setTimeout(wait,500);}
+  })();
+})();
 </script>
 
 <!-- ── REQUEST MODAL ── -->
