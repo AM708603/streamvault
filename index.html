@@ -1456,6 +1456,30 @@ button:focus-visible,
 }
 .src-group:first-child{padding-top:6px}
 
+  /* ── UNIFIED CARD SIZE + NO HOVER EFFECTS ── */
+:root{--card-w:185px}
+
+/* same width for home rows, section grids and My List */
+.track .card{flex:0 0 var(--card-w);width:var(--card-w)}
+.section-grid{grid-template-columns:repeat(auto-fill,minmax(var(--card-w),1fr))}
+.mylist-grid{grid-template-columns:repeat(auto-fill,minmax(var(--card-w),1fr))}
+
+/* remove hover: no zoom, no red outline, no info panel, no image zoom */
+.card:hover,
+.card:first-child:hover,
+.card:last-child:hover{transform:none!important}
+.card:hover .card-inner{box-shadow:0 6px 24px rgba(0,0,0,.5)}
+.card:hover .card-img img{transform:none}
+.card-info,
+.card:hover .card-info{display:none!important}
+
+/* keep the ♡ My List button always visible (it used to appear only on hover) */
+.card-remove{opacity:1}
+.card:hover .card-remove{animation:none}
+
+@media(max-width:768px){:root{--card-w:140px}}
+@media(max-width:480px){:root{--card-w:120px}}
+
 /* ── SECTION GRID (Movies / TV / Anime pages) ── */
 .section-grid{
   display:grid;
