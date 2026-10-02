@@ -1562,6 +1562,14 @@ button:focus-visible,
 .tour-prog{display:flex;gap:4px;margin-bottom:14px}
 .tour-prog i{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.1)}
 .tour-prog i.on{background:var(--accent)}
+  /* ── RELEVANT CONTENT ON DETAIL PAGE ── */
+#dpRelated{margin-top:28px}
+#dpRelated .row{margin-bottom:0}
+#dpRelated .row-top,
+#dpRelated .track-outer{padding-left:0;padding-right:0}
+#dpRelated .row-arr.left{left:6px}
+#dpRelated .row-arr.right{right:6px}
+  
 </style>
 </head>
 <body>
@@ -2254,7 +2262,7 @@ function A(v,n){var a=[];for(var i=0;i<n;i++)a.push(v);return a;}
   function initRowArrows(){
   var chevL='<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>';
   var chevR='<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9,6 15,12 9,18"/></svg>';
-  document.querySelectorAll('#rowsWrap .track-outer').forEach(function(outer){
+  document.querySelectorAll('#rowsWrap .track-outer, #dpRelated .track-outer').forEach(function(outer){
     var track=outer.querySelector('.track');
     if(!track||outer.querySelector('.row-arr'))return;
     var l=document.createElement('button');
@@ -2484,6 +2492,68 @@ function showDetail(item,type){
   }
   document.getElementById('dpRight').innerHTML=Rv;
   setTimeout(function(){document.querySelectorAll('.rbar-f').forEach(function(el){el.style.width=el.dataset.w;});},120);
+  renderRelated(item,type);
+}
+  // ── Relevant titles: genre / tags / studio / director / year ──
+function relTokens(v){
+  return String(v||'').toLowerCase().split(/[,\/&]| and /).map(function(s){return s.trim();}).filter(Boolean);
+}
+function getRelated(item,type,limit){
+  limit=limit||12;
+  var pools={movie:MOVIES,tv:TV,anime:ANIME};
+  var out=[],seen={};seen[item.id]=1;
+  function add(it,t){if(!it||seen[it.id])return;seen[it.id]=1;out.push({item:it,type:t});}
+
+  // 1) hand-picked related IDs first (if they exist in the library)
+  (item.related||[]).forEach(function(rid){var f=findById(rid);if(f)add(f.item,f.type);});
+
+  var g=relTokens(item.genre),tg=[].concat(item.tags||[]).map(function(t){return String(t).toLowerCase();});
+  var yr=parseInt(item.year,10)||0;
+  function score(it){
+    var s=0,g2=relTokens(it.genre),t2=[].concat(it.tags||[]).map(function(t){return String(t).toLowerCase();});
+    g.forEach(function(x){if(g2.indexOf(x)>-1)s+=5;});
+    tg.forEach(function(x){if(t2.indexOf(x)>-1)s+=3;});
+    if(item.studio&&it.studio&&item.studio===it.studio)s+=2;
+    if(item.director&&it.director&&item.director===it.director)s+=2;
+    var y2=parseInt(it.year,10)||0;
+    if(yr&&y2)s+=Math.max(0,3-Math.abs(yr-y2)/5);
+    s+=(parseFloat(it.imdb)||0)/20;               // tiny quality tie-breaker
+    return s;
+  }
+  // 2) same type, best score first
+  (pools[type]||[]).filter(function(it){return !seen[it.id];})
+    .map(function(it){return{it:it,sc:score(it)};})
+    .sort(function(a,b){return b.sc-a.sc;})
+    .forEach(function(x){if(out.length<limit)add(x.it,type);});
+
+  // 3) still short? add same-genre titles from the other categories
+  if(out.length<limit){
+    ['movie','tv','anime'].forEach(function(t){
+      if(t===type)return;
+      (pools[t]||[]).map(function(it){return{it:it,sc:score(it)};})
+        .filter(function(x){return x.sc>=5;})
+        .sort(function(a,b){return b.sc-a.sc;})
+        .forEach(function(x){if(out.length<limit)add(x.it,t);});
+    });
+  }
+  return out.slice(0,limit);
+}
+function renderRelated(item,type){
+  var body=document.querySelector('#pg-detail .dp-body');
+  if(!body)return;
+  var box=document.getElementById('dpRelated');
+  if(!box){
+    box=document.createElement('div');box.id='dpRelated';body.appendChild(box);
+    box.addEventListener('click',function(e){var c=e.target.closest('[data-k]');if(c)openDetail(c.dataset.k);});
+  }
+  var rel=getRelated(item,type,14);
+  if(!rel.length){box.innerHTML='';return;}
+  box.innerHTML=
+    '<div class="row"><div class="row-top"><div class="row-title">You May Also <b>Like</b></div></div>'+
+    '<div class="track-outer"><div class="track">'+
+      rel.map(function(f){return cardHTML(f.item,f.type);}).join('')+
+    '</div></div></div>';
+  initRowArrows();
 }
 function rbarHTML(label,val,max){
   var pct=Math.round((parseFloat(val)/max)*100);
@@ -2586,7 +2656,7 @@ function buildMobilePanel(item,type,s,ep){
     '</button>';
   var tabs=[{id:'info',label:'Info'}];
   if(hasEps)tabs.push({id:'episodes',label:'Episodes'});
-  if(item.related&&item.related.length)tabs.push({id:'related',label:'More Like This'});
+  tabs.push({id:'related',label:'More Like This'});
   document.getElementById('mobTabs').innerHTML=tabs.map(function(t){
     return '<button class="play-tab'+(t.id===MOB_TAB?' on':'')+'" onclick="switchMobTab(\''+t.id+'\')">'+t.label+'</button>';
   }).join('');
@@ -2624,7 +2694,7 @@ function renderMobTab(item,type,s){
     }
     body.innerHTML=stabs+'<div class="play-ep-list" id="mobEpList">'+buildMobEpList(item,type,CUR_S)+'</div>';
   }else if(MOB_TAB==='related'){
-    var rels=(item.related||[]).map(function(rid){return findById(rid);}).filter(Boolean);
+    var rels=getRelated(item,type,8);
     if(!rels.length){body.innerHTML='<p style="color:#444;font-size:.8rem;padding:20px 0">No related titles found.</p>';return;}
     body.innerHTML='<div class="play-rel-grid">'+rels.map(function(f){
       var rk=reg(f.item,f.type);
