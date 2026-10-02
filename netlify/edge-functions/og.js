@@ -1,22 +1,15 @@
-// Netlify Edge Function — Dynamic SEO for StreamVault title pages
-// File: netlify/edge-functions/og.js
-
+// Netlify Edge Function — Dynamic SEO for StreamVault (Fixed)
 export default async function handler(request, context) {
   const url = new URL(request.url);
   const path = url.pathname;
 
-  // Match /title/123 or /title/123-slug or /play/123
   const match = path.match(/^\/(title|play)\/(\d+)/);
-  if (!match) {
-    return context.next();
-  }
+  if (!match) return context.next();
 
   const tmdbId = match[2];
-  const isPlay = match[1] === "play";
-
   const TMDB_KEY = "3001c6b89778ec27b78f6294a1e2538d";
-  const IMG_BASE = "https://image.tmdb.org/t/p/w1280";
   const IMG_POSTER = "https://image.tmdb.org/t/p/w780";
+  const IMG_BASE = "https://image.tmdb.org/t/p/w1280";
   const SITE_URL = "https://streamzvault.netlify.app";
 
   let title = "StreamVault";
@@ -27,21 +20,14 @@ export default async function handler(request, context) {
   let rating = "";
   let genres = [];
   let overview = "";
-  let poster = "";
   let isTV = false;
 
   try {
-    // Try movie first
-    let res = await fetch(
-      `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${TMDB_KEY}&language=en-US`
-    );
+    let res = await fetch(`https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${TMDB_KEY}&language=en-US`);
     let data = await res.json();
 
     if (data.success === false || !data.title) {
-      // Try TV
-      res = await fetch(
-        `https://api.themoviedb.org/3/tv/${tmdbId}?api_key=${TMDB_KEY}&language=en-US`
-      );
+      res = await fetch(`https://api.themoviedb.org/3/tv/${tmdbId}?api_key=${TMDB_KEY}&language=en-US`);
       data = await res.json();
       isTV = true;
       pageType = "video.tv_show";
@@ -51,43 +37,41 @@ export default async function handler(request, context) {
       title = data.title || data.name;
       year = (data.release_date || data.first_air_date || "").slice(0, 4);
       rating = data.vote_average ? data.vote_average.toFixed(1) : "";
-      genres = (data.genres || []).map((g) => g.name);
+      genres = (data.genres || []).map(g => g.name);
       overview = data.overview || "";
 
       description = [
-        overview.slice(0, 155),
+        overview.slice(0, 150),
         [year, rating ? `★ ${rating}` : "", genres[0] || ""].filter(Boolean).join(" · ")
       ].filter(Boolean).join(" — ");
 
-      if (data.poster_path) {
-        poster = IMG_POSTER + data.poster_path;
-        image = poster;
-      } else if (data.backdrop_path) {
-        image = IMG_BASE + data.backdrop_path;
-      }
+      if (data.poster_path) image = IMG_POSTER + data.poster_path;
+      else if (data.backdrop_path) image = IMG_BASE + data.backdrop_path;
     }
-  } catch (e) {
-    // fallback to defaults
-  }
+  } catch (e) {}
 
-  // Fetch original HTML
   const response = await context.next();
   let html = await response.text();
 
-  // ── 1. Update <title> ──────────────────────────────────────────
+  // 1. Remove ALL old Open Graph and Twitter tags
+  html = html.replace(/<meta\s+property=["']og:[^"']+["'][^>]*>/gi, "");
+  html = html.replace(/<meta\s+name=["']twitter:[^"']+["'][^>]*>/gi, "");
+  html = html.replace(/<link\s+rel=["']canonical["'][^>]*>/gi, "");
+
+  // 2. Update <title>
   html = html.replace(
     /<title>[\s\S]*?<\/title>/i,
     `<title>${esc(title)}${year ? ` (${year})` : ""} — StreamVault</title>`
   );
 
-  // ── 2. Update meta description ─────────────────────────────────
+  // 3. Update description
   html = html.replace(
     /<meta\s+name=["']description["'][^>]*>/i,
     `<meta name="description" content="${esc(description.slice(0, 160))}">`
   );
 
-  // ── 3. Inject Open Graph + Twitter tags ────────────────────────
-  const metaTags = `
+  // 4. Inject clean new tags
+  const newTags = `
     <link rel="canonical" href="${SITE_URL}/title/${tmdbId}">
     <meta property="og:type" content="${pageType}">
     <meta property="og:site_name" content="StreamVault">
@@ -97,58 +81,54 @@ export default async function handler(request, context) {
     <meta property="og:image" content="${image}">
     <meta property="og:image:width" content="780">
     <meta property="og:image:height" content="1170">
-    <meta property="og:image:alt" content="${esc(title)}">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="${esc(title)} — StreamVault">
     <meta name="twitter:description" content="${esc(description.slice(0, 160))}">
     <meta name="twitter:image" content="${image}">
   `;
 
-  // Insert right after <head>
-  html = html.replace(/<head[^>]*>/i, (m) => `${m}\n${metaTags}`);
+  html = html.replace(/<head[^>]*>/i, m => `${m}\n${newTags}`);
 
-  // ── 4. Inject visible content for Google ───────────────────────
-  const visibleContent = `
-    <div id="seo-content" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">
+  // 5. SEO content for Google
+  const seoContent = `
+    <div id="seo-content" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;">
       <h1>${esc(title)}${year ? ` (${year})` : ""}</h1>
       <p>${esc(overview || description)}</p>
       ${rating ? `<p>Rating: ${rating}/10</p>` : ""}
       ${genres.length ? `<p>Genres: ${genres.map(esc).join(", ")}</p>` : ""}
-      <img src="${poster || image}" alt="${esc(title)} poster">
+      <img src="${image}" alt="${esc(title)}">
       <p>Watch ${esc(title)} online free on StreamVault.</p>
     </div>
   `;
+  html = html.replace(/<body[^>]*>/i, m => `${m}\n${seoContent}`);
 
-  html = html.replace(/<body[^>]*>/i, (m) => `${m}\n${visibleContent}`);
-
-  // ── 5. Add JSON-LD Schema ──────────────────────────────────────
+  // 6. Schema
   const schema = {
     "@context": "https://schema.org",
     "@type": isTV ? "TVSeries" : "Movie",
-    "name": title,
-    "description": overview || description,
-    "image": poster || image,
-    "url": `${SITE_URL}/title/${tmdbId}`,
-    ...(year && { "datePublished": year }),
+    name: title,
+    description: overview || description,
+    image: image,
+    url: `${SITE_URL}/title/${tmdbId}`,
+    ...(year && { datePublished: year }),
     ...(rating && {
-      "aggregateRating": {
+      aggregateRating: {
         "@type": "AggregateRating",
-        "ratingValue": rating,
-        "bestRating": "10",
-        "ratingCount": "100"
+        ratingValue: rating,
+        bestRating: "10",
+        ratingCount: "100"
       }
     }),
-    "genre": genres
+    genre: genres
   };
 
-  const schemaScript = `<script type="application/ld+json">${JSON.stringify(schema)}</script>`;
-  html = html.replace(/<\/head>/i, `${schemaScript}\n</head>`);
+  html = html.replace(/<\/head>/i, `<script type="application/ld+json">${JSON.stringify(schema)}</script>\n</head>`);
 
   return new Response(html, {
     headers: {
       "content-type": "text/html; charset=UTF-8",
-      "cache-control": "public, max-age=1800, stale-while-revalidate=86400",
-    },
+      "cache-control": "public, max-age=1800, stale-while-revalidate=86400"
+    }
   });
 }
 
