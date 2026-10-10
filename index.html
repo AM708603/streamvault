@@ -2756,9 +2756,8 @@ function buildSrc(type, item, s, ep) {
 function syncPlayerChrome() {}
 function buildSrcMenu() {}
 
-// Sandboxed iframe: blocks popups, new-tab ads and top-page redirects from the player.
-// If a title ever refuses to play, set VS_SANDBOX = '' to turn it off.
-var VS_SANDBOX = 'allow-scripts allow-same-origin allow-forms allow-presentation';
+// VIDSTUCK refuses to play inside a sandboxed iframe ("Sandbox Detected"), so sandboxing is OFF.
+var VS_SANDBOX = '';
 function vsFrame(src) {
   return '<iframe src="' + src + '" frameborder="0" allowfullscreen allow="encrypted-media; autoplay; fullscreen"' +
          (VS_SANDBOX ? ' sandbox="' + VS_SANDBOX + '"' : '') + '></iframe>';
