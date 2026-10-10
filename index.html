@@ -2577,7 +2577,7 @@ function startPlayer(item,type,s,ep){
     window.history.back();
   };
   document.getElementById('playFrame').innerHTML=
-    '<iframe src="'+buildSrc(type,item,s,ep)+'" frameborder="0" allowfullscreen allow="encrypted-media; autoplay; fullscreen"></iframe>';
+    vsFrame(buildSrc(type,item,s,ep));
   updatePlayerListBtn();
   buildMobilePanel(item,type,s,ep);
   var pL=document.getElementById('pipL');
@@ -2705,7 +2705,7 @@ function mobPlayEp(k,s,ep){
   var r=R[k];if(!r)return;
   CUR_EP=s?{s:s,e:ep}:{e:ep};
   pushRoute(playPath(r.item,s,ep));
-  document.getElementById('playFrame').innerHTML='<iframe src="'+buildSrc(r.type,r.item,s,ep)+'" frameborder="0" allowfullscreen allow="encrypted-media; autoplay; fullscreen"></iframe>';
+  document.getElementById('playFrame').innerHTML=vsFrame(buildSrc(r.type,r.item,s,ep));
   document.getElementById('playTitle').textContent=r.item.title+(s?' · S'+s+'E'+ep:' · Ep'+ep);
   document.getElementById('mobTitle').textContent=r.item.title;
   var list=document.getElementById('mobEpList');
@@ -2756,6 +2756,14 @@ function buildSrc(type, item, s, ep) {
 function syncPlayerChrome() {}
 function buildSrcMenu() {}
 
+// Sandboxed iframe: blocks popups, new-tab ads and top-page redirects from the player.
+// If a title ever refuses to play, set VS_SANDBOX = '' to turn it off.
+var VS_SANDBOX = 'allow-scripts allow-same-origin allow-forms allow-presentation';
+function vsFrame(src) {
+  return '<iframe src="' + src + '" frameborder="0" allowfullscreen allow="encrypted-media; autoplay; fullscreen"' +
+         (VS_SANDBOX ? ' sandbox="' + VS_SANDBOX + '"' : '') + '></iframe>';
+}
+
 function buildPipEps(){
   var list=document.getElementById('pipList');
   if(!list||!CUR_ITEM)return;
@@ -2784,7 +2792,7 @@ function pipPlay(k,s,ep){
   var r=R[k];if(!r)return;
   CUR_EP=s?{s:s,e:ep}:{e:ep};
   pushRoute(playPath(r.item,s,ep));
-  document.getElementById('playFrame').innerHTML='<iframe src="'+buildSrc(r.type,r.item,s,ep)+'" frameborder="0" allowfullscreen allow="encrypted-media; autoplay; fullscreen"></iframe>';
+  document.getElementById('playFrame').innerHTML=vsFrame(buildSrc(r.type,r.item,s,ep));
   document.getElementById('playTitle').textContent=r.item.title+(s?' · S'+s+'E'+ep:' · Ep'+ep);
   buildPipEps();resetProg();
 }
