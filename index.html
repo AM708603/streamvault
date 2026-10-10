@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
   <meta name="google-site-verification" content="_2DCBu3I053BmGWhJ1O3sBPKrxtyCRX5he1laHrtBz0" />
 <title>StreamVault — Watch Movies, TV Shows &amp; Anime Online Free</title>
 <meta name="description" content="StreamVault is your free online streaming destination. Watch the latest movies, binge-worthy TV shows and top anime — all in one place, no sign-up needed.">
@@ -1543,133 +1543,6 @@ button:focus-visible,
 #dpRelated .row-arr.left{left:6px}
 #dpRelated .row-arr.right{right:6px}
   
-
-/* ═══════════════════════════════════════════
-   MOBILE-FRIENDLY ENHANCEMENTS
-═══════════════════════════════════════════ */
-html{-webkit-tap-highlight-color:transparent}
-body{overscroll-behavior-x:none}
-button,.card,.s-tab,.ep-item,.tag,.pg-btn,.row-more,.dot,.play-tab,.play-ep-item{touch-action:manipulation}
-@supports(height:100dvh){
-  .page,#pg-mylist,#pg-history{min-height:100dvh}
-}
-/* touch devices: no sticky hover zoom */
-@media(hover:none){
-  .card:hover,.section-grid .card:hover,.rel-item:hover,.cast-item:hover,.ep-item:hover{transform:none!important}
-  .btn-play:hover::after{opacity:0}
-}
-#toast:not(.show){opacity:0}
-#toast.show{opacity:1}
-
-@media(max-width:768px){
-  /* safe areas (notch / home bar) */
-  :root{--nav-h:calc(56px + env(safe-area-inset-top,0px))}
-  nav{
-    padding-top:env(safe-area-inset-top,0px);
-    padding-left:calc(12px + env(safe-area-inset-left,0px));
-    padding-right:calc(12px + env(safe-area-inset-right,0px));
-  }
-  .nav-user{display:none!important}
-  .drawer{
-    max-height:calc(100dvh - var(--nav-h));overflow-y:auto;
-    padding-left:calc(16px + env(safe-area-inset-left,0px));
-    padding-right:calc(16px + env(safe-area-inset-right,0px));
-    padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));
-  }
-  .drawer button{min-height:48px;padding:14px;font-size:.9rem}
-
-  /* hero */
-  #slider{height:72dvh;min-height:420px;max-height:640px}
-  .btn-play,.btn-info{min-height:44px;justify-content:center}
-  .btn-info{display:inline-flex}
-
-  /* rows: snap scrolling + bigger tap targets */
-  .track{scroll-snap-type:x proximity;scroll-padding-left:4%;overscroll-behavior-x:contain}
-  .card{scroll-snap-align:start}
-  .card-remove{width:32px;height:32px;top:6px;right:6px;font-size:15px;background:rgba(0,0,0,.6)}
-  .card-label-title{font-size:.78rem}
-  .row-more{min-height:34px;display:inline-flex;align-items:center}
-  .section-grid{gap:12px}
-
-  /* detail page */
-  .dp-body{padding:24px 4% 60px}
-  .dp-cols{gap:28px}
-  .dp-btn{min-height:44px;justify-content:center}
-  .dp-btn.share{display:inline-flex;padding:10px 14px}
-  .cast-row{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-right:-4%;padding-right:4%}
-  .cast-row::-webkit-scrollbar{display:none}
-  .cast-item{flex:0 0 auto}
-  .ep-item{padding:12px;gap:10px}
-  .ep-num{font-size:1.5rem;min-width:28px}
-
-  /* player */
-  .play-video-wrap{
-    padding-top:env(safe-area-inset-top,0px);
-    padding-left:env(safe-area-inset-left,0px);
-    padding-right:env(safe-area-inset-right,0px);
-  }
-  .play-frame{min-height:0;padding-top:0;height:auto;max-height:none;aspect-ratio:16/9}
-  .play-back{min-height:38px}
-  .play-top-btn{width:40px;height:40px}
-  .play-info-title{font-size:1.4rem}
-  .play-act-btn{min-width:64px;min-height:56px}
-  .play-tab{min-height:46px}
-  .play-ep-item{min-height:56px}
-  .play-tab-body{padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))}
-
-  /* search */
-  #search-ov{padding-top:calc(env(safe-area-inset-top,0px) + 64px)}
-  .search-results{max-height:calc(100dvh - 170px - env(safe-area-inset-top,0px))}
-  .s-item{padding:10px 12px}
-
-  /* inputs: 16px stops iOS auto-zoom on focus */
-  #searchInput,.req-input,.user-input{font-size:16px}
-
-  /* modals become bottom sheets */
-  #req-ov,#info-ov,#user-ov{align-items:flex-end;padding:0}
-  .req-box,.info-modal,.user-box{
-    max-width:100%;border-radius:16px 16px 0 0;
-    padding-bottom:env(safe-area-inset-bottom,0px);
-  }
-  .req-box{max-height:92dvh;overflow-y:auto}
-  .info-modal{max-height:90dvh}
-  .user-box{max-height:92dvh;overflow-y:auto}
-  .req-type-btn{min-height:44px;display:flex;align-items:center;justify-content:center}
-  .req-submit,.user-submit{min-height:46px}
-
-  /* lists, pager, toast */
-  .pg-btn{min-width:40px;height:40px}
-  #pg-history{padding-top:calc(var(--nav-h) + 16px)}
-  .hist-item{padding:10px}
-  #toast{
-    bottom:calc(20px + env(safe-area-inset-bottom,0px));
-    max-width:calc(100vw - 32px);white-space:normal;text-align:center;
-  }
-
-  /* footer: show Browse + Info, hide Genres */
-  .ft-grid{grid-template-columns:1fr 1fr;gap:24px}
-  .ft-grid>div:first-child{grid-column:1/-1}
-  .ft-col:nth-child(2),.ft-col:nth-child(4){display:block}
-  .ft-col:nth-child(3){display:none}
-  .ft-col ul li a{display:inline-block;padding:5px 0;font-size:.82rem}
-  footer{padding-bottom:calc(28px + env(safe-area-inset-bottom,0px))}
-}
-
-@media(max-width:480px){
-  .nav-right{gap:0}
-  .nav-btn,.ham{width:36px;height:36px}
-  .slide-btns .btn-play,.slide-btns .btn-info{padding:11px 18px}
-}
-
-/* phones in landscape */
-@media(max-height:500px) and (orientation:landscape){
-  #slider{height:100dvh;min-height:300px;max-height:none}
-  .slide-desc{display:none}
-  .slide-title{font-size:2rem}
-  .slide{padding-bottom:10%}
-  #pg-player .play-frame{aspect-ratio:auto;height:100dvh;max-height:none}
-  #pg-player .play-video-wrap{padding-top:0}
-}
 </style>
 </head>
 <body>
