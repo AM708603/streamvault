@@ -1793,6 +1793,7 @@ button:focus-visible,
 //  CONFIG
 // ══════════════════════
 var CF = 'https://streamvault.amworkmanage.workers.dev';
+var PLAYER_URL = 'https://am708603.github.io/streamvault-player/player.html';
 var IB = 'https://image.tmdb.org/t/p/w1280';
 var IP = 'https://image.tmdb.org/t/p/w500';
 var IA = 'https://image.tmdb.org/t/p/w185';
@@ -1865,7 +1866,7 @@ function handleRoute(path){
   var dm=path.match(/^\/title\/(\d+)/);
   if(dm){var f=findById(parseInt(dm[1]));if(f){showDetail(f.item,f.type);return;}}
   var pm=path.match(/^\/play\/(\d+)[^/]*(?:\/(\d+)\/(\d+))?$/);
-  if(pm){var f=findById(parseInt(pm[1]));if(f){startPlayer(f.item,f.type,pm[2]?parseInt(pm[2]):null,pm[3]?parseInt(pm[3]):null);return;}}
+  if(pm){var f=findById(parseInt(pm[1]));if(f){showDetail(f.item,f.type);return;}}
   (ROUTES[path]||ROUTES['/'])();
 }
 window.addEventListener('popstate',function(){handleRoute(window.location.pathname);});
@@ -2554,48 +2555,24 @@ function switchSeason(s,btn){
 var MOB_TAB='info';
 function playItem(k){var r=R[k];if(!r)return;startPlayer(r.item,r.type,null,null);}
 function playEp(k,s,ep){var r=R[k];if(!r)return;startPlayer(r.item,r.type,s,ep);}
-function startPlayer(item,type,s,ep){
-  pushRoute(playPath(item,s,ep));
-  PREV_PG=document.querySelector('.page.active').id;
-  clearInterval(SLIDE_TMR);CUR_ITEM=item;CUR_TYPE=type;
-  CUR_S=s||(item.seasons?item.seasons[0].s:1);
-  if(s==null&&ep==null){
-    if(type==='tv'){
-      var ss=(item.seasons&&item.seasons.length)?item.seasons[0]:null;
-      s = ss ? (ss.s||1) : 1;
+function startPlayer(item, type, s, ep){
+  var isMovie = (type === 'movie') || item.isM || item.isMovie;
+  var hs = s, he = ep;
+  if (!isMovie && (s == null || ep == null)) {
+    if (type === 'tv') {
+      var ss = (item.seasons && item.seasons.length) ? item.seasons[0] : null;
+      s = ss ? (ss.s || 1) : 1;
       ep = (ss && ss.episodes && ss.episodes[0]) ? ss.episodes[0].e : 1;
-    } else if(type==='anime'&&!(item.isM||item.isMovie)){
+      hs = s; he = ep;
+    } else {
+      s = 1;
       ep = (item.episodes && item.episodes[0]) ? item.episodes[0].e : 1;
+      he = ep;
     }
   }
-  CUR_EP=s?{s:s,e:ep}:ep?{e:ep}:null;
-  try{trackHistory(item,type,s,ep);}catch(e){}
-  showPage('pg-player');
-  try{syncPlayerChrome();}catch(e){}
-  document.getElementById('playTitle').textContent=item.title+(s&&ep?' · S'+s+'E'+ep:'');
-  document.getElementById('playBackBtn').onclick=function(){
-    document.getElementById('playFrame').innerHTML='';
-    window.history.back();
-  };
-  document.getElementById('playFrame').innerHTML=
-    vsFrame(buildSrc(type,item,s,ep));
-  updatePlayerListBtn();
-  buildMobilePanel(item,type,s,ep);
-  var pL=document.getElementById('pipL');
-  pL.innerHTML=
-    '<div class="pip-title">'+X(item.title)+'</div>'+
-    '<div class="pip-meta"><span class="gn">'+item.match+'% Match</span><span>'+item.year+'</span><span>'+item.rating+'</span><span>'+X(item.genre)+'</span>'+(s&&ep?'<span>S'+s+' E'+ep+'</span>':'')+'</div>'+
-    '<div class="pip-desc">'+X(item.desc)+'</div>'+
-    '<div class="prog-box"><div class="prog-top"><span class="prog-lbl">Watch Progress</span><span class="prog-pct" id="progPct">0%</span></div><div class="prog-bar"><div class="prog-fill" id="progFillDesktop"></div></div><div class="prog-time" id="progTime">—</div></div>';
-  var pR=document.getElementById('pipR');
-  var hasEps=type==='tv'||(type==='anime'&&!item.isM);
-  if(hasEps){
-    var stabs='';
-    if(type==='tv'&&item.seasons)stabs=item.seasons.map(function(ss){return '<div class="pip-stab'+(ss.s===CUR_S?' on':'')+'" onclick="pipS('+ss.s+',this)">S'+ss.s+'</div>';}).join('');
-    pR.innerHTML='<div class="pip-ep-title">Episodes</div>'+(stabs?'<div class="pip-stabs" id="pipStabs">'+stabs+'</div>':'')+'<div class="pip-ep-list" id="pipList"></div>';
-    buildPipEps();
-  }else{pR.innerHTML='';}
-  resetProg();
+  try { trackHistory(item, type, hs, he); } catch(e) {}
+  // short delay so the history request can leave before the page changes
+  setTimeout(function(){ window.location.href = buildPlayerURL(item, type, s, ep); }, 200);
 }
 function buildMobilePanel(item,type,s,ep){
   var k=reg(item,type);
@@ -2704,16 +2681,7 @@ function mobSwitchSeason(s,btn){
 }
 function mobPlayEp(k,s,ep){
   var r=R[k];if(!r)return;
-  CUR_EP=s?{s:s,e:ep}:{e:ep};
-  pushRoute(playPath(r.item,s,ep));
-  document.getElementById('playFrame').innerHTML=vsFrame(buildSrc(r.type,r.item,s,ep));
-  document.getElementById('playTitle').textContent=r.item.title+(s?' · S'+s+'E'+ep:' · Ep'+ep);
-  document.getElementById('mobTitle').textContent=r.item.title;
-  var list=document.getElementById('mobEpList');
-  if(list)list.innerHTML=buildMobEpList(r.item,r.type,s||CUR_S);
-  buildPipEps();resetProg();
-  var vw=document.querySelector('.play-video-wrap');
-  if(vw)vw.scrollIntoView({behavior:'smooth'});
+  startPlayer(r.item,r.type,s,ep);
 }
 function updatePlayerListBtn(){
   if(!CUR_ITEM)return;
@@ -2739,30 +2707,18 @@ function playerToggleList(){
 }
 
 // ══════════════════════
-//  BUILD SRC — VIDSTUCK
+//  BUILD PLAYER URL (external player page)
 // ══════════════════════
-var VS_BASE = 'https://vidstuck.cc/embed';
-var VS_OPTS = 'color=E50914&branding=StreamVault&subtitle=english';
-
-function buildSrc(type, item, s, ep) {
-  var id = item.id;
+function buildPlayerURL(item, type, s, ep){
   var isMovie = (type === 'movie') || item.isM || item.isMovie;
-  if (isMovie) return VS_BASE + '/movie/' + id + '?' + VS_OPTS;
-  // TV shows and anime series use the /tv/ route: id / season / episode
-  return VS_BASE + '/tv/' + id + '/' + (s || 1) + '/' + (ep || 1) +
-         '?' + VS_OPTS + '&nextEpisode=true&episodeSelector=true&autoplayNextEpisode=true';
+  var q = ['type=' + (isMovie ? 'movie' : 'tv'), 'id=' + item.id];
+  if (!isMovie) { q.push('s=' + (s || 1)); q.push('e=' + (ep || 1)); }
+  q.push('title=' + encodeURIComponent(item.title));
+  q.push('back=' + encodeURIComponent(window.location.origin + titlePath(item)));
+  return PLAYER_URL + '?' + q.join('&');
 }
-
-// no-op stubs so existing calls don't break
 function syncPlayerChrome() {}
 function buildSrcMenu() {}
-
-// VIDSTUCK refuses to play inside a sandboxed iframe ("Sandbox Detected"), so sandboxing is OFF.
-var VS_SANDBOX = '';
-function vsFrame(src) {
-  return '<iframe src="' + src + '" frameborder="0" allowfullscreen allow="encrypted-media; autoplay; fullscreen"' +
-         (VS_SANDBOX ? ' sandbox="' + VS_SANDBOX + '"' : '') + '></iframe>';
-}
 
 function buildPipEps(){
   var list=document.getElementById('pipList');
@@ -2790,11 +2746,7 @@ function pipS(s,btn){
 }
 function pipPlay(k,s,ep){
   var r=R[k];if(!r)return;
-  CUR_EP=s?{s:s,e:ep}:{e:ep};
-  pushRoute(playPath(r.item,s,ep));
-  document.getElementById('playFrame').innerHTML=vsFrame(buildSrc(r.type,r.item,s,ep));
-  document.getElementById('playTitle').textContent=r.item.title+(s?' · S'+s+'E'+ep:' · Ep'+ep);
-  buildPipEps();resetProg();
+  startPlayer(r.item,r.type,s,ep);
 }
 
 // ══════════════════════
@@ -3525,11 +3477,11 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeRequest
 
 <script>
 var INFO_CONTENT={
-  about:{title:'About StreamVault',html:'<h3>What is StreamVault?</h3><p>StreamVault is a free online streaming platform where you can watch movies, TV shows and anime — all in one place, with no sign-up or subscription required.</p><h3>Our Mission</h3><p>We believe great entertainment should be accessible to everyone. StreamVault is built to give you a premium streaming experience without the premium price tag.</p><h3>Content Library</h3><p>Our library includes thousands of titles across movies, TV series and anime. New content is added regularly. Use the <strong style="color:#fff">Request Content</strong> feature and we will do our best to add it.</p><h3>Powered by VIDSTUCK</h3><p>StreamVault uses VIDSTUCK streaming technology to deliver fast, reliable video playback directly in your browser — no app downloads needed.</p>'},
+  about:{title:'About StreamVault',html:'<h3>What is StreamVault?</h3><p>StreamVault is a free online streaming platform where you can watch movies, TV shows and anime — all in one place, with no sign-up or subscription required.</p><h3>Our Mission</h3><p>We believe great entertainment should be accessible to everyone. StreamVault is built to give you a premium streaming experience without the premium price tag.</p><h3>Content Library</h3><p>Our library includes thousands of titles across movies, TV series and anime. New content is added regularly. Use the <strong style="color:#fff">Request Content</strong> feature and we will do our best to add it.</p>'},
   contact:{title:'Contact Us',html:'<h3>Get in Touch</h3><p>We would love to hear from you! Whether you have a question, suggestion, bug report or just want to say hello — reach out anytime.</p><h3>Request Content</h3><p>Cannot find a movie, show or anime? Use the <strong style="color:#fff">Request Content</strong> button in the navigation bar and we will review your request.</p><h3>Report an Issue</h3><p>If a video is not playing or you have found a bug, please describe the issue (title, browser, device) and send us a message.</p><h3>Email</h3><p><a href="mailto:amworkmanage@gmail.com">amworkmanage@gmail.com</a></p><h3>Response Time</h3><p>We typically respond within 24-48 hours. Thank you for your patience!</p>'},
-  privacy:{title:'Privacy Policy',html:'<p><em style="color:#555;font-size:.75rem">Last updated: January 2025</em></p><h3>Information We Collect</h3><p>StreamVault does not require you to create an account or provide personal information to use our service.</p><ul><li><strong style="color:#ccc">My List</strong> — saved locally in your browser session storage. Never sent to our servers.</li><li><strong style="color:#ccc">Content Requests</strong> — if you submit a request, we store the title, type and optional name you provide.</li><li><strong style="color:#ccc">Usage Data</strong> — we may collect anonymous analytics data to improve the service.</li></ul><h3>Cookies</h3><p>StreamVault uses minimal cookies necessary for the site to function. We do not use tracking or advertising cookies.</p><h3>Third-Party Services</h3><p>Our video player is provided by VIDSTUCK. Movie data and images are sourced from TMDB. These services have their own privacy policies.</p><h3>Data Sharing</h3><p>We do not sell, trade or share your personal information with third parties for marketing purposes.</p><h3>Changes</h3><p>We may update this policy occasionally. Changes will be posted on this page with an updated date.</p>'},
+  privacy:{title:'Privacy Policy',html:'<p><em style="color:#555;font-size:.75rem">Last updated: January 2025</em></p><h3>Information We Collect</h3><p>StreamVault does not require you to create an account or provide personal information to use our service.</p><ul><li><strong style="color:#ccc">My List</strong> — saved locally in your browser session storage. Never sent to our servers.</li><li><strong style="color:#ccc">Content Requests</strong> — if you submit a request, we store the title, type and optional name you provide.</li><li><strong style="color:#ccc">Usage Data</strong> — we may collect anonymous analytics data to improve the service.</li></ul><h3>Cookies</h3><p>StreamVault uses minimal cookies necessary for the site to function. We do not use tracking or advertising cookies.</p><h3>Third-Party Services</h3><p>Movie data and images are sourced from TMDB. Third-party services used for playback have their own privacy policies.</p><h3>Data Sharing</h3><p>We do not sell, trade or share your personal information with third parties for marketing purposes.</p><h3>Changes</h3><p>We may update this policy occasionally. Changes will be posted on this page with an updated date.</p>'},
   terms:{title:'Terms of Service',html:'<p><em style="color:#555;font-size:.75rem">Last updated: January 2025</em></p><h3>Acceptance of Terms</h3><p>By using StreamVault, you agree to these Terms of Service. If you do not agree, please do not use the service.</p><h3>Use of Service</h3><p>StreamVault is provided for personal, non-commercial use only. You agree not to:</p><ul><li>Use the service for any unlawful purpose</li><li>Attempt to bypass or circumvent any security measures</li><li>Scrape, crawl or automate access to the platform</li><li>Redistribute or resell any content from StreamVault</li></ul><h3>Content</h3><p>StreamVault provides access to streaming content via third-party providers. We do not host any video files directly and are not responsible for third-party content availability.</p><h3>Disclaimer</h3><p>StreamVault is provided as-is without warranties of any kind. We do not guarantee uninterrupted or error-free service.</p><h3>Changes</h3><p>We reserve the right to modify these terms at any time. Continued use constitutes acceptance.</p>'},
-  cookies:{title:'Cookie Policy',html:'<p><em style="color:#555;font-size:.75rem">Last updated: January 2025</em></p><h3>What Are Cookies?</h3><p>Cookies are small text files stored in your browser when you visit a website. They help the site remember your preferences and improve your experience.</p><h3>How We Use Cookies</h3><p>We use only essential cookies necessary for the site to function. We do not use advertising or tracking cookies.</p><h3>Session Storage</h3><p>Your My List is stored in your browser session storage — local to your device and cleared when you close the browser. Never sent to our servers.</p><h3>Third-Party Cookies</h3><p>The VIDSTUCK video player and TMDB image service may set their own cookies. Please refer to their privacy policies for details.</p><h3>Managing Cookies</h3><p>You can control cookies through your browser settings at any time.</p>'}
+  cookies:{title:'Cookie Policy',html:'<p><em style="color:#555;font-size:.75rem">Last updated: January 2025</em></p><h3>What Are Cookies?</h3><p>Cookies are small text files stored in your browser when you visit a website. They help the site remember your preferences and improve your experience.</p><h3>How We Use Cookies</h3><p>We use only essential cookies necessary for the site to function. We do not use advertising or tracking cookies.</p><h3>Session Storage</h3><p>Your My List is stored in your browser session storage — local to your device and cleared when you close the browser. Never sent to our servers.</p><h3>Third-Party Cookies</h3><p>The video player and TMDB image service may set their own cookies. Please refer to their privacy policies for details.</p><h3>Managing Cookies</h3><p>You can control cookies through your browser settings at any time.</p>'}
 };
 function openInfoModal(page){
   var content=INFO_CONTENT[page];if(!content)return;
