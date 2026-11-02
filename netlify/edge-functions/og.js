@@ -3,6 +3,35 @@ export default async function handler(request, context) {
   const url = new URL(request.url);
   const path = url.pathname;
 
+  // ── Section pages: /movies /tvshows /anime ──
+  const SECTIONS = {
+    "/movies":  ["Watch Movies Online Free — StreamVault",   "Browse and stream the latest and top-rated movies free on StreamVault. No sign-up needed.", "Watch Movies Online Free"],
+    "/tvshows": ["Watch TV Shows Online Free — StreamVault",  "Stream binge-worthy TV series free on StreamVault. No sign-up needed.", "Watch TV Shows Online Free"],
+    "/anime":   ["Watch Anime Online Free — StreamVault",    "Stream popular anime series and movies free on StreamVault. No sign-up needed.", "Watch Anime Online Free"]
+  };
+  const secPath = path.replace(/\/+$/, "");
+  if (SECTIONS[secPath]) {
+    const [t, d, h] = SECTIONS[secPath];
+    const full = "https://streamzvault.netlify.app" + secPath;
+    const res = await context.next();
+    let page = await res.text();
+    page = page.replace(/<title>[\s\S]*?<\/title>/i, `<title>${esc(t)}</title>`);
+    page = page.replace(/<meta\s+name=["']description["'][^>]*>/i, `<meta name="description" content="${esc(d)}">`);
+    page = page.replace(/<link\s+rel=["']canonical["'][^>]*>/i, `<link rel="canonical" href="${full}">`);
+    page = page.replace(/<meta\s+property=["']og:title["'][^>]*>/i, `<meta property="og:title" content="${esc(t)}">`);
+    page = page.replace(/<meta\s+property=["']og:description["'][^>]*>/i, `<meta property="og:description" content="${esc(d)}">`);
+    page = page.replace(/<meta\s+property=["']og:url["'][^>]*>/i, `<meta property="og:url" content="${full}">`);
+    page = page.replace(/<meta\s+name=["']twitter:title["'][^>]*>/i, `<meta name="twitter:title" content="${esc(t)}">`);
+    page = page.replace(/<meta\s+name=["']twitter:description["'][^>]*>/i, `<meta name="twitter:description" content="${esc(d)}">`);
+    page = page.replace(/<h1 class="sr-only">[\s\S]*?<\/h1>/i, `<h1 class="sr-only">${esc(h)} — StreamVault</h1>`);
+    return new Response(page, {
+      headers: {
+        "content-type": "text/html; charset=UTF-8",
+        "cache-control": "public, max-age=600, stale-while-revalidate=86400"
+      }
+    });
+  }
+
   const match = path.match(/^\/(title|play)\/(\d+)/);
   if (!match) return context.next();
 
