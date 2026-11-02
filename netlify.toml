@@ -5,3 +5,15 @@
 [[edge_functions]]
   function = "og"
   path = "/play/*"
+
+[[edge_functions]]
+  function = "og"
+  path = "/movies"
+
+[[edge_functions]]
+  function = "og"
+  path = "/tvshows"
+
+[[edge_functions]]
+  function = "og"
+  path = "/anime"
