@@ -1857,6 +1857,30 @@ var ROUTES={
   '/mylist':function(){_goMyList();},
   '/history':function(){if(USER_TOKEN){showPage('pg-history');renderHistory();}else{_goHome();}}
 };
+// ══════════════════════
+//  SEO (per-route title / canonical / robots)
+// ══════════════════════
+var SITE='https://streamzvault.netlify.app';
+function setMeta(sel,val){var el=document.querySelector(sel);if(el)el.setAttribute('content',val);}
+function setSEO(path,title,desc,noindex){
+  document.title=title;
+  var c=document.querySelector('link[rel="canonical"]');
+  if(c)c.setAttribute('href',SITE+path);
+  setMeta('meta[name="description"]',desc);
+  setMeta('meta[property="og:title"]',title);
+  setMeta('meta[property="og:description"]',desc);
+  setMeta('meta[property="og:url"]',SITE+path);
+  setMeta('meta[name="twitter:title"]',title);
+  setMeta('meta[name="twitter:description"]',desc);
+  setMeta('meta[name="robots"]',noindex?'noindex, follow':'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1');
+}
+var SEO_SECTIONS={
+  home:['/','StreamVault \u2014 Watch Movies, TV Shows & Anime Online Free','Watch the latest movies, TV shows and anime online free on StreamVault. No sign-up needed.'],
+  movies:['/movies','Watch Movies Online Free \u2014 StreamVault','Browse and stream the latest and top-rated movies free on StreamVault.'],
+  tvshows:['/tvshows','Watch TV Shows Online Free \u2014 StreamVault','Stream binge-worthy TV series free on StreamVault.'],
+  anime:['/anime','Watch Anime Online Free \u2014 StreamVault','Stream popular anime series and movies free on StreamVault.']
+};
+
 function slugify(title){
   return String(title||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
 }
@@ -1992,6 +2016,7 @@ function showPage(id){
 }
 function _goHome(){
   CUR_SEC='home';showPage('pg-home');setNavActive(null);buildSlides();buildRows();startSlider();
+  var hs=SEO_SECTIONS.home;setSEO(hs[0],hs[1],hs[2]);
 }
 var PAGE_SIZE = 24;   // titles per page, change as you like
 var SEC_PAGE  = 1;
@@ -2009,11 +2034,13 @@ function pageFromURL(){
 }
 function _goSection(sec,btn,page){
   CUR_SEC=sec;setNavActive(btn);showPage('pg-home');clearInterval(SLIDE_TMR);
-  if(sec==='home'){buildSlides();buildRows();startSlider();return;}
+  if(sec==='home'){buildSlides();buildRows();startSlider();var h0=SEO_SECTIONS.home;setSEO(h0[0],h0[1],h0[2]);return;}
   var cfg=secCfg(sec);
   buildSingleHero(cfg.hero,cfg.htype);
   SEC_PAGE=page||1;
   renderSection();
+  var ss=SEO_SECTIONS[sec];
+  if(ss)setSEO(ss[0]+(SEC_PAGE>1?'?page='+SEC_PAGE:''),ss[1],ss[2]);
 }
 function pageList(cur,total){
   var out=[],i;
@@ -2066,12 +2093,14 @@ function renderSection(){
 function goPage(n){
   SEC_PAGE=n;
   renderSection();
+  var sp=SEO_SECTIONS[CUR_SEC];if(sp)setSEO(sp[0]+(n>1?'?page='+n:''),sp[1],sp[2]);
   var el=document.getElementById('secTop');
   if(el)window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-80,behavior:'smooth'});
 }
 function _goMyList(){
   PREV_PG=document.querySelector('.page.active').id;
   clearInterval(SLIDE_TMR);showPage('pg-mylist');renderMyList();
+  setSEO('/mylist','My List \u2014 StreamVault','Your saved titles on StreamVault.',true);
 }
 function goHome(){pushRoute('/');_goHome();}
 function goSection(sec,btn){var pm={movies:'/movies',tvshows:'/tvshows',anime:'/anime',home:'/'};pushRoute(pm[sec]||'/');_goSection(sec,btn);}
@@ -2382,6 +2411,7 @@ function clearMyList(){
 function openDetail(k){var r=R[k];if(!r)return;showDetail(r.item,r.type);}
 function showDetail(item,type){
   pushRoute(titlePath(item));
+  setSEO(titlePath(item),item.title+' ('+item.year+') \u2014 Watch Online Free | StreamVault',(item.desc||'').slice(0,155),false);
   PREV_PG=document.querySelector('.page.active').id;
   clearInterval(SLIDE_TMR);CUR_ITEM=item;CUR_TYPE=type;
   showPage('pg-detail');
@@ -3103,6 +3133,7 @@ function goHistory(){
   if (!requireLogin()) return;
   pushRoute('/history');
   showPage('pg-history');
+  setSEO('/history','Watch History \u2014 StreamVault','Your watch history on StreamVault.',true);
   renderHistory();
 }
 function renderHistory(){
